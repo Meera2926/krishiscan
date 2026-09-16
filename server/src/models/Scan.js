@@ -51,6 +51,8 @@ const scanSchema = new mongoose.Schema(
     statusReason: { type: String, enum: STATUS_REASONS, default: 'ok' },
     // Share of the model's raw probability that fell on the declared crop's classes.
     cropProbability: { type: Number, min: 0, max: 1, default: null },
+    // Gate model's probability that the photo is not a crop leaf at all.
+    invalidProbability: { type: Number, min: 0, max: 1, default: null },
     modelVersion: { type: String, required: true },
     inferenceMs: Number,
 

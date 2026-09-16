@@ -1,0 +1,40 @@
+# Render Blueprint: one free web service serves both the API and the built React app.
+# Before deploying, create a free MongoDB Atlas cluster and a free Cloudinary account,
+# then fill in the "sync: false" values in the Render dashboard.
+services:
+  - type: web
+    name: krishiscan
+    runtime: node
+    plan: free
+    buildCommand: npm ci --include=dev && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NODE_VERSION
+        value: "24"
+      - key: TRUST_PROXY
+        value: "true"
+      - key: ONNXRUNTIME_NODE_INSTALL
+        value: skip
+      # Dev dependencies are needed to build the client, but not the ~100 MB test MongoDB binary.
+      - key: MONGOMS_DISABLE_POSTINSTALL
+        value: "1"
+      # The free instance has 0.1 CPU; more threads only add contention.
+      - key: ORT_THREADS
+        value: "1"
+      - key: MONGO_URI
+        sync: false
+      - key: JWT_ACCESS_SECRET
+        generateValue: true
+      - key: JWT_REFRESH_SECRET
+        generateValue: true
+      - key: STORAGE_DRIVER
+        value: cloudinary
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false

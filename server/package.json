@@ -24,6 +24,7 @@
     "mongoose": "^9.10.1",
     "morgan": "^1.12.1",
     "multer": "^2.4.0",
+    "onnxruntime-node": "^1.30.0",
     "sharp": "^0.35.4",
     "zod": "^4.6.5"
   },

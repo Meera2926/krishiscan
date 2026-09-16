@@ -87,6 +87,8 @@ export function createApp() {
   if (config.STORAGE_DRIVER === 'local') {
     app.use('/uploads', express.static(config.UPLOAD_DIR, { maxAge: '30d', immutable: true, index: false }));
   }
+  // A missing image must 404, not fall through to the SPA and come back as index.html.
+  app.use('/uploads', notFoundHandler);
 
   // In production one Node process serves both the API and the built React app. Same origin
   // means no CORS and first-party refresh cookies, and it is one service to deploy.

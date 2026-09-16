@@ -32,8 +32,9 @@ const schema = z.object({
   CLOUDINARY_API_SECRET: z.string().optional(),
 
   INFERENCE_DRIVER: z.enum(['local', 'mock']).default('local'),
-  MODEL_ID: z.string().optional().default(''),
   MODEL_CACHE_DIR: z.string().default(path.join(serverRoot, 'models-cache')),
+  // 0 lets onnxruntime pick. Set 1 on tiny shared-CPU hosts to avoid thread thrashing.
+  ORT_THREADS: z.coerce.number().int().min(0).max(64).default(0),
   // Top-1 confidence at or above this is reported as a confident diagnosis.
   CONFIDENCE_HIGH: z.coerce.number().min(0).max(1).default(0.7),
   // Below this the image is rejected as "not a recognisable supported leaf".
@@ -44,7 +45,9 @@ const schema = z.object({
   MAX_UPLOAD_MB: z.coerce.number().positive().default(8),
 });
 
-const parsed = schema.safeParse(process.env);
+// Treat `KEY=` lines in .env as unset, so copying .env.example as-is works.
+const provided = Object.fromEntries(Object.entries(process.env).filter(([, v]) => v !== ''));
+const parsed = schema.safeParse(provided);
 if (!parsed.success) {
   console.error('Invalid environment configuration:\n' + z.prettifyError(parsed.error));
   process.exit(1);

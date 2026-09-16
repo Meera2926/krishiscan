@@ -51,34 +51,33 @@
   }
 }
 
-@layer components {
-  .card {
-    @apply bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(0,0,0,0.04)];
-  }
-  .btn {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 min-h-11 text-[15px] font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed select-none;
-  }
-  .btn-primary {
-    @apply btn bg-brand-700 text-white hover:bg-brand-800;
-  }
-  .btn-secondary {
-    @apply btn bg-surface text-ink border border-line hover:bg-canvas;
-  }
-  .btn-ghost {
-    @apply btn text-ink-muted hover:bg-black/5 hover:text-ink;
-  }
-  .btn-danger {
-    @apply btn bg-surface text-danger border border-line hover:bg-danger-bg;
-  }
-  .input {
-    @apply w-full rounded-xl border border-line bg-surface px-3.5 min-h-11 text-[15px] placeholder:text-ink-muted/70 focus:border-brand-600 focus:outline-none focus:ring-3 focus:ring-brand-600/15;
-  }
-  .label {
-    @apply mb-1.5 block text-sm font-medium text-ink;
-  }
-  .chip {
-    @apply inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold;
-  }
+/* Tailwind 4 only lets @apply compose classes declared with @utility. */
+@utility card {
+  @apply bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(0,0,0,0.04)];
+}
+@utility btn {
+  @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 min-h-11 text-[15px] font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed select-none;
+}
+@utility btn-primary {
+  @apply btn bg-brand-700 text-white hover:bg-brand-800;
+}
+@utility btn-secondary {
+  @apply btn bg-surface text-ink border border-line hover:bg-canvas;
+}
+@utility btn-ghost {
+  @apply btn text-ink-muted hover:bg-black/5 hover:text-ink;
+}
+@utility btn-danger {
+  @apply btn bg-surface text-danger border border-line hover:bg-danger-bg;
+}
+@utility input {
+  @apply w-full rounded-xl border border-line bg-surface px-3.5 min-h-11 text-[15px] placeholder:text-ink-muted/70 focus:border-brand-600 focus:outline-none focus:ring-3 focus:ring-brand-600/15;
+}
+@utility label {
+  @apply mb-1.5 block text-sm font-medium text-ink;
+}
+@utility chip {
+  @apply inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold;
 }
 
 /* Leaflet inherits the app font and sits below the sticky header and mobile nav. */

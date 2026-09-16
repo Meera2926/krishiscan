@@ -2,21 +2,16 @@ import { Disease } from '../models/index.js';
 
 let cached = null;
 
-/** Map of raw classifier label -> { diseaseKey, crop, isHealthy }, built from Disease.modelLabels. */
+/**
+ * Map of classifier label -> { diseaseKey, crop, isHealthy }. The classifiers already emit
+ * disease keys (see inference/catalog.js), so a label only resolves if the disease has
+ * advisory content in the database.
+ */
 export async function getLabelIndex() {
   if (cached) return cached;
-  const diseases = await Disease.find({ 'modelLabels.0': { $exists: true } })
-    .select('key crop isHealthy modelLabels')
-    .lean();
-
-  const index = new Map();
-  for (const d of diseases) {
-    for (const label of d.modelLabels) {
-      index.set(label, { diseaseKey: d.key, crop: d.crop, isHealthy: d.isHealthy });
-    }
-  }
-  cached = index;
-  return index;
+  const diseases = await Disease.find().select('key crop isHealthy').lean();
+  cached = new Map(diseases.map((d) => [d.key, { diseaseKey: d.key, crop: d.crop, isHealthy: d.isHealthy }]));
+  return cached;
 }
 
 /** Call after reseeding diseases so the next scan sees the new mapping. */

@@ -66,12 +66,46 @@ describe('diagnose', () => {
     expect(total).toBeCloseTo(1, 3);
   });
 
-  it('flags a crop mismatch instead of forcing the declared crop', () => {
+  it('on a crop mismatch, keeps the best answer for the declared crop but only as uncertain', () => {
     const r = diagnose(dist({ Potato___Late_blight: 0.8, Tomato___Late_blight: 0.15, Tomato___healthy: 0.05 }), { ...opts, declaredCrop: 'tomato' });
     expect(r.cropProbability).toBeLessThan(CROP_AGREEMENT);
     expect(r.status).toBe('uncertain');
     expect(r.statusReason).toBe('crop_mismatch');
-    expect(r.top.label).toBe('Potato___Late_blight');
+    expect(r.top.label).toBe('Tomato___Late_blight');
+    expect(r.top.confidence).toBeCloseTo(0.75, 4);
+    expect(r.crop).toBe('tomato');
+  });
+
+  describe('invalid-class gate', () => {
+    const leafy = dist({ Tomato___Late_blight: 0.77, Tomato___Early_blight: 0.2, Potato___healthy: 0.03 });
+    const unsure = dist({ Tomato___Late_blight: 0.56, Tomato___Early_blight: 0.4, Potato___healthy: 0.04 });
+
+    it('rejects on strong invalid evidence even if the disease model is confident', () => {
+      const r = diagnose(leafy, { ...opts, declaredCrop: 'tomato', invalidProbability: 0.95 });
+      expect(r.status).toBe('rejected');
+      expect(r.statusReason).toBe('not_recognised');
+      expect(r.invalidProbability).toBeCloseTo(0.95, 4);
+    });
+
+    it('rejects on moderate invalid evidence when the disease model is also unsure', () => {
+      const r = diagnose(unsure, { ...opts, declaredCrop: 'tomato', invalidProbability: 0.6 });
+      expect(r.status).toBe('rejected');
+    });
+
+    it('keeps a real diseased leaf that the gate is only moderately unsure about', () => {
+      // Mirrors a real Wikimedia late-blight photo: 59% invalid, 77% late blight.
+      const r = diagnose(leafy, { ...opts, declaredCrop: 'tomato', invalidProbability: 0.586 });
+      expect(r.status).toBe('confident');
+      expect(r.diseaseKey).toBe('tomato_late_blight');
+    });
+
+    it('ignores the __invalid__ label when ranking diseases', () => {
+      const r = diagnose(
+        [...dist({ Tomato___Late_blight: 0.5, Tomato___healthy: 0.1 }), { label: '__invalid__', confidence: 0.4 }],
+        { ...opts, declaredCrop: 'tomato', invalidProbability: 0.4 },
+      );
+      expect(r.top.label).toBe('Tomato___Late_blight');
+    });
   });
 
   it('rejects a declared crop the model has no classes for', () => {

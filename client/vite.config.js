@@ -59,7 +59,6 @@ export default defineConfig({
       output: {
         manualChunks(id) {
           if (id.includes('node_modules/leaflet') || id.includes('node_modules/react-leaflet')) return 'map';
-          if (id.includes('node_modules/recharts') || id.includes('node_modules/d3-')) return 'charts';
         },
       },
     },

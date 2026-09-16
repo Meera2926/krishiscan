@@ -29,7 +29,7 @@ export function loadClassifier() {
         classifier = createMockClassifier({ labels });
       } else {
         const { createLocalClassifier } = await import('./local.js');
-        classifier = await createLocalClassifier({ modelId: config.MODEL_ID, cacheDir: config.MODEL_CACHE_DIR });
+        classifier = await createLocalClassifier({ cacheDir: config.MODEL_CACHE_DIR, threads: config.ORT_THREADS });
       }
       Object.assign(state, {
         status: 'ready',
@@ -58,16 +58,18 @@ export function classifierLabels() {
   return classifier?.labels ?? [];
 }
 
-export async function classify(imageBuffer) {
+/** Classifies a leaf photo for the given crop. See catalog.js CROP_ROUTES for which model runs. */
+export async function classify(imageBuffer, { crop }) {
   if (state.status !== 'ready') {
     if (state.status === 'failed') loadClassifier();
     throw serviceUnavailable('The disease model is still starting up. Please try again in a minute.');
   }
   const started = performance.now();
-  const predictions = await classifier.classify(imageBuffer);
+  const result = await classifier.classify(imageBuffer, { crop });
   return {
-    predictions,
-    modelVersion: classifier.modelVersion,
+    predictions: result.predictions,
+    invalidProbability: result.invalidProbability ?? 0,
+    modelVersion: result.modelVersion ?? classifier.modelVersion,
     inferenceMs: Math.round(performance.now() - started),
   };
 }

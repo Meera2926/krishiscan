@@ -8,11 +8,12 @@ import { idParams, objectId, validate } from '../middleware/validate.js';
 import { Disease, Plot, SCAN_STATUS, Scan } from '../models/index.js';
 import { diagnose } from '../services/diagnosis.js';
 import { prepareImage } from '../services/imageQuality.js';
+import { SUPPORTED_CROPS } from '../services/inference/catalog.js';
 import { classify } from '../services/inference/index.js';
 import { getLabelIndex } from '../services/labelIndex.js';
 import { storage } from '../services/storage/index.js';
 import { fromPoint, latitude, longitude, toPoint } from '../utils/geo.js';
-import { badRequest, forbidden, notFound } from '../utils/httpError.js';
+import { badRequest, forbidden, notFound, unprocessable } from '../utils/httpError.js';
 
 const router = Router();
 router.use(requireAuth);
@@ -84,15 +85,27 @@ router.post('/', uploadImage, validate({ body: createBody }), async (req, res) =
     plot = await Plot.findOne({ _id: body.plotId, owner: req.auth.userId });
     if (!plot) throw notFound('Plot not found');
   }
+  // The classifiers are routed by crop, and farmers know their crop, so it is required.
   const declaredCrop = body.crop || plot?.crop || null;
+  if (!declaredCrop) {
+    throw unprocessable('Choose the crop', { crop: ['Select which crop this leaf is from.'] });
+  }
+  if (!SUPPORTED_CROPS.includes(declaredCrop)) {
+    throw unprocessable('Crop not supported', {
+      crop: [`Photo diagnosis currently supports: ${SUPPORTED_CROPS.join(', ')}.`],
+    });
+  }
   const location = body.lat !== undefined ? toPoint(body.lat, body.lng) : plot?.location;
 
   // Validate and classify before persisting anything, so a failure leaves no orphaned image.
   const { stored, quality } = await prepareImage(req.file.buffer);
-  const { predictions: raw, modelVersion, inferenceMs } = await classify(stored.buffer);
+  const { predictions: raw, invalidProbability, modelVersion, inferenceMs } = await classify(stored.buffer, {
+    crop: declaredCrop,
+  });
   const result = diagnose(raw, {
     labelIndex: await getLabelIndex(),
     declaredCrop,
+    invalidProbability,
     high: config.CONFIDENCE_HIGH,
     low: config.CONFIDENCE_LOW,
   });

@@ -37,8 +37,6 @@ const diseaseSchema = new mongoose.Schema(
     preventive: [String],
     severity: { type: String, enum: ['none', 'low', 'moderate', 'severe'], default: 'moderate' },
     sourceUrl: String,
-    // Raw class labels emitted by the classifier that resolve to this disease.
-    modelLabels: { type: [String], index: true },
   },
   { timestamps: true, toJSON: toJSONOptions },
 );

@@ -2,22 +2,36 @@
  * Turns a classifier's raw probability distribution into a farmer-facing diagnosis.
  *
  * Order matters:
- *  1. Out-of-distribution gate on the RAW distribution. If nothing scores above the low
- *     threshold, the photo is not a leaf the model recognises.
- *  2. Crop conditioning. When the farmer tells us the crop, keep only that crop's classes and
+ *  1. "Is this a crop leaf at all?" gates, on RAW probabilities:
+ *     a. nothing scores above the low threshold, or
+ *     b. the gate model's explicit "invalid" class is strongly (or moderately, while the disease
+ *        model is also unsure) convinced this is not a crop leaf.
+ *  2. Crop conditioning. The farmer tells us the crop, so keep only that crop's classes and
  *     renormalise. This sharply improves ranking, but renormalising can inflate a junk
  *     prediction, which is why step 1 has to run first.
  *  3. Triage into confident / uncertain / rejected. Uncertain scans go to the expert queue.
+ *
+ * Thresholds were chosen against a small labelled set of PlantVillage, Indian rice field,
+ * Wikimedia field, and non-leaf photos (see server/scripts/evaluate-models.js). Re-check
+ * them against more field data before trusting them.
  */
 
-// If less than this share of raw probability lands on the declared crop, the model thinks
-// the photo shows a different crop, so the result is flagged rather than forced into that crop.
+// Below this share of raw probability on the declared crop, the model disagrees with the farmer
+// about the crop. The best in-crop answer is still shown, but only as uncertain.
 export const CROP_AGREEMENT = 0.5;
 
-export function diagnose(raw, { labelIndex, declaredCrop = null, high, low, topK = 3 }) {
+// A real late-blight tomato photo scored 0.59 on the invalid class while the tomato model was
+// 77% sure of the disease, so moderate invalid evidence alone must not reject a photo.
+export const INVALID_STRONG = 0.9;
+export const INVALID_MODERATE = 0.5;
+
+const INVALID_LABEL = '__invalid__';
+
+export function diagnose(raw, { labelIndex, declaredCrop = null, invalidProbability = 0, high, low, topK = 3 }) {
   if (!raw?.length) throw new Error('diagnose() needs at least one prediction');
 
   const ranked = [...raw]
+    .filter((p) => p.label !== INVALID_LABEL)
     .sort((a, b) => b.confidence - a.confidence)
     .map((p) => {
       const info = labelIndex.get(p.label);
@@ -29,6 +43,7 @@ export function diagnose(raw, { labelIndex, declaredCrop = null, high, low, topK
         isHealthy: info?.isHealthy ?? false,
       };
     });
+  if (!ranked.length) throw new Error('diagnose() needs at least one non-invalid prediction');
   const rawTop = ranked[0];
 
   const outcome = (top, predictions, status, statusReason, cropProbability = null) => ({
@@ -40,9 +55,13 @@ export function diagnose(raw, { labelIndex, declaredCrop = null, high, low, topK
     status,
     statusReason,
     cropProbability: cropProbability == null ? null : round(cropProbability),
+    invalidProbability: round(invalidProbability),
   });
 
   if (rawTop.confidence < low) {
+    return outcome(rawTop, ranked, 'rejected', 'not_recognised');
+  }
+  if (invalidProbability >= INVALID_STRONG || (invalidProbability >= INVALID_MODERATE && rawTop.confidence < high)) {
     return outcome(rawTop, ranked, 'rejected', 'not_recognised');
   }
 
@@ -53,12 +72,14 @@ export function diagnose(raw, { labelIndex, declaredCrop = null, high, low, topK
     }
 
     const cropProbability = inCrop.reduce((sum, p) => sum + p.confidence, 0);
-    if (cropProbability < CROP_AGREEMENT) {
-      return outcome(rawTop, ranked, 'uncertain', 'crop_mismatch', cropProbability);
-    }
-
-    const conditioned = inCrop.map((p) => ({ ...p, confidence: p.confidence / cropProbability }));
+    const conditioned = inCrop.map((p) => ({ ...p, confidence: cropProbability > 0 ? p.confidence / cropProbability : 0 }));
     const top = conditioned[0];
+
+    if (cropProbability < CROP_AGREEMENT) {
+      // Farmers know their own crop far better than the model does (wheat rust photos were
+      // routinely called maize rust), so show the best answer for the declared crop, flagged.
+      return outcome(top, conditioned, 'uncertain', 'crop_mismatch', cropProbability);
+    }
     return top.confidence >= high
       ? outcome(top, conditioned, 'confident', 'ok', cropProbability)
       : outcome(top, conditioned, 'uncertain', 'low_confidence', cropProbability);
