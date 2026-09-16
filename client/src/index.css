@@ -1,0 +1,88 @@
+@import 'tailwindcss';
+@import 'leaflet/dist/leaflet.css';
+
+@theme {
+  --font-sans: 'Noto Sans', 'Noto Sans Devanagari', 'Noto Sans Tamil', 'Noto Sans Malayalam', 'Noto Sans Telugu',
+    system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+
+  --color-canvas: #f7f7f2;
+  --color-surface: #ffffff;
+  --color-ink: #1c1f1a;
+  --color-ink-muted: #5b6157;
+  --color-line: #e3e4dc;
+
+  --color-brand-50: #f0fdf4;
+  --color-brand-100: #dcfce7;
+  --color-brand-200: #bbf7d0;
+  --color-brand-500: #22a55a;
+  --color-brand-600: #16803f;
+  --color-brand-700: #166534;
+  --color-brand-800: #14532d;
+
+  --color-soil-100: #f3ece2;
+  --color-soil-500: #9a6b3f;
+  --color-soil-700: #6b4526;
+
+  --color-ok: #15803d;
+  --color-ok-bg: #dcfce7;
+  --color-warn: #a16207;
+  --color-warn-bg: #fef3c7;
+  --color-danger: #b91c1c;
+  --color-danger-bg: #fee2e2;
+  --color-info: #1d4ed8;
+  --color-info-bg: #dbeafe;
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    @apply bg-canvas text-ink font-sans antialiased;
+    min-height: 100dvh;
+  }
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-brand-600;
+  }
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+  }
+}
+
+@layer components {
+  .card {
+    @apply bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(0,0,0,0.04)];
+  }
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 min-h-11 text-[15px] font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed select-none;
+  }
+  .btn-primary {
+    @apply btn bg-brand-700 text-white hover:bg-brand-800;
+  }
+  .btn-secondary {
+    @apply btn bg-surface text-ink border border-line hover:bg-canvas;
+  }
+  .btn-ghost {
+    @apply btn text-ink-muted hover:bg-black/5 hover:text-ink;
+  }
+  .btn-danger {
+    @apply btn bg-surface text-danger border border-line hover:bg-danger-bg;
+  }
+  .input {
+    @apply w-full rounded-xl border border-line bg-surface px-3.5 min-h-11 text-[15px] placeholder:text-ink-muted/70 focus:border-brand-600 focus:outline-none focus:ring-3 focus:ring-brand-600/15;
+  }
+  .label {
+    @apply mb-1.5 block text-sm font-medium text-ink;
+  }
+  .chip {
+    @apply inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold;
+  }
+}
+
+/* Leaflet inherits the app font and sits below the sticky header and mobile nav. */
+.leaflet-container {
+  font: inherit;
+  z-index: 0;
+}
