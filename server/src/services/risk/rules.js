@@ -199,6 +199,11 @@ const HUTTON_MIN_HOURS_RH90 = 6;
 // Source: National Vegetable Society, https://www.nvsuk.org.uk/articles/blight-watch
 const HUTTON_NEAR_MISS_TMIN_C = 9;
 const HUTTON_NEAR_MISS_HOURS_RH90 = 5;
+//  - KrishiScan adaptation for Indian conditions: Hutton has no upper temperature limit because British
+//    weather never needs one. In Indian heat that produced false "high" warnings (e.g. West Bengal in
+//    September, nights of 26-27 C). A day therefore only counts when its wet-period temperature is at or
+//    below the ceiling of ICAR-CPRI JHULSACAST congenial range (26.6 C, see JHULSA_CONGENIAL_T_MAX_C).
+const HUTTON_INDIA_MAX_WET_TEMP_C = 26.6;
 const HUTTON_SOURCE =
   "https://potatoes.ahdb.org.uk/development-and-implementation-of-a-new-national-warning-system-for-potato-late-blight-in-great-britain-hutton-criteria";
 // Adaptations:
@@ -210,11 +215,6 @@ const HUTTON_SOURCE =
 //    exists yet (e.g. the last forecast day, whose partner day lies beyond the forecast).
 //  - Tomato: the Hutton Criteria were developed for potato. Tomato late blight is caused by the same pathogen
 //    (Phytophthora infestans), so the same weather thresholds are applied to tomato without re-validation.
-//  - KrishiScan adaptation for Indian conditions: Hutton has no upper temperature limit because British
-//    weather never needs one. In Indian heat that produced false "high" warnings (e.g. West Bengal in
-//    September, nights of 26-27 °C). A day therefore only counts when its wet-period temperature is at or
-//    below the ceiling of ICAR-CPRI JHULSACAST's congenial range (26.6 °C, see JHULSA_CONGENIAL_T_MAX_C).
-const HUTTON_INDIA_MAX_WET_TEMP_C = 26.6;
 
 function huttonRule({ id, crop, diseaseKey, cropName }) {
   const status = (d) => {
@@ -315,7 +315,7 @@ function huttonRule({ id, crop, diseaseKey, cropName }) {
 //
 // Rainy variant: 5-day moving RH >= 90 % period >= 65 h AND 5-day moving congenial temperature
 // (7.2-26.6 °C) period >= 105 h, prevailing for 5 consecutive days, AND two consecutive days with rainfall
-// summing to >= 2.5 mm  ->  late blight predicted to appear within 14 days.
+// summing to >= 2.5 mm  ->  "Late Blight may appear within 8-10 days" (verbatim from the ICAR-CPRI source).
 // Non-rainy variant: 7-day moving RH >= 90 % period >= 105 h AND 7-day moving congenial temperature
 // period >= 150 h, prevailing for 7 consecutive days.
 const JHULSA_CONGENIAL_T_MIN_C = 7.2;
@@ -363,7 +363,10 @@ const potatoLateBlightJhulsacast = guarded({
   crop: "potato",
   diseaseKey: "potato_late_blight",
   model: "JHULSACAST (ICAR-CPRI), West Bengal plains calibration",
-  source: "https://epubs.icar.org.in/index.php/PotatoJ/article/view/50164",
+  // Citation points at the ICAR-CPRI status paper on CGSpace: it is openly accessible and its table is the one
+  // implemented below (verified verbatim 2026-09). The underlying journal article is Potato Journal (ICAR),
+  // https://epubs.icar.org.in/index.php/PotatoJ/article/view/50164, which is behind a login.
+  source: "https://cgspace.cgiar.org/server/api/core/bitstreams/bcb3a56b-c2af-4987-8c55-a187e3147c81/content",
   evaluate(days) {
     const ds = cleanDays(days);
     const rh = ds.map(wetHours);
@@ -425,7 +428,7 @@ const potatoLateBlightJhulsacast = guarded({
       return makeResult(
         "high",
         meanRatio - 1,
-        `Long humid spells in mild weather during ${describeRange(ds[spanStart].date, ds[runEnd].date)}, with rain on ${describeDates(rainPair)}, meet the ICAR-CPRI JHULSACAST late blight rule, so blight may appear in potato within about two weeks.`,
+        `Long humid spells in mild weather during ${describeRange(ds[spanStart].date, ds[runEnd].date)}, with rain on ${describeDates(rainPair)}, meet the ICAR-CPRI JHULSACAST late blight rule, so blight may appear in potato within about 8 to 10 days.`,
         { from: ds[spanStart].date, to: ds[runEnd].date },
         dailyScores
       );
@@ -477,6 +480,9 @@ const potatoLateBlightJhulsacast = guarded({
 // Carrot and Potato", which also notes the original lower temperature limit of 13 °C (used here).
 // Spray guidance in the same poster: accumulated DSV 0-15 green, 15-20 yellow, > 20 red; sprays were
 // triggered at DSV = 20. UConn IPM and METOS also give a 15-20 DSV spray interval.
+// Table cross-checked (2026-09) against Agronomy 10(12):1872 (doi:10.3390/agronomy10121872), which states that at
+// 13-17 °C a DSV of 1 is assigned for leaf wetness of 7-15 h - matching the 13-17 °C row below - and against
+// Plants 12(8):1634 (TOMCAST in China), which confirms DSV 0-4 and spray thresholds accumulated at 10/15/20/25.
 const TOMCAST_DSV_TABLE = [
   { tFromC: 13, tToC: 18, minHoursForDsv: [7, 16, 21] }, //     13-17 °C: 0-6 h ->0, 7-15 ->1, 16-20 ->2, 21+ ->3
   { tFromC: 18, tToC: 21, minHoursForDsv: [4, 9, 16, 23] }, //  18-20 °C: 0-3 ->0, 4-8 ->1, 9-15 ->2, 16-22 ->3, 23+ ->4
@@ -564,9 +570,11 @@ function tomcastRule({ id, crop, diseaseKey, cropName }) {
 
 // TNAU e-course PATH 272 (Diseases of field crops), lecture on rice diseases: "Forecast for rice blast can be
 // made on the basis of minimum night temperature range of 20-26°C in association with a high relative
-// humidity of 90 per cent and above lasting for a period of a week or more during any of the three
+// humidity range of 90 per cent and above lasting for a period of a week or more during any of the three
 // susceptible phases of crop growth, viz., seedling stage, post transplanting tillering stage and neck
 // emergence stage."
+// Verified verbatim (2026-09) in RVSKVV course notes PAT 301, which reproduce the same TNAU PATH 272 text;
+// cited instead of eagri.org/eagri50/PATH272/lecture01/lec07.pdf because that host's TLS certificate has expired.
 const BLAST_TMIN_LOW_C = 20;
 const BLAST_TMIN_HIGH_C = 26;
 const BLAST_RH_PCT = 90;
@@ -618,7 +626,7 @@ const riceLeafBlast = guarded({
   crop: "rice",
   diseaseKey: "rice_leaf_blast",
   model: "Blast forecast rule (night 20-26°C, RH >= 90% for a week)",
-  source: "http://eagri.org/eagri50/PATH272/lecture01/lec07.pdf",
+  source: "https://rvsagri.ac.in/modules/academics/timetable/PAT%20301.pdf",
   evaluate(days) {
     const ds = cleanDays(days);
     const dailyScores = ds.map((d) => ({
@@ -673,7 +681,7 @@ const riceLeafBlast = guarded({
 
 // IRRI Rice Knowledge Bank, Brown spot fact sheet: the disease develops with relative humidity 86-100 % and
 // temperature 16-36 °C; "for infection to occur, the leaves must be wet for 8-24 hours".
-// TNAU e-course PATH 272 rice lecture (http://eagri.org/eagri50/PATH272/lecture01/lec07.pdf):
+// TNAU e-course PATH 272 rice lecture (https://rvsagri.ac.in/modules/academics/timetable/PAT%20301.pdf):
 // "Temperature of 25-30°C with relative humidity above 80 per cent are highly favourable."
 const BROWN_SPOT_IRRI_WET_HOURS = 8;
 const BROWN_SPOT_IRRI_T_MIN_C = 16;

@@ -4,7 +4,9 @@
     "crop": "rice",
     "isHealthy": false,
     "commonName": "Brown spot",
-    "names": { "hi": "भूरा धब्बा" },
+    "names": {
+      "hi": "भूरा धब्बा"
+    },
     "causalAgentType": "fungal",
     "pathogen": "Bipolaris oryzae (syn. Helminthosporium oryzae, Drechslera oryzae; teleomorph Cochliobolus miyabeanus)",
     "symptoms": "Leaves first show tiny brown dots that grow into oval or round brown spots about the size of a sesame seed (0.5-2 mm), often with a grey or light centre. Many spots can join into large dead brown patches. The disease can also spread to the panicle neck and grains, which turn discoloured.",
@@ -21,9 +23,21 @@
       "Soil amendment with calcium silicate slag"
     ],
     "chemicalControl": [
-      { "activeIngredient": "Mancozeb", "dose": "2.0 g per litre of water; 2 to 3 sprays at 10-15 day intervals depending on disease intensity", "phiDays": null },
-      { "activeIngredient": "Edifenphos", "dose": "1 ml per litre of water; 2 to 3 sprays at 10-15 day intervals", "phiDays": 21 },
-      { "activeIngredient": "Captan or Thiram (seed treatment)", "dose": "2.0 g per kg of seed", "phiDays": null }
+      {
+        "activeIngredient": "Mancozeb",
+        "dose": "2.0 g per litre of water; 2 to 3 sprays at 10-15 day intervals depending on disease intensity",
+        "phiDays": null
+      },
+      {
+        "activeIngredient": "Edifenphos",
+        "dose": "1 ml per litre of water; 2 to 3 sprays at 10-15 day intervals",
+        "phiDays": null
+      },
+      {
+        "activeIngredient": "Captan or Thiram (seed treatment)",
+        "dose": "2.0 g per kg of seed",
+        "phiDays": null
+      }
     ],
     "preventive": [
       "Use disease-free seed",
@@ -39,7 +53,9 @@
     "crop": "rice",
     "isHealthy": false,
     "commonName": "Leaf blast",
-    "names": { "hi": "झोंका रोग" },
+    "names": {
+      "hi": "झोंका रोग"
+    },
     "causalAgentType": "fungal",
     "pathogen": "Magnaporthe oryzae (anamorph Pyricularia oryzae)",
     "symptoms": "Small white to grey-green spots with brown borders appear on leaves. They grow into eye- or spindle-shaped spots (0.5-1.5 cm long) with an ash-grey centre and brown margin. In severe attack many spots merge and the field looks burnt. The panicle neck or nodes may also turn black and break.",
@@ -55,10 +71,26 @@
       "Spray Pseudomonas fluorescens at 0.5% from 45 days after transplanting at 10-day intervals"
     ],
     "chemicalControl": [
-      { "activeIngredient": "Tricyclazole", "dose": "1 g per litre of water; spray at nursery, tillering and panicle initiation stages as needed", "phiDays": null },
-      { "activeIngredient": "Edifenphos", "dose": "1 ml per litre of water", "phiDays": 21 },
-      { "activeIngredient": "Carbendazim", "dose": "1.0 g per litre of water", "phiDays": null },
-      { "activeIngredient": "Captan or Carbendazim or Thiram or Tricyclazole (seed treatment)", "dose": "2.0 g per kg of seed", "phiDays": null }
+      {
+        "activeIngredient": "Tricyclazole",
+        "dose": "1 g per litre of water; spray at nursery, tillering and panicle initiation stages as needed",
+        "phiDays": null
+      },
+      {
+        "activeIngredient": "Edifenphos",
+        "dose": "1 ml per litre of water",
+        "phiDays": null
+      },
+      {
+        "activeIngredient": "Carbendazim",
+        "dose": "1.0 g per litre of water",
+        "phiDays": null
+      },
+      {
+        "activeIngredient": "Captan or Carbendazim or Thiram or Tricyclazole (seed treatment)",
+        "dose": "2.0 g per kg of seed",
+        "phiDays": null
+      }
     ],
     "preventive": [
       "Grow resistant varieties recommended locally (TNAU lists CO 47, CO 50, ADT 36, ADT 37, ADT 39, ADT 44, BPT 5204, IR 64, IR 36, Jaya)",
@@ -75,11 +107,19 @@
     "crop": "rice",
     "isHealthy": true,
     "commonName": "Healthy rice leaf",
-    "names": {},
+    "names": {
+      "hi": "स्वस्थ धान"
+    },
     "causalAgentType": "none",
     "pathogen": "",
     "symptoms": "A healthy rice leaf is uniformly green from base to tip, long and narrow with smooth parallel veins. There are no brown dots, spindle-shaped grey spots, streaks or yellowing, and the leaf tip is not dried or burnt.",
-    "favorableConditions": { "tempMinC": null, "tempMaxC": null, "humidityPct": null, "leafWetnessHours": null, "rainfall": "" },
+    "favorableConditions": {
+      "tempMinC": null,
+      "tempMaxC": null,
+      "humidityPct": null,
+      "leafWetnessHours": null,
+      "rainfall": ""
+    },
     "organicControl": [],
     "chemicalControl": [],
     "preventive": [
@@ -97,7 +137,9 @@
     "crop": "wheat",
     "isHealthy": false,
     "commonName": "Brown rust (leaf rust)",
-    "names": { "hi": "भूरा रतुआ" },
+    "names": {
+      "hi": "भूरा रतुआ"
+    },
     "causalAgentType": "fungal",
     "pathogen": "Puccinia triticina (syn. P. recondita f. sp. tritici)",
     "symptoms": "Small round or slightly oval orange-brown pustules appear scattered on the upper surface of leaves, not in lines. Rubbing a pustule leaves orange-brown powder on the finger. Pustules usually stay separate; late in the season dark brown to black spots may form.",
@@ -108,10 +150,21 @@
       "leafWetnessHours": null,
       "rainfall": "High humidity with moderate temperatures; spores spread by wind."
     },
-    "organicControl": [],
+    "organicControl": [
+      "Seed treatment with Pseudomonas fluorescens 1.75% WP @ 5 g per kg of seed (NIPHM wheat IPM package)",
+      "Apply Trichoderma viride/harzianum and Pseudomonas fluorescens as seed treatment and soil application; NIPHM directs growers to follow these common biological practices for the wheat rusts (NIPHM wheat IPM package)"
+    ],
     "chemicalControl": [
-      { "activeIngredient": "Propiconazole 25% EC", "dose": "0.1% (1 ml per litre of water; 200 ml in 200 litres of water per acre)", "phiDays": 30 },
-      { "activeIngredient": "Tebuconazole 50% + Trifloxystrobin 25% WG", "dose": "0.06% (0.6 g per litre of water; 120 g in 200 litres of water per acre)", "phiDays": null }
+      {
+        "activeIngredient": "Propiconazole 25% EC",
+        "dose": "0.1% (1 ml per litre of water; 200 ml in 200 litres of water per acre)",
+        "phiDays": null
+      },
+      {
+        "activeIngredient": "Tebuconazole 50% + Trifloxystrobin 25% WG",
+        "dose": "Consult local KVK or agriculture officer for dosage",
+        "phiDays": null
+      }
     ],
     "preventive": [
       "Grow rust-resistant varieties recommended for your zone",
@@ -127,7 +180,9 @@
     "crop": "wheat",
     "isHealthy": false,
     "commonName": "Yellow rust (stripe rust)",
-    "names": { "hi": "पीला रतुआ" },
+    "names": {
+      "hi": "पीला रतुआ"
+    },
     "causalAgentType": "fungal",
     "pathogen": "Puccinia striiformis f. sp. tritici",
     "symptoms": "Yellow to orange-yellow powdery pustules form in narrow stripes along the leaf veins and on leaf sheaths. Touching an infected leaf leaves yellow powder on the fingers or clothes. The disease starts in small patches in the field and spreads quickly in cool, foggy weather.",
@@ -138,10 +193,21 @@
       "leafWetnessHours": null,
       "rainfall": "Cool weather with fog, cloud and intermittent rain (Punjab, Haryana, Jammu and Kashmir, tarai of UP and Uttarakhand)."
     },
-    "organicControl": [],
+    "organicControl": [
+      "Seed treatment with Pseudomonas fluorescens 1.75% WP @ 5 g per kg of seed (NIPHM wheat IPM package)",
+      "Apply Trichoderma viride/harzianum and Pseudomonas fluorescens as seed treatment and soil application; NIPHM directs growers to follow these common biological practices for the wheat rusts (NIPHM wheat IPM package)"
+    ],
     "chemicalControl": [
-      { "activeIngredient": "Propiconazole 25% EC", "dose": "0.1% (1 ml per litre of water; 200 ml in 200 litres of water per acre)", "phiDays": 30 },
-      { "activeIngredient": "Tebuconazole 50% + Trifloxystrobin 25% WG", "dose": "0.06% (0.6 g per litre of water; 120 g in 200 litres of water per acre)", "phiDays": null }
+      {
+        "activeIngredient": "Propiconazole 25% EC",
+        "dose": "0.1% (1 ml per litre of water; 200 ml in 200 litres of water per acre)",
+        "phiDays": null
+      },
+      {
+        "activeIngredient": "Tebuconazole 50% + Trifloxystrobin 25% WG",
+        "dose": "Consult local KVK or agriculture officer for dosage",
+        "phiDays": null
+      }
     ],
     "preventive": [
       "Grow newly released yellow-rust-resistant varieties (IIWBR lists DBW 370, DBW 371, DBW 372, DBW 327, DBW 332, DBW 187, DBW 303, WH 1270, HD 3226)",
@@ -158,11 +224,19 @@
     "crop": "wheat",
     "isHealthy": true,
     "commonName": "Healthy wheat leaf",
-    "names": {},
+    "names": {
+      "hi": "स्वस्थ गेहूं"
+    },
     "causalAgentType": "none",
     "pathogen": "",
     "symptoms": "A healthy wheat leaf is evenly green and smooth with parallel veins. There are no yellow stripes, orange-brown or black powdery pustules, and no powder comes off on the fingers when the leaf is rubbed.",
-    "favorableConditions": { "tempMinC": null, "tempMaxC": null, "humidityPct": null, "leafWetnessHours": null, "rainfall": "" },
+    "favorableConditions": {
+      "tempMinC": null,
+      "tempMaxC": null,
+      "humidityPct": null,
+      "leafWetnessHours": null,
+      "rainfall": ""
+    },
     "organicControl": [],
     "chemicalControl": [],
     "preventive": [
@@ -193,7 +267,11 @@
     },
     "organicControl": [],
     "chemicalControl": [
-      { "activeIngredient": "Fungicide for grey leaf spot (no Indian dose recommendation found)", "dose": "Consult local KVK or agriculture officer for dosage", "phiDays": null }
+      {
+        "activeIngredient": "Fungicide for grey leaf spot (no Indian dose recommendation found)",
+        "dose": "Consult local KVK or agriculture officer for dosage",
+        "phiDays": null
+      }
     ],
     "preventive": [
       "Plant resistant hybrids",
@@ -209,7 +287,9 @@
     "crop": "maize",
     "isHealthy": false,
     "commonName": "Common rust",
-    "names": { "hi": "गेरूआ रोग" },
+    "names": {
+      "hi": "गेरूआ रोग"
+    },
     "causalAgentType": "fungal",
     "pathogen": "Puccinia sorghi",
     "symptoms": "Small raised chocolate-brown to brick-red powdery pustules appear on both leaf surfaces. Touching them leaves brown powder on the hand. Tissue around the pustules may turn yellow and die, and pustules turn black as they age. Badly affected leaves yellow and drop.",
@@ -222,8 +302,16 @@
     },
     "organicControl": [],
     "chemicalControl": [
-      { "activeIngredient": "Mancozeb", "dose": "2.5 g per litre of water", "phiDays": null },
-      { "activeIngredient": "Zineb 75% WP", "dose": "1.5-2 kg per ha at first appearance of pustules; up to three sprays at 15-day intervals if needed", "phiDays": null }
+      {
+        "activeIngredient": "Mancozeb",
+        "dose": "2.5 g per litre of water",
+        "phiDays": null
+      },
+      {
+        "activeIngredient": "Zineb 75% WP",
+        "dose": "Consult local KVK or agriculture officer for dosage",
+        "phiDays": null
+      }
     ],
     "preventive": [
       "Grow resistant or tolerant varieties (NIPHM lists Buland, Sheetal, HHM 1, HHM 2, HQPM 1)",
@@ -231,14 +319,14 @@
       "Remove crop residue and volunteer maize plants"
     ],
     "severity": "moderate",
-    "sourceUrl": "http://mpkrishi.mp.gov.in/hindisite_New/krishi_pranaliya_kharif_makka_rog.aspx"
+    "sourceUrl": "https://iimr.icar.gov.in/?page_id=2134"
   },
   {
     "key": "maize_northern_leaf_blight",
     "crop": "maize",
     "isHealthy": false,
     "commonName": "Turcicum leaf blight (northern corn leaf blight)",
-    "names": { "hi": "टूरसिकम पर्ण झुलसन" },
+    "names": {},
     "causalAgentType": "fungal",
     "pathogen": "Exserohilum turcicum (teleomorph Setosphaeria turcica)",
     "symptoms": "Long, cigar-shaped, grey-green to tan spots (2.5-15 cm) appear on the leaves, first on lower leaves and then moving upward in damp weather. In moist conditions dark grey spores make the spots look dirty. Severely affected leaves dry up completely, as if burnt.",
@@ -251,8 +339,16 @@
     },
     "organicControl": [],
     "chemicalControl": [
-      { "activeIngredient": "Mancozeb", "dose": "2.5 g per litre of water", "phiDays": null },
-      { "activeIngredient": "Zineb (Indofil Z-78) or Mancozeb (Indofil M-45)", "dose": "1500 g in 750 litres of water per hectare", "phiDays": null }
+      {
+        "activeIngredient": "Mancozeb",
+        "dose": "2.5 g per litre of water",
+        "phiDays": null
+      },
+      {
+        "activeIngredient": "Zineb (Indofil Z-78) or Mancozeb (Indofil M-45)",
+        "dose": "Consult local KVK or agriculture officer for dosage",
+        "phiDays": null
+      }
     ],
     "preventive": [
       "Grow resistant hybrids (NIPHM lists PEMH 5, Vivek 21, Vivek 23, Vivek 25, Pratap Kanchan 2)",
@@ -262,18 +358,26 @@
       "Scout lower leaves regularly and spray at first appearance of spots"
     ],
     "severity": "moderate",
-    "sourceUrl": "http://mpkrishi.mp.gov.in/hindisite_New/krishi_pranaliya_kharif_makka_rog.aspx"
+    "sourceUrl": "https://iimr.icar.gov.in/?page_id=2134"
   },
   {
     "key": "maize_healthy",
     "crop": "maize",
     "isHealthy": true,
     "commonName": "Healthy maize leaf",
-    "names": {},
+    "names": {
+      "hi": "स्वस्थ मक्का"
+    },
     "causalAgentType": "none",
     "pathogen": "",
     "symptoms": "A healthy maize leaf is broad, evenly green and glossy with a clear midrib. There are no long tan or grey cigar-shaped spots, no rectangular grey lesions and no brown or red powdery pustules.",
-    "favorableConditions": { "tempMinC": null, "tempMaxC": null, "humidityPct": null, "leafWetnessHours": null, "rainfall": "" },
+    "favorableConditions": {
+      "tempMinC": null,
+      "tempMaxC": null,
+      "humidityPct": null,
+      "leafWetnessHours": null,
+      "rainfall": ""
+    },
     "organicControl": [],
     "chemicalControl": [],
     "preventive": [
@@ -291,7 +395,9 @@
     "crop": "potato",
     "isHealthy": false,
     "commonName": "Early blight",
-    "names": { "hi": "अगेता झुलसा" },
+    "names": {
+      "hi": "अगेता झुलसा"
+    },
     "causalAgentType": "fungal",
     "pathogen": "Alternaria solani",
     "symptoms": "Dark brown to black spots appear on older leaves first. Each spot is angular or oval with target-like concentric rings inside. Several spots join and spread over the leaf, which then yellows and dries.",
@@ -302,11 +408,26 @@
       "leafWetnessHours": null,
       "rainfall": "Dry, warm weather with intermittent rain; poorly nourished, weak crops suffer more."
     },
-    "organicControl": [],
+    "organicControl": [
+      "Apply Trichoderma viride/harzianum and Pseudomonas fluorescens to seed tubers and planting material, and as a soil application (NIPHM potato IPM package)",
+      "Apply neem cake @ 80 kg per acre as a soil application at sowing (NIPHM potato IPM package)"
+    ],
     "chemicalControl": [
-      { "activeIngredient": "Zineb", "dose": "0.2% spray; start very early and repeat every 15-20 days", "phiDays": null },
-      { "activeIngredient": "Captan", "dose": "0.2% spray; start very early and repeat every 15-20 days", "phiDays": null },
-      { "activeIngredient": "Mancozeb (Indofil M-45)", "dose": "0.2% spray at 15-day intervals", "phiDays": null }
+      {
+        "activeIngredient": "Zineb",
+        "dose": "0.2% spray; start very early and repeat every 15-20 days",
+        "phiDays": null
+      },
+      {
+        "activeIngredient": "Captan",
+        "dose": "0.2% spray; start very early and repeat every 15-20 days",
+        "phiDays": null
+      },
+      {
+        "activeIngredient": "Mancozeb (Indofil M-45)",
+        "dose": "Consult local KVK or agriculture officer for dosage",
+        "phiDays": null
+      }
     ],
     "preventive": [
       "Plant disease-free seed tubers",
@@ -322,7 +443,9 @@
     "crop": "potato",
     "isHealthy": false,
     "commonName": "Late blight",
-    "names": { "hi": "पछेता झुलसा" },
+    "names": {
+      "hi": "पछेता झुलसा"
+    },
     "causalAgentType": "oomycete",
     "pathogen": "Phytophthora infestans",
     "symptoms": "Water-soaked pale spots appear on leaves, usually at tips and edges, and quickly turn purple-brown and then black. A white mouldy growth forms on the underside of leaves around the spots in humid weather. Stems get dark lesions and may break. Tubers show rusty-brown rot under the skin.",
@@ -333,17 +456,56 @@
       "leafWetnessHours": null,
       "rainfall": "Cloudy, foggy weather with rain (even 0.1 mm) on successive days and cool nights around 10°C; can become an epidemic within days."
     },
-    "organicControl": [],
+    "organicControl": [
+      "Apply Trichoderma viride/harzianum and Pseudomonas fluorescens to seed tubers and planting material, and as a soil application (NIPHM potato IPM package)",
+      "Apply neem cake @ 80 kg per acre as a soil application at sowing (NIPHM potato IPM package)"
+    ],
     "chemicalControl": [
-      { "activeIngredient": "Mancozeb 75% WP (Indofil M-45 / Mass M-45 / Markzeb)", "dose": "500-700 g per acre; preventive sprays from the first week of November at weekly intervals under low to moderate risk", "phiDays": null },
-      { "activeIngredient": "Chlorothalonil 75% WP (Kavach)", "dose": "500-700 g per acre", "phiDays": 14 },
-      { "activeIngredient": "Propineb 70% WP (Antracol)", "dose": "500-700 g per acre", "phiDays": 15 },
-      { "activeIngredient": "Copper oxychloride 50% WP (Blitox-50 / Markcopper)", "dose": "750-1000 g per acre", "phiDays": null },
-      { "activeIngredient": "Metalaxyl-M (mefenoxam) + Mancozeb (Ridomil Gold)", "dose": "700 g per acre; 3rd and 4th spray at 10-day interval under high disease risk", "phiDays": null },
-      { "activeIngredient": "Cymoxanil 8% + Mancozeb 64% WP (Curzate M-8)", "dose": "700 g per acre; 3rd and 4th spray at 10-day interval under high disease risk", "phiDays": 10 },
-      { "activeIngredient": "Fenamidone 10% + Mancozeb 50% WDG (Sectin)", "dose": "700 g per acre; 3rd and 4th spray at 10-day interval under high disease risk", "phiDays": 30 },
-      { "activeIngredient": "Mandipropamid 23.4% SC (Revus)", "dose": "200 ml per acre; 3rd and 4th spray at 10-day interval under high disease risk", "phiDays": null },
-      { "activeIngredient": "Famoxadone 16.6% + Cymoxanil 22.1% SC (Equation Pro)", "dose": "200 ml per acre; 3rd and 4th spray at 10-day interval under high disease risk", "phiDays": 40 }
+      {
+        "activeIngredient": "Mancozeb 75% WP (Indofil M-45 / Mass M-45 / Markzeb)",
+        "dose": "500-700 g per acre; preventive sprays from the first week of November at weekly intervals under low to moderate risk",
+        "phiDays": null
+      },
+      {
+        "activeIngredient": "Chlorothalonil 75% WP (Kavach)",
+        "dose": "500-700 g per acre",
+        "phiDays": null
+      },
+      {
+        "activeIngredient": "Propineb 70% WP (Antracol)",
+        "dose": "500-700 g per acre",
+        "phiDays": null
+      },
+      {
+        "activeIngredient": "Copper oxychloride 50% WP (Blitox-50 / Markcopper)",
+        "dose": "750-1000 g per acre",
+        "phiDays": null
+      },
+      {
+        "activeIngredient": "Metalaxyl-M (mefenoxam) + Mancozeb (Ridomil Gold)",
+        "dose": "700 g per acre; 3rd and 4th spray at 10-day interval under high disease risk",
+        "phiDays": null
+      },
+      {
+        "activeIngredient": "Cymoxanil 8% + Mancozeb 64% WP (Curzate M-8)",
+        "dose": "700 g per acre; 3rd and 4th spray at 10-day interval under high disease risk",
+        "phiDays": null
+      },
+      {
+        "activeIngredient": "Fenamidone 10% + Mancozeb 50% WDG (Sectin)",
+        "dose": "700 g per acre; 3rd and 4th spray at 10-day interval under high disease risk",
+        "phiDays": null
+      },
+      {
+        "activeIngredient": "Mandipropamid 23.4% SC (Revus)",
+        "dose": "200 ml per acre; 3rd and 4th spray at 10-day interval under high disease risk",
+        "phiDays": null
+      },
+      {
+        "activeIngredient": "Famoxadone 16.6% + Cymoxanil 22.1% SC (Equation Pro)",
+        "dose": "200 ml per acre; 3rd and 4th spray at 10-day interval under high disease risk",
+        "phiDays": null
+      }
     ],
     "preventive": [
       "Use certified, disease-free seed tubers",
@@ -361,11 +523,19 @@
     "crop": "potato",
     "isHealthy": true,
     "commonName": "Healthy potato leaf",
-    "names": {},
+    "names": {
+      "hi": "स्वस्थ आलू"
+    },
     "causalAgentType": "none",
     "pathogen": "",
     "symptoms": "A healthy potato leaf is made of several evenly green leaflets with a slightly wrinkled but clean surface. There are no brown spots with rings, no water-soaked or black patches, and no white mould on the underside.",
-    "favorableConditions": { "tempMinC": null, "tempMaxC": null, "humidityPct": null, "leafWetnessHours": null, "rainfall": "" },
+    "favorableConditions": {
+      "tempMinC": null,
+      "tempMaxC": null,
+      "humidityPct": null,
+      "leafWetnessHours": null,
+      "rainfall": ""
+    },
     "organicControl": [],
     "chemicalControl": [],
     "preventive": [
@@ -383,7 +553,9 @@
     "crop": "tomato",
     "isHealthy": false,
     "commonName": "Bacterial spot (bacterial leaf spot)",
-    "names": {},
+    "names": {
+      "hi": "जीवाणु झुलसा"
+    },
     "causalAgentType": "bacterial",
     "pathogen": "Xanthomonas vesicatoria complex (reported in India as Xanthomonas axonopodis pv. vesicatoria / X. campestris pv. vesicatoria)",
     "symptoms": "Small, brown, water-soaked, round spots with a yellow halo appear on leaves, mostly older ones, which may fall off. On green fruit, small water-soaked spots become raised, light brown and scabby with a rough surface.",
@@ -394,9 +566,16 @@
       "leafWetnessHours": null,
       "rainfall": "Moist weather with splashing rain, high humidity or persistent dew; outbreaks often follow heavy rainstorms."
     },
-    "organicControl": [],
+    "organicControl": [
+      "Seed treatment with Trichoderma viride 1% WP @ 9 g per kg of seed (NIPHM tomato IPM package)",
+      "Apply Trichoderma as seed and nursery treatment, and Pseudomonas fluorescens as seed treatment, nursery treatment and soil application (NIPHM tomato IPM package)"
+    ],
     "chemicalControl": [
-      { "activeIngredient": "Bactericide approved for tomato bacterial spot (older advice to use streptocycline is no longer valid; streptomycin + tetracycline is prohibited in Indian agriculture from 1 January 2024)", "dose": "Consult local KVK or agriculture officer for dosage", "phiDays": null }
+      {
+        "activeIngredient": "Bactericide approved for tomato bacterial spot (older advice to use streptocycline is no longer valid; streptomycin + tetracycline is prohibited in Indian agriculture from 1 January 2024)",
+        "dose": "Consult local KVK or agriculture officer for dosage",
+        "phiDays": null
+      }
     ],
     "preventive": [
       "Use disease-free seed and healthy seedlings",
@@ -413,7 +592,9 @@
     "crop": "tomato",
     "isHealthy": false,
     "commonName": "Early blight",
-    "names": { "hi": "अगेती झुलसा" },
+    "names": {
+      "hi": "अगेती झुलसा"
+    },
     "causalAgentType": "fungal",
     "pathogen": "Alternaria solani",
     "symptoms": "Brown spots with concentric rings, like a target or bull's eye, appear on older leaves, often with a yellow border. Spots enlarge and leaves yellow and drop. Fruits may get brown ringed spots near the stem end.",
@@ -428,14 +609,46 @@
       "Seed treatment with Trichoderma asperellum @ 4 g per kg of seed"
     ],
     "chemicalControl": [
-      { "activeIngredient": "Iprodione 50% WP", "dose": "600 g per acre", "phiDays": null },
-      { "activeIngredient": "Azoxystrobin 23% SC", "dose": "200 ml per acre", "phiDays": 3 },
-      { "activeIngredient": "Metiram 70% WG", "dose": "1.0 kg per acre", "phiDays": null },
-      { "activeIngredient": "Pyraclostrobin 20% WG", "dose": "200 g per acre", "phiDays": 3 },
-      { "activeIngredient": "Zineb 75% WP", "dose": "800 g per acre", "phiDays": null },
-      { "activeIngredient": "Azoxystrobin 18.2% + Difenoconazole 11.4% SC", "dose": "200 ml per acre", "phiDays": null },
-      { "activeIngredient": "Metiram 55% + Pyraclostrobin 5% WG", "dose": "600 g per acre", "phiDays": 5 },
-      { "activeIngredient": "Tebuconazole 50% + Trifloxystrobin 25% WG", "dose": "140 g per acre", "phiDays": null }
+      {
+        "activeIngredient": "Iprodione 50% WP",
+        "dose": "600 g per acre",
+        "phiDays": null
+      },
+      {
+        "activeIngredient": "Azoxystrobin 23% SC",
+        "dose": "200 ml per acre",
+        "phiDays": null
+      },
+      {
+        "activeIngredient": "Metiram 70% WG",
+        "dose": "1.0 kg per acre",
+        "phiDays": null
+      },
+      {
+        "activeIngredient": "Pyraclostrobin 20% WG",
+        "dose": "200 g per acre",
+        "phiDays": null
+      },
+      {
+        "activeIngredient": "Zineb 75% WP",
+        "dose": "800 g per acre",
+        "phiDays": null
+      },
+      {
+        "activeIngredient": "Azoxystrobin 18.2% + Difenoconazole 11.4% SC",
+        "dose": "200 ml per acre",
+        "phiDays": null
+      },
+      {
+        "activeIngredient": "Metiram 55% + Pyraclostrobin 5% WG",
+        "dose": "600 g per acre",
+        "phiDays": null
+      },
+      {
+        "activeIngredient": "Tebuconazole 50% + Trifloxystrobin 25% WG",
+        "dose": "140 g per acre",
+        "phiDays": null
+      }
     ],
     "preventive": [
       "Remove and destroy crop debris after harvest",
@@ -451,7 +664,9 @@
     "crop": "tomato",
     "isHealthy": false,
     "commonName": "Late blight",
-    "names": { "hi": "पछेती झुलसा" },
+    "names": {
+      "hi": "पछेती झुलसा"
+    },
     "causalAgentType": "oomycete",
     "pathogen": "Phytophthora infestans",
     "symptoms": "Water-soaked, dark greasy patches appear on leaves and stems and spread fast until the whole leaf dies. White fluffy growth appears on the leaf underside in humid weather. Fruits get large dark brown, firm patches that later rot.",
@@ -466,10 +681,26 @@
       "Soil application of Trichoderma asperellum (viride) @ 1.0 kg per acre"
     ],
     "chemicalControl": [
-      { "activeIngredient": "Cyazofamid 34.5% SC", "dose": "80 ml per acre", "phiDays": null },
-      { "activeIngredient": "Azoxystrobin 23% SC", "dose": "200 ml per acre", "phiDays": 3 },
-      { "activeIngredient": "Zineb 75% WP", "dose": "800 g per acre", "phiDays": null },
-      { "activeIngredient": "Azoxystrobin 18.2% + Difenoconazole 11.4% SC", "dose": "200 ml per acre", "phiDays": null }
+      {
+        "activeIngredient": "Cyazofamid 34.5% SC",
+        "dose": "80 ml per acre",
+        "phiDays": null
+      },
+      {
+        "activeIngredient": "Azoxystrobin 23% SC",
+        "dose": "200 ml per acre",
+        "phiDays": null
+      },
+      {
+        "activeIngredient": "Zineb 75% WP",
+        "dose": "800 g per acre",
+        "phiDays": null
+      },
+      {
+        "activeIngredient": "Azoxystrobin 18.2% + Difenoconazole 11.4% SC",
+        "dose": "200 ml per acre",
+        "phiDays": null
+      }
     ],
     "preventive": [
       "Provide proper drainage",
@@ -497,9 +728,16 @@
       "leafWetnessHours": null,
       "rainfall": "Very humid conditions, typical of poorly ventilated polyhouses and high tunnels."
     },
-    "organicControl": [],
+    "organicControl": [
+      "Seed treatment with Trichoderma viride 1% WP @ 9 g per kg of seed (NIPHM tomato IPM package)",
+      "Apply Trichoderma as seed and nursery treatment, and Pseudomonas fluorescens as seed treatment, nursery treatment and soil application (NIPHM tomato IPM package)"
+    ],
     "chemicalControl": [
-      { "activeIngredient": "Fungicide for tomato leaf mould (no Indian dose recommendation found)", "dose": "Consult local KVK or agriculture officer for dosage", "phiDays": null }
+      {
+        "activeIngredient": "Fungicide for tomato leaf mould (no Indian dose recommendation found)",
+        "dose": "Consult local KVK or agriculture officer for dosage",
+        "phiDays": null
+      }
     ],
     "preventive": [
       "Keep humidity down: ventilate polyhouses and avoid wetting leaves",
@@ -530,8 +768,16 @@
       "Seed treatment with Trichoderma asperellum @ 4 g per kg of seed"
     ],
     "chemicalControl": [
-      { "activeIngredient": "Fluxapyroxad 250 g/l + Pyraclostrobin 250 g/l SC", "dose": "200-250 ml per ha", "phiDays": null },
-      { "activeIngredient": "Mancozeb 75% WP", "dose": "600-800 g in 300 litres of water per acre", "phiDays": null }
+      {
+        "activeIngredient": "Fluxapyroxad 250 g/l + Pyraclostrobin 250 g/l SC",
+        "dose": "200-250 ml per ha",
+        "phiDays": null
+      },
+      {
+        "activeIngredient": "Mancozeb 75% WP",
+        "dose": "Consult local KVK or agriculture officer for dosage",
+        "phiDays": null
+      }
     ],
     "preventive": [
       "Remove and destroy affected plant parts",
@@ -546,7 +792,9 @@
     "crop": "tomato",
     "isHealthy": false,
     "commonName": "Two-spotted spider mite",
-    "names": {},
+    "names": {
+      "hi": "लाल मकड़ी"
+    },
     "causalAgentType": "pest",
     "pathogen": "Tetranychus urticae",
     "symptoms": "Leaves show many tiny pale or yellow speckles and later turn pale, bronzed and dry. Fine silk webbing and a dusty coating appear, especially on the underside, where tiny moving mites can be seen. Heavily infested plants are stunted.",
@@ -561,8 +809,16 @@
       "Conserve predators such as predatory mites (Phytoseiulus spp., Amblyseius spp.), staphylinid beetles (Oligota spp.), lady bird beetles, lacewings, predatory thrips, anthocorid bugs (Orius spp.) and mirid bugs"
     ],
     "chemicalControl": [
-      { "activeIngredient": "Fenazaquin 10% EC", "dose": "500 ml in 200 litres of water per acre", "phiDays": null },
-      { "activeIngredient": "Spiromesifen 22.9% SC", "dose": "250 ml in 200 litres of water per acre", "phiDays": null }
+      {
+        "activeIngredient": "Fenazaquin 10% EC",
+        "dose": "Consult local KVK or agriculture officer for dosage",
+        "phiDays": null
+      },
+      {
+        "activeIngredient": "Spiromesifen 22.9% SC",
+        "dose": "Consult local KVK or agriculture officer for dosage",
+        "phiDays": null
+      }
     ],
     "preventive": [
       "Keep the field and bunds clean; remove weeds that harbour mites",
@@ -590,9 +846,16 @@
       "leafWetnessHours": 16,
       "rainfall": "Warm, humid weather with long leaf wetness (16-44 hours); rain and wind spread spores."
     },
-    "organicControl": [],
+    "organicControl": [
+      "Seed treatment with Trichoderma viride 1% WP @ 9 g per kg of seed (NIPHM tomato IPM package)",
+      "Apply Trichoderma as seed and nursery treatment, and Pseudomonas fluorescens as seed treatment, nursery treatment and soil application (NIPHM tomato IPM package)"
+    ],
     "chemicalControl": [
-      { "activeIngredient": "Fungicide for tomato target spot (no Indian dose recommendation found)", "dose": "Consult local KVK or agriculture officer for dosage", "phiDays": null }
+      {
+        "activeIngredient": "Fungicide for tomato target spot (no Indian dose recommendation found)",
+        "dose": "Consult local KVK or agriculture officer for dosage",
+        "phiDays": null
+      }
     ],
     "preventive": [
       "Rotate with crops outside the tomato family",
@@ -608,7 +871,9 @@
     "crop": "tomato",
     "isHealthy": false,
     "commonName": "Tomato leaf curl (yellow leaf curl) virus disease",
-    "names": {},
+    "names": {
+      "hi": "पर्ण कुंचन"
+    },
     "causalAgentType": "viral",
     "pathogen": "Tomato leaf curl virus complex (begomoviruses, including Tomato yellow leaf curl virus), transmitted by whitefly Bemisia tabaci",
     "symptoms": "Young leaves curl downward or upward, crinkle and turn yellowish, and stay small. Older leaves become thick, leathery and brittle. Internodes shorten and many side branches form, giving a bushy, stunted plant with few fruits.",
@@ -625,9 +890,21 @@
       "Conserve whitefly parasitoids (Encarsia spp., Eretmocerus spp.) and predators"
     ],
     "chemicalControl": [
-      { "activeIngredient": "Imidacloprid 17.8% SL (controls the whitefly vector only; does not cure infected plants)", "dose": "60-70 ml in 200 litres of water per acre", "phiDays": 3 },
-      { "activeIngredient": "Thiamethoxam 25% WG (controls the whitefly vector only; does not cure infected plants)", "dose": "80 g in 200 litres of water per acre", "phiDays": 5 },
-      { "activeIngredient": "Spiromesifen 22.9% SC (controls the whitefly vector only; does not cure infected plants)", "dose": "250 ml in 200 litres of water per acre", "phiDays": null }
+      {
+        "activeIngredient": "Imidacloprid 17.8% SL (controls the whitefly vector only; does not cure infected plants)",
+        "dose": "Consult local KVK or agriculture officer for dosage",
+        "phiDays": null
+      },
+      {
+        "activeIngredient": "Thiamethoxam 25% WG (controls the whitefly vector only; does not cure infected plants)",
+        "dose": "Consult local KVK or agriculture officer for dosage",
+        "phiDays": null
+      },
+      {
+        "activeIngredient": "Spiromesifen 22.9% SC (controls the whitefly vector only; does not cure infected plants)",
+        "dose": "Consult local KVK or agriculture officer for dosage",
+        "phiDays": null
+      }
     ],
     "preventive": [
       "There is no cure for infected plants; pull out and destroy them early",
@@ -644,7 +921,9 @@
     "crop": "tomato",
     "isHealthy": false,
     "commonName": "Tomato mosaic",
-    "names": {},
+    "names": {
+      "hi": "मोसैक विषाणु"
+    },
     "causalAgentType": "viral",
     "pathogen": "Tomato mosaic virus (ToMV, genus Tobamovirus)",
     "symptoms": "Leaves show a patchy light-green and dark-green mottle (mosaic). Leaflets become distorted, puckered and smaller, sometimes narrow and fern-like. Young leaves may wilt on sunny days and the plant looks stunted, pale and spindly.",
@@ -672,11 +951,19 @@
     "crop": "tomato",
     "isHealthy": true,
     "commonName": "Healthy tomato leaf",
-    "names": {},
+    "names": {
+      "hi": "स्वस्थ टमाटर"
+    },
     "causalAgentType": "none",
     "pathogen": "",
     "symptoms": "A healthy tomato leaf is made of evenly green, flat leaflets with a normal serrated edge. There are no ringed or dark spots, yellow halos, mottling, curling, webbing or mould on either side of the leaf.",
-    "favorableConditions": { "tempMinC": null, "tempMaxC": null, "humidityPct": null, "leafWetnessHours": null, "rainfall": "" },
+    "favorableConditions": {
+      "tempMinC": null,
+      "tempMaxC": null,
+      "humidityPct": null,
+      "leafWetnessHours": null,
+      "rainfall": ""
+    },
     "organicControl": [],
     "chemicalControl": [],
     "preventive": [
@@ -705,9 +992,15 @@
       "leafWetnessHours": null,
       "rainfall": "Warm, moist climate with extended periods of rain and cloudy weather."
     },
-    "organicControl": [],
+    "organicControl": [
+      "Apply Trichoderma viride/harzianum and Pseudomonas fluorescens to the cuttings/planting material and as a soil application (NIPHM grapes IPM package)"
+    ],
     "chemicalControl": [
-      { "activeIngredient": "Fungicide for grape black rot (no product has a CIB&RC label claim for this disease on grape in the ICAR-NRCG 2026-27 list)", "dose": "Consult local KVK or agriculture officer for dosage", "phiDays": null }
+      {
+        "activeIngredient": "Fungicide for grape black rot (no product has a CIB&RC label claim for this disease on grape in the ICAR-NRCG 2026-27 list)",
+        "dose": "Consult local KVK or agriculture officer for dosage",
+        "phiDays": null
+      }
     ],
     "preventive": [
       "Remove and destroy mummified berries, infected leaves and canes, since the fungus survives in plant debris",
@@ -733,9 +1026,16 @@
       "leafWetnessHours": null,
       "rainfall": "Spores released during rain infect fresh pruning wounds, which stay susceptible for several weeks after pruning."
     },
-    "organicControl": [],
+    "organicControl": [
+      "Apply Trichoderma viride/harzianum and Pseudomonas fluorescens to the cuttings/planting material and as a soil application (NIPHM grapes IPM package)",
+      "Prune only in dry weather and protect large pruning wounds; cut out and burn dead wood, since the fungi live in the wood and no spray reaches them (NIPHM grapes IPM package)"
+    ],
     "chemicalControl": [
-      { "activeIngredient": "Pruning-wound protectant (no product has a CIB&RC label claim for esca on grape in the ICAR-NRCG 2026-27 list; fungicides cannot eradicate established infections)", "dose": "Consult local KVK or agriculture officer for dosage", "phiDays": null }
+      {
+        "activeIngredient": "Pruning-wound protectant (no product has a CIB&RC label claim for esca on grape in the ICAR-NRCG 2026-27 list; fungicides cannot eradicate established infections)",
+        "dose": "Consult local KVK or agriculture officer for dosage",
+        "phiDays": null
+      }
     ],
     "preventive": [
       "Protect pruning wounds and avoid pruning just before or during rain",
@@ -762,9 +1062,15 @@
       "leafWetnessHours": null,
       "rainfall": "Most common late in the season in poorly protected vineyards."
     },
-    "organicControl": [],
+    "organicControl": [
+      "Apply Trichoderma viride/harzianum and Pseudomonas fluorescens to the cuttings/planting material and as a soil application (NIPHM grapes IPM package)"
+    ],
     "chemicalControl": [
-      { "activeIngredient": "Fungicide for grape leaf blight (no product has a CIB&RC label claim for this disease on grape in the ICAR-NRCG 2026-27 list)", "dose": "Consult local KVK or agriculture officer for dosage", "phiDays": null }
+      {
+        "activeIngredient": "Fungicide for grape leaf blight (no product has a CIB&RC label claim for this disease on grape in the ICAR-NRCG 2026-27 list)",
+        "dose": "Consult local KVK or agriculture officer for dosage",
+        "phiDays": null
+      }
     ],
     "preventive": [
       "Keep up the regular protective spray programme through the season, as advised by experts",
@@ -779,11 +1085,19 @@
     "crop": "grape",
     "isHealthy": true,
     "commonName": "Healthy grape leaf",
-    "names": {},
+    "names": {
+      "hi": "स्वस्थ अंगूर"
+    },
     "causalAgentType": "none",
     "pathogen": "",
     "symptoms": "A healthy grape leaf is evenly green, broad and lobed with clear veins. There are no brown, red or black spots, no striping between veins, no powdery or downy growth, and the edges are not dried or curled.",
-    "favorableConditions": { "tempMinC": null, "tempMaxC": null, "humidityPct": null, "leafWetnessHours": null, "rainfall": "" },
+    "favorableConditions": {
+      "tempMinC": null,
+      "tempMaxC": null,
+      "humidityPct": null,
+      "leafWetnessHours": null,
+      "rainfall": ""
+    },
     "organicControl": [],
     "chemicalControl": [],
     "preventive": [

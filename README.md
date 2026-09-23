@@ -103,9 +103,15 @@ Read these before quoting any accuracy number.
   under-counted. It is meant for comparing scans of the same plot over time.
 - **Weather risk is an early warning, not a diagnosis.** Several rules are extension-service
   "favourable conditions" rather than validated forecasting models; each rule names its source.
-- **Pesticide doses come from Indian extension sources** and are shown with the source. Where a dose
-  could not be confirmed, the app says to consult the local KVK instead of guessing. Always read the
-  product label.
+- **Pesticide doses come from Indian extension sources** (TNAU, PAU, ICAR institutes) and each disease
+  shows its source. Of 53 chemical entries, 35 doses were confirmed word-for-word against a fetched
+  source; the other 18 say "consult your local KVK" rather than guess. Every active ingredient was
+  checked against the CIB&RC banned and restricted list of 31.03.2024, and none is banned for these
+  crops. Streptocycline is deliberately absent: it has been prohibited in Indian agriculture since
+  1 January 2024, though older advisories still recommend it.
+- **No pre-harvest interval is pre-filled.** None could be confirmed from the sources available, so
+  the app asks the farmer to enter the interval from the product label when logging a spray, and
+  computes the safe-to-harvest date from that. Always read the label.
 
 ## Deployment
 
