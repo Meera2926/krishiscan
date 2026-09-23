@@ -109,6 +109,20 @@ export const CROP_ROUTES = {
 
 export const SUPPORTED_CROPS = Object.keys(CROP_ROUTES);
 
+/**
+ * Other names a farmer may type or look for. "Corn" and "maize" are the same crop, and a farmer
+ * who cannot find their crop in the list picks the wrong one, which the classifier then answers
+ * confidently: a corn leaf declared as rice came back "rice leaf blast, 90%".
+ * Keep in step with the `aliases` in seed/data/crops.json (seedLibrary checks this).
+ */
+export const CROP_ALIASES = { corn: 'maize', paddy: 'rice' };
+
+/** Canonical crop key for anything a client sends: trimmed, lowercased and de-aliased. */
+export function resolveCrop(name) {
+  const key = String(name ?? '').trim().toLowerCase();
+  return CROP_ALIASES[key] ?? key;
+}
+
 /** Model whose invalid class screens every photo for "this is not a crop leaf at all". */
 export const OOD_GATE_MODEL = 'cropvit';
 

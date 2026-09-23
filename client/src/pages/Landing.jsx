@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Link, Navigate } from 'react-router';
 import { useAuth } from '../auth/AuthProvider.jsx';
 import { useCrops } from '../api/hooks.js';
-import { localName } from '../i18n/index.js';
+import { cropLabel } from '../i18n/index.js';
 
 export default function Landing() {
   const { t, i18n } = useTranslation();
@@ -40,7 +40,7 @@ export default function Landing() {
                 .filter((c) => c.supportedByModel)
                 .map((c) => (
                   <li key={c.key} className="chip bg-surface border border-line px-3 py-1 text-sm text-ink">
-                    {localName(c, i18n.language)}
+                    {cropLabel(c, i18n.language)}
                   </li>
                 ))}
             </ul>

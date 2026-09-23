@@ -44,4 +44,16 @@ export function localName(entity, lang) {
   return (lang !== 'en' && entity.names?.[lang]) || entity.commonName || entity.name || '';
 }
 
+/**
+ * Crop label for pickers and lists: the local name followed by the other names farmers use for
+ * the same crop. A farmer looking for "Corn" has to find maize here, because picking the wrong
+ * crop does not fail — it routes the photo to the wrong classifier and gets a confident answer.
+ */
+export function cropLabel(crop, lang) {
+  if (!crop) return '';
+  const primary = localName(crop, lang);
+  const alt = [...(lang !== 'en' ? [crop.name] : []), ...(crop.aliases ?? [])].filter((n) => n && n !== primary);
+  return alt.length ? `${primary} (${alt.join(', ')})` : primary;
+}
+
 export default i18n;

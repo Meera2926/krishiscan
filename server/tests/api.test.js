@@ -145,6 +145,14 @@ describe('scans', () => {
     expect(await Scan.countDocuments()).toBe(0);
   });
 
+  it('accepts a crop named the way a farmer would say it', async () => {
+    __setClassifierForTests(fixedClassifier({ rice_leaf_blast: 0.92, rice_healthy: 0.08 }));
+    const { token } = await registerUser(app);
+    const res = await uploadScan(token, { crop: 'Paddy' });
+    expect(res.status).toBe(201);
+    expect(res.body.scan.declaredCrop).toBe('rice');
+  });
+
   it('diagnoses a confident scan and returns advisory content', async () => {
     __setClassifierForTests(fixedClassifier({ tomato_late_blight: 0.9, tomato_early_blight: 0.08, rice_leaf_blast: 0.02 }));
     const { token } = await registerUser(app);

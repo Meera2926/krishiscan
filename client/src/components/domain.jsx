@@ -2,7 +2,7 @@ import { Bug, Droplets, FlaskConical, Leaf, ShieldAlert, ShieldCheck, Thermomete
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
 import { useCrops } from '../api/hooks.js';
-import { localName } from '../i18n/index.js';
+import { cropLabel, localName } from '../i18n/index.js';
 import { relativeTime } from '../lib/format.js';
 import { Alert, SeverityBadge, StatusBadge } from './ui.jsx';
 
@@ -15,8 +15,7 @@ export function CropSelect({ value, onChange, id, required, onlySupported = true
       {allowAll ? <option value="">{allLabel}</option> : <option value="" disabled>{t('scan.cropAuto')}</option>}
       {options.map((c) => (
         <option key={c.key} value={c.key}>
-          {localName(c, i18n.language)}
-          {i18n.language !== 'en' ? ` (${c.name})` : ''}
+          {cropLabel(c, i18n.language)}
         </option>
       ))}
     </select>

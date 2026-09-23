@@ -20,6 +20,7 @@
   {
     "key": "maize",
     "name": "Maize",
+    "aliases": ["Corn"],
     "names": { "hi": "मक्का" },
     "scientificName": "Zea mays",
     "seasons": ["Kharif", "Rabi", "Zaid"],

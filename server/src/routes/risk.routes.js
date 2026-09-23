@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { z } from 'zod';
 import { requireAuth } from '../middleware/auth.js';
-import { idParams, validate } from '../middleware/validate.js';
+import { cropKey, idParams, validate } from '../middleware/validate.js';
 import { Disease, Plot } from '../models/index.js';
 import { assessRisk, supportedRiskCrops } from '../services/risk/engine.js';
 import { getDailyWeather } from '../services/weather.js';
@@ -46,7 +46,7 @@ router.get('/crops', (_req, res) => {
 const pointQuery = z.object({
   lat: latitude,
   lng: longitude,
-  crop: z.string().trim().toLowerCase().min(1).max(40),
+  crop: cropKey.refine(Boolean, 'Choose a crop'),
 });
 
 router.get('/', validate({ query: pointQuery }), async (req, res) => {

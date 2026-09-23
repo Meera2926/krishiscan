@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { z } from 'zod';
 import { optionalAuth, requireAuth } from '../middleware/auth.js';
-import { validate } from '../middleware/validate.js';
+import { cropKey, validate } from '../middleware/validate.js';
 import { Plot, Scan } from '../models/index.js';
 import { latitude, longitude, toPoint } from '../utils/geo.js';
 
@@ -45,7 +45,7 @@ const mapQuery = z.object({
   // Up to country scale: the map opens on all of India before a farmer picks a location.
   radiusKm: z.coerce.number().min(1).max(2000).default(100),
   days: z.coerce.number().int().min(1).max(90).default(30),
-  crop: z.string().trim().toLowerCase().max(40).optional(),
+  crop: cropKey.optional(),
 });
 
 router.get('/map', optionalAuth, validate({ query: mapQuery }), async (req, res) => {

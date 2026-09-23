@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { z } from 'zod';
 import { requireAuth, requireRole } from '../middleware/auth.js';
-import { idParams, validate } from '../middleware/validate.js';
+import { cropKey, idParams, validate } from '../middleware/validate.js';
 import { Disease, Scan } from '../models/index.js';
 import { fromPoint } from '../utils/geo.js';
 import { conflict, notFound, unprocessable } from '../utils/httpError.js';
@@ -11,7 +11,7 @@ router.use(requireAuth, requireRole('expert', 'admin'));
 
 const queueQuery = z.object({
   status: z.enum(['pending', 'confirmed', 'corrected']).default('pending'),
-  crop: z.string().trim().toLowerCase().max(40).optional(),
+  crop: cropKey.optional(),
   page: z.coerce.number().int().min(1).default(1),
   limit: z.coerce.number().int().min(1).max(50).default(20),
 });

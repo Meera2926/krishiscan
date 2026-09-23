@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { z } from 'zod';
 import { requireAuth } from '../middleware/auth.js';
-import { idParams, validate } from '../middleware/validate.js';
+import { cropKey, idParams, validate } from '../middleware/validate.js';
 import { Crop, Disease, Plot, Scan, Treatment } from '../models/index.js';
 import { summariseProgression } from '../services/progression.js';
 import treatmentRoutes, { treatmentsWithEfficacy } from './treatment.routes.js';
@@ -13,7 +13,7 @@ router.use(requireAuth);
 
 const plotFields = {
   name: z.string().trim().min(1).max(80),
-  crop: z.string().trim().toLowerCase().min(1).max(40),
+  crop: cropKey.refine(Boolean, 'Choose a crop'),
   variety: z.string().trim().max(80).optional(),
   sowingDate: z.coerce
     .date()

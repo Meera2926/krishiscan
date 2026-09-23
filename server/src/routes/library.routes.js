@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { z } from 'zod';
-import { validate } from '../middleware/validate.js';
+import { cropKey, validate } from '../middleware/validate.js';
 import { Crop, Disease } from '../models/index.js';
 import { notFound } from '../utils/httpError.js';
 
@@ -22,7 +22,7 @@ router.get('/crops', async (_req, res) => {
 });
 
 const listQuery = z.object({
-  crop: z.string().trim().toLowerCase().max(40).optional(),
+  crop: cropKey.optional(),
   q: z.string().trim().max(80).optional(),
   includeHealthy: z
     .enum(['true', 'false'])

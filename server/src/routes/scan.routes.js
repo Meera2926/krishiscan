@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { config } from '../config/env.js';
 import { requireAuth } from '../middleware/auth.js';
 import { uploadImage } from '../middleware/upload.js';
-import { idParams, objectId, validate } from '../middleware/validate.js';
+import { cropKey, idParams, objectId, validate } from '../middleware/validate.js';
 import { Disease, Plot, SCAN_STATUS, Scan } from '../models/index.js';
 import { diagnose } from '../services/diagnosis.js';
 import { prepareImage } from '../services/imageQuality.js';
@@ -27,7 +27,7 @@ const formBool = z
 const createBody = z
   .object({
     plotId: objectId.optional(),
-    crop: z.string().trim().toLowerCase().max(40).optional(),
+    crop: cropKey.optional(),
     lat: latitude.optional(),
     lng: longitude.optional(),
     shareLocation: formBool.optional(),

@@ -3,8 +3,9 @@
 A MERN web app that diagnoses crop disease from a leaf photo, **tracks how the disease progresses**,
 checks whether a treatment worked, and warns farmers before symptoms appear.
 
-Built for six crops grown across India: **rice, wheat, maize, potato, tomato and grape** (27 disease
-and healthy classes).
+Built for six crops grown across India: **rice (paddy), wheat, maize (corn), potato, tomato and
+grape** (27 disease and healthy classes). Crop pickers and the API accept either name, because
+picking the wrong crop does not fail — it routes the photo to another crop's classifier.
 
 ---
 
@@ -54,7 +55,7 @@ Cloudinary instead of the server's disk, which most free hosts wipe on every dep
 |---|---|
 | `npm run dev` | API on :5000 and Vite on :5173 (Vite proxies `/api`, so dev matches production) |
 | `npm run dev:watch -w server` | Same, with the API restarting on source changes |
-| `npm test` | 64 server tests: diagnosis triage, severity, progression, risk rules, API |
+| `npm test` | 74 server tests: diagnosis triage, photo quality, severity, progression, risk rules, API |
 | `npm run build` | Production React build; Express serves it from the same origin |
 | `npm run seed` | Crops and diseases (`-- --demo` adds demo data) |
 | `node server/scripts/evaluate-models.js <dir>` | Accuracy, rejection rate and latency on your own labelled photos |

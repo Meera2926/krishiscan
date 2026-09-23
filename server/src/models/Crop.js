@@ -5,6 +5,8 @@ const cropSchema = new mongoose.Schema(
   {
     key: { type: String, required: true, unique: true, lowercase: true, trim: true },
     name: { type: String, required: true },
+    // Other names farmers use for the same crop, shown in pickers and accepted by the API.
+    aliases: { type: [String], default: [] },
     names: { type: Map, of: String, default: {} },
     scientificName: String,
     seasons: [String],

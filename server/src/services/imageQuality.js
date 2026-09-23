@@ -3,12 +3,18 @@ import { badRequest } from '../utils/httpError.js';
 
 const MAX_STORED_EDGE = 1600;
 const MIN_EDGE = 128;
+// Every heuristic is measured on a copy scaled to this edge, so a 12 MP phone photo and a 480px
+// dataset crop of the same leaf score the same.
+const NORMALISED_EDGE = 512;
 
-// Measured on a fixed 512px greyscale copy so the thresholds do not depend on camera resolution.
 export const QUALITY_THRESHOLDS = Object.freeze({
   tooDark: 45,
   tooBright: 230,
-  blurry: 4.5,
+  // sharp reports sharpness as the standard deviation of a Laplacian convolution. On the
+  // normalised copy, 300 clear PlantVillage leaves scored 1.28-2.15 and clear field photos
+  // 2.5-5.2, while a field photo blurred until the lesion edges smear scored 0.69. 0.8 sits
+  // below every clear sample and above visibly unusable ones.
+  blurry: 0.8,
   lowGreenFraction: 0.08,
 });
 
@@ -56,8 +62,16 @@ export async function prepareImage(buffer) {
 }
 
 export async function assessQuality(buffer) {
-  const grey = sharp(buffer).resize(512, 512, { fit: 'inside' }).greyscale();
-  const stats = await grey.stats();
+  // sharp's stats() reads the input image and ignores operations chained onto the pipeline, so
+  // the normalised copy has to be materialised first. Measuring the original instead made
+  // `brightness` the red channel's mean rather than luminance, and made `sharpness` scale with
+  // camera resolution: one crisp field photo scored 2.49 at 1280px and 5.20 at 512px, so real
+  // photos fell below any threshold tuned on small dataset images and were all called blurry.
+  const normalised = await sharp(buffer)
+    .resize(NORMALISED_EDGE, NORMALISED_EDGE, { fit: 'inside', withoutEnlargement: true })
+    .greyscale()
+    .toBuffer();
+  const stats = await sharp(normalised).stats();
   const brightness = stats.channels[0].mean;
   const sharpness = stats.sharpness;
 

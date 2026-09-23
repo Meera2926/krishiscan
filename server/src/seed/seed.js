@@ -12,7 +12,7 @@ import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import sharp from 'sharp';
 import { Crop, Disease, Plot, Scan, Treatment, User } from '../models/index.js';
-import { SUPPORTED_CROPS } from '../services/inference/catalog.js';
+import { SUPPORTED_CROPS, resolveCrop } from '../services/inference/catalog.js';
 import { invalidateLabelIndex } from '../services/labelIndex.js';
 import { storage } from '../services/storage/index.js';
 import { toPoint } from '../utils/geo.js';
@@ -28,6 +28,15 @@ export async function seedLibrary() {
 
   const unknownCrop = diseases.find((d) => !crops.some((c) => c.key === d.crop));
   if (unknownCrop) throw new Error(`Disease ${unknownCrop.key} references unknown crop ${unknownCrop.crop}`);
+
+  // A displayed alias the API would not accept sends farmers to the wrong classifier.
+  for (const c of crops) {
+    for (const alias of c.aliases ?? []) {
+      if (resolveCrop(alias) !== c.key) {
+        throw new Error(`Crop "${c.key}" lists alias "${alias}", but CROP_ALIASES maps it to "${resolveCrop(alias)}"`);
+      }
+    }
+  }
 
   await Crop.bulkWrite(
     crops.map((c) => ({

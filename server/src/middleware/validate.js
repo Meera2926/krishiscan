@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { resolveCrop } from '../services/inference/catalog.js';
 import { unprocessable } from '../utils/httpError.js';
 
 /**
@@ -22,3 +23,6 @@ export function validate(schemas) {
 
 export const objectId = z.string().regex(/^[a-f\d]{24}$/i, 'Invalid id');
 export const idParams = z.object({ id: objectId });
+
+/** A crop the client named, normalised to its canonical key so "Corn" reaches maize. */
+export const cropKey = z.string().trim().max(40).transform(resolveCrop);
