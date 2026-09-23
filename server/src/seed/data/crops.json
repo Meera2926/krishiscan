@@ -1,0 +1,56 @@
+[
+  {
+    "key": "rice",
+    "name": "Rice (Paddy)",
+    "names": { "hi": "धान" },
+    "scientificName": "Oryza sativa",
+    "seasons": ["Kharif", "Rabi"],
+    "commonVarieties": ["ADT 36", "ADT 39", "ADT 44", "CO 47", "CO 50", "BPT 5204", "IR 64", "Jaya"],
+    "typicalStates": ["West Bengal", "Uttar Pradesh", "Punjab", "Andhra Pradesh", "Telangana", "Odisha", "Tamil Nadu", "Chhattisgarh", "Bihar"]
+  },
+  {
+    "key": "wheat",
+    "name": "Wheat",
+    "names": { "hi": "गेहूं" },
+    "scientificName": "Triticum aestivum",
+    "seasons": ["Rabi"],
+    "commonVarieties": ["HD 3226", "HD 3059", "DBW 187", "DBW 303", "DBW 327", "DBW 332", "WH 1270", "PBW 752", "HI 1634", "MP 3336"],
+    "typicalStates": ["Uttar Pradesh", "Punjab", "Haryana", "Madhya Pradesh", "Rajasthan", "Bihar", "Gujarat"]
+  },
+  {
+    "key": "maize",
+    "name": "Maize",
+    "names": { "hi": "मक्का" },
+    "scientificName": "Zea mays",
+    "seasons": ["Kharif", "Rabi", "Zaid"],
+    "commonVarieties": ["Vivek 21", "Vivek 23", "PEMH 5", "HQPM 1", "HQPM 5", "Buland", "Pratap Kanchan 2", "CO 6"],
+    "typicalStates": ["Karnataka", "Madhya Pradesh", "Maharashtra", "Rajasthan", "Bihar", "Telangana", "Tamil Nadu", "Uttar Pradesh", "Andhra Pradesh"]
+  },
+  {
+    "key": "potato",
+    "name": "Potato",
+    "names": { "hi": "आलू" },
+    "scientificName": "Solanum tuberosum",
+    "seasons": ["Rabi", "Kharif"],
+    "commonVarieties": ["Kufri Jyoti", "Kufri Badshah", "Kufri Sutlej", "Kufri Sindhuri", "Kufri Naveen"],
+    "typicalStates": ["Uttar Pradesh", "West Bengal", "Bihar", "Gujarat", "Madhya Pradesh", "Punjab", "Himachal Pradesh"]
+  },
+  {
+    "key": "tomato",
+    "name": "Tomato",
+    "names": { "hi": "टमाटर" },
+    "scientificName": "Solanum lycopersicum",
+    "seasons": ["Kharif", "Rabi", "Zaid"],
+    "commonVarieties": ["Pusa Ruby", "Arka Vikas", "Arka Rakshak", "PKM 1", "Kashi Aman"],
+    "typicalStates": ["Andhra Pradesh", "Madhya Pradesh", "Karnataka", "Gujarat", "Odisha", "Maharashtra", "Tamil Nadu", "West Bengal"]
+  },
+  {
+    "key": "grape",
+    "name": "Grape",
+    "names": { "hi": "अंगूर" },
+    "scientificName": "Vitis vinifera",
+    "seasons": ["Rabi"],
+    "commonVarieties": ["Thompson Seedless", "Sharad Seedless", "Bangalore Blue", "Anab-e-Shahi", "Beauty Seedless", "Bharat Early", "Pusa Navrang"],
+    "typicalStates": ["Maharashtra", "Karnataka", "Tamil Nadu", "Andhra Pradesh", "Telangana", "Punjab", "Mizoram"]
+  }
+]

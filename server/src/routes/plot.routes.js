@@ -2,7 +2,9 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { requireAuth } from '../middleware/auth.js';
 import { idParams, validate } from '../middleware/validate.js';
-import { Crop, Plot, Scan } from '../models/index.js';
+import { Crop, Disease, Plot, Scan, Treatment } from '../models/index.js';
+import { summariseProgression } from '../services/progression.js';
+import treatmentRoutes, { treatmentsWithEfficacy } from './treatment.routes.js';
 import { fromPoint, latitude, longitude, toPoint } from '../utils/geo.js';
 import { notFound, unprocessable } from '../utils/httpError.js';
 
@@ -110,8 +112,54 @@ router.delete('/:id', validate({ params: idParams }), async (req, res) => {
   const plot = await findOwnedPlot(req);
   // Keep the scans (they are the farmer's history) but detach them from the deleted plot.
   await Scan.updateMany({ plot: plot._id }, { $set: { plot: null } });
+  await Treatment.deleteMany({ plot: plot._id });
   await plot.deleteOne();
   res.status(204).end();
 });
+
+/**
+ * Disease progression for one plot: a severity timeline and trend for the plot as a whole and
+ * for each disease seen on it, plus the treatment log with efficacy checks.
+ */
+router.get('/:id/progression', validate({ params: idParams }), async (req, res) => {
+  const plot = await findOwnedPlot(req);
+  const scans = await Scan.find({ plot: plot._id, status: { $ne: 'rejected' } })
+    .sort({ createdAt: 1 })
+    .select('createdAt diseaseKey isHealthy status severity review image.url');
+
+  const points = scans.map((s) => ({
+    scanId: s.id,
+    date: s.createdAt,
+    percent: s.severity?.reliable ? s.severity.percent : null,
+    grade: s.severity?.reliable ? s.severity.grade : null,
+    diseaseKey: s.effectiveDiseaseKey,
+    isHealthy: s.review?.status === 'corrected' ? s.review.correctedDiseaseKey?.endsWith('_healthy') : s.isHealthy,
+    status: s.status,
+    imageUrl: s.image.url,
+  }));
+
+  const diseaseKeys = [...new Set(points.filter((p) => p.diseaseKey && !p.isHealthy).map((p) => p.diseaseKey))];
+  const diseases = await Disease.find({ key: { $in: diseaseKeys } }).select('key commonName names severity').lean();
+  const byKey = Object.fromEntries(diseases.map((d) => [d.key, d]));
+
+  res.json({
+    plot: { id: plot.id, name: plot.name, crop: plot.crop },
+    overall: { points, summary: summariseProgression(points) },
+    byDisease: diseaseKeys.map((key) => {
+      const own = points.filter((p) => p.diseaseKey === key);
+      return {
+        diseaseKey: key,
+        commonName: byKey[key]?.commonName ?? key,
+        names: byKey[key]?.names ?? {},
+        severity: byKey[key]?.severity ?? null,
+        points: own,
+        summary: summariseProgression(own),
+      };
+    }),
+    treatments: await treatmentsWithEfficacy(plot._id),
+  });
+});
+
+router.use('/:plotId/treatments', treatmentRoutes);
 
 export default router;

@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import request from 'supertest';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { Scan, User } from '../src/models/index.js';
@@ -289,5 +290,86 @@ describe('outbreak map', () => {
 
   it('validates the query', async () => {
     await request(app).get('/api/outbreaks/map?lat=999&lng=1').expect(422);
+  });
+});
+
+describe('progression and treatments', () => {
+  /** Green leaf filling the frame with one brown lesion of the given radius (px) in a 320px image. */
+  const lesionLeaf = (radius, seed = 0) =>
+    import('sharp').then(({ default: sharp }) =>
+      sharp({ create: { width: 320, height: 320, channels: 3, background: { r: 50 + seed, g: 140, b: 60 } } })
+        .composite([{ input: Buffer.from(`<svg width="320" height="320"><circle cx="160" cy="160" r="${radius}" fill="#7a4a1c"/></svg>`) }])
+        .jpeg()
+        .toBuffer(),
+    );
+  const daysAgo = (n) => new Date(Date.now() - n * 864e5);
+  // Mongoose treats createdAt as immutable, so go straight to the collection.
+  const backdate = (id, date) => Scan.collection.updateOne({ _id: new mongoose.Types.ObjectId(id) }, { $set: { createdAt: date } });
+
+  it('tracks severity over repeat scans and evaluates a logged treatment', async () => {
+    __setClassifierForTests(fixedClassifier({ tomato_late_blight: 0.9, tomato_early_blight: 0.1 }));
+    const { token } = await registerUser(app);
+    const other = await registerUser(app);
+    const plot = (await request(app).post('/api/plots').set(bearer(token)).send({ name: 'Progress', crop: 'tomato', lat: 13.1, lng: 78.1 })).body.plot;
+
+    const small = (await uploadScan(token, { plotId: plot.id }, await lesionLeaf(40, 1))).body.scan;
+    const large = await uploadScan(token, { plotId: plot.id }, await lesionLeaf(100, 2));
+    expect(small.severity.reliable).toBe(true);
+    expect(large.body.scan.severity.percent).toBeGreaterThan(small.severity.percent + 10);
+
+    // Spread the two scans 8 days apart.
+    await backdate(small.id, daysAgo(20));
+    await backdate(large.body.scan.id, daysAgo(12));
+
+    const treatment = await request(app)
+      .post(`/api/plots/${plot.id}/treatments`)
+      .set(bearer(token))
+      .send({ type: 'chemical', product: 'Test fungicide', activeIngredient: 'Mancozeb', diseaseKey: 'tomato_late_blight', appliedAt: daysAgo(11).toISOString(), phiDays: 30 })
+      .expect(201);
+    expect(treatment.body.treatment.product).toBe('Test fungicide');
+
+    const recovered = (await uploadScan(token, { plotId: plot.id }, await lesionLeaf(30, 3))).body;
+    await backdate(recovered.scan.id, daysAgo(2));
+
+    const progression = await request(app).get(`/api/plots/${plot.id}/progression`).set(bearer(token)).expect(200);
+    expect(progression.body.overall.points).toHaveLength(3);
+    expect(progression.body.overall.summary.count).toBe(3);
+    expect(progression.body.overall.summary.audpc).toBeGreaterThan(0);
+    expect(progression.body.byDisease.map((d) => d.diseaseKey)).toEqual(['tomato_late_blight']);
+
+    const [logged] = progression.body.treatments.items;
+    expect(logged.efficacy.status).toBe('effective');
+    expect(logged.efficacy.change).toBeLessThan(0);
+    // 30-day pre-harvest interval from 11 days ago: not yet safe.
+    expect(progression.body.treatments.safeToHarvestNow).toBe(false);
+
+    // The latest scan is compared with the previous one on the same plot.
+    const detail = await request(app).get(`/api/scans/${recovered.scan.id}`).set(bearer(token)).expect(200);
+    expect(detail.body.comparison.direction).toBe('better');
+
+    // Other farmers cannot see or add to this plot's records.
+    await request(app).get(`/api/plots/${plot.id}/progression`).set(bearer(other.token)).expect(404);
+    await request(app).post(`/api/plots/${plot.id}/treatments`).set(bearer(other.token)).send({ type: 'organic', product: 'Neem', appliedAt: daysAgo(1).toISOString() }).expect(404);
+  });
+
+  it('validates treatments and deletes them', async () => {
+    const { token } = await registerUser(app);
+    const plot = (await request(app).post('/api/plots').set(bearer(token)).send({ name: 'T', crop: 'tomato', lat: 13, lng: 78 })).body.plot;
+    await request(app).post(`/api/plots/${plot.id}/treatments`).set(bearer(token)).send({ type: 'magic', product: 'X', appliedAt: daysAgo(1) }).expect(422);
+    await request(app).post(`/api/plots/${plot.id}/treatments`).set(bearer(token)).send({ type: 'organic', product: 'X', appliedAt: new Date(Date.now() + 5 * 864e5) }).expect(422);
+    await request(app).post(`/api/plots/${plot.id}/treatments`).set(bearer(token)).send({ type: 'chemical', product: 'X', diseaseKey: 'rice_leaf_blast', appliedAt: daysAgo(1) }).expect(422);
+    const created = await request(app).post(`/api/plots/${plot.id}/treatments`).set(bearer(token)).send({ type: 'organic', product: 'Neem oil', appliedAt: daysAgo(1) }).expect(201);
+    await request(app).delete(`/api/plots/${plot.id}/treatments/${created.body.treatment.id}`).set(bearer(token)).expect(204);
+    const list = await request(app).get(`/api/plots/${plot.id}/treatments`).set(bearer(token)).expect(200);
+    expect(list.body.items).toHaveLength(0);
+    expect(list.body.safeToHarvestNow).toBe(true);
+  });
+
+  it('stores no severity for rejected photos', async () => {
+    __setClassifierForTests(fixedClassifier({ tomato_late_blight: 0.6, tomato_early_blight: 0.4 }, 0.99));
+    const { token } = await registerUser(app);
+    const res = await uploadScan(token, { crop: 'tomato' });
+    expect(res.body.scan.status).toBe('rejected');
+    expect(res.body.scan.severity?.percent ?? null).toBeNull();
   });
 });

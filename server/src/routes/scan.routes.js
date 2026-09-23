@@ -8,6 +8,7 @@ import { idParams, objectId, validate } from '../middleware/validate.js';
 import { Disease, Plot, SCAN_STATUS, Scan } from '../models/index.js';
 import { diagnose } from '../services/diagnosis.js';
 import { prepareImage } from '../services/imageQuality.js';
+import { estimateSeverity } from '../services/severity.js';
 import { SUPPORTED_CROPS } from '../services/inference/catalog.js';
 import { classify } from '../services/inference/index.js';
 import { getLabelIndex } from '../services/labelIndex.js';
@@ -62,6 +63,31 @@ async function loadAdvisory(scan) {
   return { disease: key ? (byKey[key] ?? null) : null, alternatives: byKey };
 }
 
+/** Severity change against the plot's previous reliable scan: the per-scan view of progression. */
+async function compareWithPrevious(scan) {
+  const plotId = scan.plot?._id ?? scan.plot;
+  if (!plotId || !scan.severity?.reliable) return null;
+  const previous = await Scan.findOne({
+    plot: plotId,
+    _id: { $ne: scan._id },
+    createdAt: { $lt: scan.createdAt },
+    status: { $ne: 'rejected' },
+    'severity.reliable': true,
+  })
+    .sort({ createdAt: -1 })
+    .select('createdAt severity diseaseKey isHealthy review');
+  if (!previous) return null;
+  const change = Math.round((scan.severity.percent - previous.severity.percent) * 10) / 10;
+  return {
+    previousScanId: previous.id,
+    previousDate: previous.createdAt,
+    previousPercent: previous.severity.percent,
+    previousDiseaseKey: previous.effectiveDiseaseKey,
+    change,
+    direction: change >= 3 ? 'worse' : change <= -3 ? 'better' : 'same',
+  };
+}
+
 function serialise(scan) {
   const json = scan.toJSON();
   json.location = fromPoint(scan.location);
@@ -99,9 +125,10 @@ router.post('/', uploadImage, validate({ body: createBody }), async (req, res) =
 
   // Validate and classify before persisting anything, so a failure leaves no orphaned image.
   const { stored, quality } = await prepareImage(req.file.buffer);
-  const { predictions: raw, invalidProbability, modelVersion, inferenceMs } = await classify(stored.buffer, {
-    crop: declaredCrop,
-  });
+  const [{ predictions: raw, invalidProbability, modelVersion, inferenceMs }, severity] = await Promise.all([
+    classify(stored.buffer, { crop: declaredCrop }),
+    estimateSeverity(stored.buffer),
+  ]);
   const result = diagnose(raw, {
     labelIndex: await getLabelIndex(),
     declaredCrop,
@@ -126,6 +153,8 @@ router.post('/', uploadImage, validate({ body: createBody }), async (req, res) =
         format: stored.format,
       },
       quality,
+      // A severity figure for a photo that is not a recognised leaf would only mislead.
+      severity: result.status === 'rejected' ? undefined : severity,
       ...result,
       modelVersion,
       inferenceMs,
@@ -139,7 +168,7 @@ router.post('/', uploadImage, validate({ body: createBody }), async (req, res) =
   }
 
   if (plot) await scan.populate('plot', 'name crop');
-  res.status(201).json({ scan: serialise(scan), ...(await loadAdvisory(scan)) });
+  res.status(201).json({ scan: serialise(scan), ...(await loadAdvisory(scan)), comparison: await compareWithPrevious(scan) });
 });
 
 router.get('/', validate({ query: listQuery }), async (req, res) => {
@@ -227,7 +256,7 @@ router.get('/summary', async (req, res) => {
 
 router.get('/:id', validate({ params: idParams }), async (req, res) => {
   const { scan } = await findVisibleScan(req);
-  res.json({ scan: serialise(scan), ...(await loadAdvisory(scan)) });
+  res.json({ scan: serialise(scan), ...(await loadAdvisory(scan)), comparison: await compareWithPrevious(scan) });
 });
 
 router.patch('/:id', validate({ params: idParams, body: patchBody }), async (req, res) => {

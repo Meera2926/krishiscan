@@ -11,7 +11,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import sharp from 'sharp';
-import { Crop, Disease, Plot, Scan, User } from '../models/index.js';
+import { Crop, Disease, Plot, Scan, Treatment, User } from '../models/index.js';
 import { SUPPORTED_CROPS } from '../services/inference/catalog.js';
 import { invalidateLabelIndex } from '../services/labelIndex.js';
 import { storage } from '../services/storage/index.js';
@@ -93,6 +93,7 @@ export async function seedDemo() {
   if (await Scan.exists({ modelVersion: 'demo-seed' })) {
     return { skipped: 'demo scans already present' };
   }
+  await Treatment.deleteMany({ notes: /^Demo record/ });
 
   const farmer = users.farmer;
   const neighbour = users.neighbour;
@@ -148,6 +149,60 @@ export async function seedDemo() {
         createdAt: daysAgo(Math.floor(rand() * 28)),
       });
     }
+  }
+
+  // A progression story on the tomato plot: disease climbs, a spray is logged, severity falls.
+  const storyDisease = diseases.find((d) => d.key === 'tomato_late_blight') ?? byCrop.tomato?.[0];
+  if (storyDisease) {
+    const course = [
+      [24, 4.2],
+      [19, 9.1],
+      [14, 15.8],
+      [9, 22.4],
+      [4, 12.3],
+      [1, 6.1],
+    ];
+    for (const [daysBack, percent] of course) {
+      const buffer = await placeholderImage(`${storyDisease.commonName} ${percent}%`, 95 - percent);
+      const saved = await storage.put(buffer, { extension: 'jpg' });
+      const confidence = 0.78 + rand() * 0.18;
+      docs.push({
+        owner: farmer._id,
+        plot: plots[1]._id,
+        declaredCrop: 'tomato',
+        image: { url: saved.url, storageKey: saved.storageKey, width: 480, height: 480, bytes: buffer.length, format: 'jpeg' },
+        quality: { ok: true, brightness: 118, sharpness: 7, warnings: [] },
+        severity: { percent, grade: percent <= 1 ? 0 : percent <= 5 ? 1 : percent <= 10 ? 2 : percent <= 25 ? 3 : 4, leafFraction: 0.55, reliable: true, method: 'demo-seed' },
+        predictions: [{ label: storyDisease.key, confidence, diseaseKey: storyDisease.key }],
+        top: { label: storyDisease.key, confidence, diseaseKey: storyDisease.key },
+        crop: 'tomato',
+        diseaseKey: storyDisease.key,
+        isHealthy: false,
+        status: 'confident',
+        statusReason: 'ok',
+        cropProbability: 0.93,
+        invalidProbability: 0.01,
+        modelVersion: 'demo-seed',
+        inferenceMs: 0,
+        location: plots[1].location,
+        shareLocation: true,
+        review: { status: 'none' },
+        createdAt: daysAgo(daysBack),
+      });
+    }
+
+    await Treatment.create({
+      owner: farmer._id,
+      plot: plots[1]._id,
+      diseaseKey: storyDisease.key,
+      type: 'chemical',
+      product: 'Mancozeb 75% WP',
+      activeIngredient: 'Mancozeb',
+      dose: 'As per label; confirm with local KVK',
+      appliedAt: daysAgo(8),
+      phiDays: 7,
+      notes: 'Demo record: sprayed after severity crossed 20%.',
+    });
   }
 
   // A few uncertain scans from the demo farmer so the expert queue is not empty.

@@ -1,0 +1,799 @@
+[
+  {
+    "key": "rice_brown_spot",
+    "crop": "rice",
+    "isHealthy": false,
+    "commonName": "Brown spot",
+    "names": { "hi": "भूरा धब्बा" },
+    "causalAgentType": "fungal",
+    "pathogen": "Bipolaris oryzae (syn. Helminthosporium oryzae, Drechslera oryzae; teleomorph Cochliobolus miyabeanus)",
+    "symptoms": "Leaves first show tiny brown dots that grow into oval or round brown spots about the size of a sesame seed (0.5-2 mm), often with a grey or light centre. Many spots can join into large dead brown patches. The disease can also spread to the panicle neck and grains, which turn discoloured.",
+    "favorableConditions": {
+      "tempMinC": 25,
+      "tempMaxC": 30,
+      "humidityPct": 80,
+      "leafWetnessHours": 8,
+      "rainfall": "Humid weather with leaves staying wet for 8-24 hours; excess nitrogen fertiliser makes the disease worse."
+    },
+    "organicControl": [
+      "Seed treatment with Pseudomonas fluorescens @ 10 g per kg of seed",
+      "Hot water seed treatment at 53-54°C for 10-12 minutes",
+      "Soil amendment with calcium silicate slag"
+    ],
+    "chemicalControl": [
+      { "activeIngredient": "Mancozeb", "dose": "2.0 g per litre of water; 2 to 3 sprays at 10-15 day intervals depending on disease intensity", "phiDays": null },
+      { "activeIngredient": "Edifenphos", "dose": "1 ml per litre of water; 2 to 3 sprays at 10-15 day intervals", "phiDays": 21 },
+      { "activeIngredient": "Captan or Thiram (seed treatment)", "dose": "2.0 g per kg of seed", "phiDays": null }
+    ],
+    "preventive": [
+      "Use disease-free seed",
+      "Grow tolerant varieties recommended locally (TNAU lists ADT 44, PY 4, CORH 1, CO 44, Cauvery, Bhavani, TPS 4, Dhanu)",
+      "Apply balanced nutrition; avoid excess nitrogen",
+      "Maintain proper irrigation and avoid moisture stress"
+    ],
+    "severity": "moderate",
+    "sourceUrl": "https://agritech.tnau.ac.in/expert_system/paddy/cpdisbrownspot.html"
+  },
+  {
+    "key": "rice_leaf_blast",
+    "crop": "rice",
+    "isHealthy": false,
+    "commonName": "Leaf blast",
+    "names": { "hi": "झोंका रोग" },
+    "causalAgentType": "fungal",
+    "pathogen": "Magnaporthe oryzae (anamorph Pyricularia oryzae)",
+    "symptoms": "Small white to grey-green spots with brown borders appear on leaves. They grow into eye- or spindle-shaped spots (0.5-1.5 cm long) with an ash-grey centre and brown margin. In severe attack many spots merge and the field looks burnt. The panicle neck or nodes may also turn black and break.",
+    "favorableConditions": {
+      "tempMinC": 25,
+      "tempMaxC": 28,
+      "humidityPct": 90,
+      "leafWetnessHours": null,
+      "rainfall": "Cloudy skies, frequent rain and drizzle keeping leaves wet; high nitrogen doses favour the disease."
+    },
+    "organicControl": [
+      "Seed treatment with Pseudomonas fluorescens talc formulation @ 10 g per kg of seed",
+      "Spray Pseudomonas fluorescens at 0.5% from 45 days after transplanting at 10-day intervals"
+    ],
+    "chemicalControl": [
+      { "activeIngredient": "Tricyclazole", "dose": "1 g per litre of water; spray at nursery, tillering and panicle initiation stages as needed", "phiDays": null },
+      { "activeIngredient": "Edifenphos", "dose": "1 ml per litre of water", "phiDays": 21 },
+      { "activeIngredient": "Carbendazim", "dose": "1.0 g per litre of water", "phiDays": null },
+      { "activeIngredient": "Captan or Carbendazim or Thiram or Tricyclazole (seed treatment)", "dose": "2.0 g per kg of seed", "phiDays": null }
+    ],
+    "preventive": [
+      "Grow resistant varieties recommended locally (TNAU lists CO 47, CO 50, ADT 36, ADT 37, ADT 39, ADT 44, BPT 5204, IR 64, IR 36, Jaya)",
+      "Avoid excess nitrogen; apply nitrogen in three split doses",
+      "Avoid dry nurseries",
+      "Remove and destroy infected stubble and straw after harvest",
+      "Scout the crop at tillering and panicle stages, especially during cloudy, drizzly weather"
+    ],
+    "severity": "severe",
+    "sourceUrl": "https://agritech.tnau.ac.in/expert_system/paddy/cpdisblast.html"
+  },
+  {
+    "key": "rice_healthy",
+    "crop": "rice",
+    "isHealthy": true,
+    "commonName": "Healthy rice leaf",
+    "names": {},
+    "causalAgentType": "none",
+    "pathogen": "",
+    "symptoms": "A healthy rice leaf is uniformly green from base to tip, long and narrow with smooth parallel veins. There are no brown dots, spindle-shaped grey spots, streaks or yellowing, and the leaf tip is not dried or burnt.",
+    "favorableConditions": { "tempMinC": null, "tempMaxC": null, "humidityPct": null, "leafWetnessHours": null, "rainfall": "" },
+    "organicControl": [],
+    "chemicalControl": [],
+    "preventive": [
+      "Walk the field at least once a week, checking leaves in different parts of the field for spots or discolouration",
+      "Use certified, disease-free seed and treat seed before sowing",
+      "Apply nitrogen in split doses based on crop need; avoid excess nitrogen",
+      "Keep bunds and channels free of weeds and remove infected stubble after harvest",
+      "Watch closely during cloudy, humid or drizzly spells, when blast and brown spot spread fastest"
+    ],
+    "severity": "none",
+    "sourceUrl": "https://agritech.tnau.ac.in/expert_system/paddy/cpdisblast.html"
+  },
+  {
+    "key": "wheat_brown_rust",
+    "crop": "wheat",
+    "isHealthy": false,
+    "commonName": "Brown rust (leaf rust)",
+    "names": { "hi": "भूरा रतुआ" },
+    "causalAgentType": "fungal",
+    "pathogen": "Puccinia triticina (syn. P. recondita f. sp. tritici)",
+    "symptoms": "Small round or slightly oval orange-brown pustules appear scattered on the upper surface of leaves, not in lines. Rubbing a pustule leaves orange-brown powder on the finger. Pustules usually stay separate; late in the season dark brown to black spots may form.",
+    "favorableConditions": {
+      "tempMinC": 18,
+      "tempMaxC": 25,
+      "humidityPct": null,
+      "leafWetnessHours": null,
+      "rainfall": "High humidity with moderate temperatures; spores spread by wind."
+    },
+    "organicControl": [],
+    "chemicalControl": [
+      { "activeIngredient": "Propiconazole 25% EC", "dose": "0.1% (1 ml per litre of water; 200 ml in 200 litres of water per acre)", "phiDays": 30 },
+      { "activeIngredient": "Tebuconazole 50% + Trifloxystrobin 25% WG", "dose": "0.06% (0.6 g per litre of water; 120 g in 200 litres of water per acre)", "phiDays": null }
+    ],
+    "preventive": [
+      "Grow rust-resistant varieties recommended for your zone",
+      "Visit the crop regularly and confirm rust with the nearest ICAR institute, SAU or KVK before spraying",
+      "Spray the infected area first to stop further spread",
+      "If one fungicide was used last season, use the alternate recommended fungicide this season"
+    ],
+    "severity": "moderate",
+    "sourceUrl": "https://iiwbr.org.in/wp-content/uploads/2025/01/16-31-Jan-English.pdf"
+  },
+  {
+    "key": "wheat_yellow_rust",
+    "crop": "wheat",
+    "isHealthy": false,
+    "commonName": "Yellow rust (stripe rust)",
+    "names": { "hi": "पीला रतुआ" },
+    "causalAgentType": "fungal",
+    "pathogen": "Puccinia striiformis f. sp. tritici",
+    "symptoms": "Yellow to orange-yellow powdery pustules form in narrow stripes along the leaf veins and on leaf sheaths. Touching an infected leaf leaves yellow powder on the fingers or clothes. The disease starts in small patches in the field and spreads quickly in cool, foggy weather.",
+    "favorableConditions": {
+      "tempMinC": 6,
+      "tempMaxC": 16,
+      "humidityPct": null,
+      "leafWetnessHours": null,
+      "rainfall": "Cool weather with fog, cloud and intermittent rain (Punjab, Haryana, Jammu and Kashmir, tarai of UP and Uttarakhand)."
+    },
+    "organicControl": [],
+    "chemicalControl": [
+      { "activeIngredient": "Propiconazole 25% EC", "dose": "0.1% (1 ml per litre of water; 200 ml in 200 litres of water per acre)", "phiDays": 30 },
+      { "activeIngredient": "Tebuconazole 50% + Trifloxystrobin 25% WG", "dose": "0.06% (0.6 g per litre of water; 120 g in 200 litres of water per acre)", "phiDays": null }
+    ],
+    "preventive": [
+      "Grow newly released yellow-rust-resistant varieties (IIWBR lists DBW 370, DBW 371, DBW 372, DBW 327, DBW 332, DBW 187, DBW 303, WH 1270, HD 3226)",
+      "Replace old varieties after a few years; susceptibility increases with time",
+      "Keep strict watch from December to February, especially in foggy weather",
+      "Confirm with a KVK or SAU expert, since leaf yellowing can have other causes",
+      "Do not over-apply urea when the crop shows yellowing"
+    ],
+    "severity": "severe",
+    "sourceUrl": "https://iiwbr.org.in/wp-content/uploads/2025/01/16-31-Jan-English.pdf"
+  },
+  {
+    "key": "wheat_healthy",
+    "crop": "wheat",
+    "isHealthy": true,
+    "commonName": "Healthy wheat leaf",
+    "names": {},
+    "causalAgentType": "none",
+    "pathogen": "",
+    "symptoms": "A healthy wheat leaf is evenly green and smooth with parallel veins. There are no yellow stripes, orange-brown or black powdery pustules, and no powder comes off on the fingers when the leaf is rubbed.",
+    "favorableConditions": { "tempMinC": null, "tempMaxC": null, "humidityPct": null, "leafWetnessHours": null, "rainfall": "" },
+    "organicControl": [],
+    "chemicalControl": [],
+    "preventive": [
+      "Scout the field weekly, especially from December to February, and rub suspicious leaves to check for rust powder",
+      "Sow varieties recommended for your zone and sowing time",
+      "Avoid excess urea, particularly in foggy or cloudy weather",
+      "Irrigate on time and avoid irrigating just before forecast rain",
+      "Do not burn crop residue; keep it on or mix it into the soil"
+    ],
+    "severity": "none",
+    "sourceUrl": "https://iiwbr.org.in/wp-content/uploads/2024/11/Hindi-Advisory-1-15-Dec-2024-Scanned.pdf"
+  },
+  {
+    "key": "maize_gray_leaf_spot",
+    "crop": "maize",
+    "isHealthy": false,
+    "commonName": "Grey leaf spot",
+    "names": {},
+    "causalAgentType": "fungal",
+    "pathogen": "Cercospora zeae-maydis",
+    "symptoms": "Long, narrow, rectangular spots (up to about 5 cm) form on the leaves, first light tan and later grey. The spots are boxed in by the leaf veins, so they have straight sides. Spots can join and kill whole leaves, starting on lower leaves a few weeks before tasselling.",
+    "favorableConditions": {
+      "tempMinC": null,
+      "tempMaxC": null,
+      "humidityPct": 90,
+      "leafWetnessHours": null,
+      "rainfall": "Warm (about 27°C), humid weather with relative humidity above 90% for 12 hours or more; worse where maize follows maize."
+    },
+    "organicControl": [],
+    "chemicalControl": [
+      { "activeIngredient": "Fungicide for grey leaf spot (no Indian dose recommendation found)", "dose": "Consult local KVK or agriculture officer for dosage", "phiDays": null }
+    ],
+    "preventive": [
+      "Plant resistant hybrids",
+      "Rotate maize with non-host crops; avoid maize after maize",
+      "Reduce infected crop residue on the soil surface by tillage or residue management",
+      "Scout lower leaves from knee-high stage onwards in warm, humid weather"
+    ],
+    "severity": "moderate",
+    "sourceUrl": "https://cropprotectionnetwork.org/encyclopedia/gray-leaf-spot-of-corn"
+  },
+  {
+    "key": "maize_common_rust",
+    "crop": "maize",
+    "isHealthy": false,
+    "commonName": "Common rust",
+    "names": { "hi": "गेरूआ रोग" },
+    "causalAgentType": "fungal",
+    "pathogen": "Puccinia sorghi",
+    "symptoms": "Small raised chocolate-brown to brick-red powdery pustules appear on both leaf surfaces. Touching them leaves brown powder on the hand. Tissue around the pustules may turn yellow and die, and pustules turn black as they age. Badly affected leaves yellow and drop.",
+    "favorableConditions": {
+      "tempMinC": 18,
+      "tempMaxC": 21,
+      "humidityPct": null,
+      "leafWetnessHours": null,
+      "rainfall": "High humidity with cool nights (about 18-21°C) and moderate day temperatures."
+    },
+    "organicControl": [],
+    "chemicalControl": [
+      { "activeIngredient": "Mancozeb", "dose": "2.5 g per litre of water", "phiDays": null },
+      { "activeIngredient": "Zineb 75% WP", "dose": "1.5-2 kg per ha at first appearance of pustules; up to three sprays at 15-day intervals if needed", "phiDays": null }
+    ],
+    "preventive": [
+      "Grow resistant or tolerant varieties (NIPHM lists Buland, Sheetal, HHM 1, HHM 2, HQPM 1)",
+      "Scout leaves regularly and spray only at the first appearance of pustules",
+      "Remove crop residue and volunteer maize plants"
+    ],
+    "severity": "moderate",
+    "sourceUrl": "http://mpkrishi.mp.gov.in/hindisite_New/krishi_pranaliya_kharif_makka_rog.aspx"
+  },
+  {
+    "key": "maize_northern_leaf_blight",
+    "crop": "maize",
+    "isHealthy": false,
+    "commonName": "Turcicum leaf blight (northern corn leaf blight)",
+    "names": { "hi": "टूरसिकम पर्ण झुलसन" },
+    "causalAgentType": "fungal",
+    "pathogen": "Exserohilum turcicum (teleomorph Setosphaeria turcica)",
+    "symptoms": "Long, cigar-shaped, grey-green to tan spots (2.5-15 cm) appear on the leaves, first on lower leaves and then moving upward in damp weather. In moist conditions dark grey spores make the spots look dirty. Severely affected leaves dry up completely, as if burnt.",
+    "favorableConditions": {
+      "tempMinC": 18,
+      "tempMaxC": 27,
+      "humidityPct": 90,
+      "leafWetnessHours": 6,
+      "rainfall": "Moist weather with long dew or rain periods keeping leaves wet for more than 6 hours; most damaging when infection occurs around silking."
+    },
+    "organicControl": [],
+    "chemicalControl": [
+      { "activeIngredient": "Mancozeb", "dose": "2.5 g per litre of water", "phiDays": null },
+      { "activeIngredient": "Zineb (Indofil Z-78) or Mancozeb (Indofil M-45)", "dose": "1500 g in 750 litres of water per hectare", "phiDays": null }
+    ],
+    "preventive": [
+      "Grow resistant hybrids (NIPHM lists PEMH 5, Vivek 21, Vivek 23, Vivek 25, Pratap Kanchan 2)",
+      "Sow on time",
+      "Rotate with non-host crops such as legumes for one to two years",
+      "Destroy or plough in infected maize residue",
+      "Scout lower leaves regularly and spray at first appearance of spots"
+    ],
+    "severity": "moderate",
+    "sourceUrl": "http://mpkrishi.mp.gov.in/hindisite_New/krishi_pranaliya_kharif_makka_rog.aspx"
+  },
+  {
+    "key": "maize_healthy",
+    "crop": "maize",
+    "isHealthy": true,
+    "commonName": "Healthy maize leaf",
+    "names": {},
+    "causalAgentType": "none",
+    "pathogen": "",
+    "symptoms": "A healthy maize leaf is broad, evenly green and glossy with a clear midrib. There are no long tan or grey cigar-shaped spots, no rectangular grey lesions and no brown or red powdery pustules.",
+    "favorableConditions": { "tempMinC": null, "tempMaxC": null, "humidityPct": null, "leafWetnessHours": null, "rainfall": "" },
+    "organicControl": [],
+    "chemicalControl": [],
+    "preventive": [
+      "Use certified seed of hybrids recommended for your region, with resistance to local diseases",
+      "Scout the lower leaves weekly, especially in humid or rainy weeks and around tasselling and silking",
+      "Rotate maize with legumes or other non-host crops",
+      "Remove or plough in crop residue after harvest",
+      "Ensure good field drainage and balanced fertilisation"
+    ],
+    "severity": "none",
+    "sourceUrl": "https://www.niphm.gov.in/IPMPackages/Maize.pdf"
+  },
+  {
+    "key": "potato_early_blight",
+    "crop": "potato",
+    "isHealthy": false,
+    "commonName": "Early blight",
+    "names": { "hi": "अगेता झुलसा" },
+    "causalAgentType": "fungal",
+    "pathogen": "Alternaria solani",
+    "symptoms": "Dark brown to black spots appear on older leaves first. Each spot is angular or oval with target-like concentric rings inside. Several spots join and spread over the leaf, which then yellows and dries.",
+    "favorableConditions": {
+      "tempMinC": 25,
+      "tempMaxC": 30,
+      "humidityPct": null,
+      "leafWetnessHours": null,
+      "rainfall": "Dry, warm weather with intermittent rain; poorly nourished, weak crops suffer more."
+    },
+    "organicControl": [],
+    "chemicalControl": [
+      { "activeIngredient": "Zineb", "dose": "0.2% spray; start very early and repeat every 15-20 days", "phiDays": null },
+      { "activeIngredient": "Captan", "dose": "0.2% spray; start very early and repeat every 15-20 days", "phiDays": null },
+      { "activeIngredient": "Mancozeb (Indofil M-45)", "dose": "0.2% spray at 15-day intervals", "phiDays": null }
+    ],
+    "preventive": [
+      "Plant disease-free seed tubers",
+      "Remove and destroy infected plant debris, since spores in the soil start new infections",
+      "Grow varieties with some resistance (TNAU notes Kufri Sindhuri)",
+      "Apply adequate manure and fertiliser to keep the crop vigorous"
+    ],
+    "severity": "moderate",
+    "sourceUrl": "https://agritech.tnau.ac.in/crop_protection/crop_prot_crop%20diseases_veg_potato_2.html"
+  },
+  {
+    "key": "potato_late_blight",
+    "crop": "potato",
+    "isHealthy": false,
+    "commonName": "Late blight",
+    "names": { "hi": "पछेता झुलसा" },
+    "causalAgentType": "oomycete",
+    "pathogen": "Phytophthora infestans",
+    "symptoms": "Water-soaked pale spots appear on leaves, usually at tips and edges, and quickly turn purple-brown and then black. A white mouldy growth forms on the underside of leaves around the spots in humid weather. Stems get dark lesions and may break. Tubers show rusty-brown rot under the skin.",
+    "favorableConditions": {
+      "tempMinC": 10,
+      "tempMaxC": 25,
+      "humidityPct": 90,
+      "leafWetnessHours": null,
+      "rainfall": "Cloudy, foggy weather with rain (even 0.1 mm) on successive days and cool nights around 10°C; can become an epidemic within days."
+    },
+    "organicControl": [],
+    "chemicalControl": [
+      { "activeIngredient": "Mancozeb 75% WP (Indofil M-45 / Mass M-45 / Markzeb)", "dose": "500-700 g per acre; preventive sprays from the first week of November at weekly intervals under low to moderate risk", "phiDays": null },
+      { "activeIngredient": "Chlorothalonil 75% WP (Kavach)", "dose": "500-700 g per acre", "phiDays": 14 },
+      { "activeIngredient": "Propineb 70% WP (Antracol)", "dose": "500-700 g per acre", "phiDays": 15 },
+      { "activeIngredient": "Copper oxychloride 50% WP (Blitox-50 / Markcopper)", "dose": "750-1000 g per acre", "phiDays": null },
+      { "activeIngredient": "Metalaxyl-M (mefenoxam) + Mancozeb (Ridomil Gold)", "dose": "700 g per acre; 3rd and 4th spray at 10-day interval under high disease risk", "phiDays": null },
+      { "activeIngredient": "Cymoxanil 8% + Mancozeb 64% WP (Curzate M-8)", "dose": "700 g per acre; 3rd and 4th spray at 10-day interval under high disease risk", "phiDays": 10 },
+      { "activeIngredient": "Fenamidone 10% + Mancozeb 50% WDG (Sectin)", "dose": "700 g per acre; 3rd and 4th spray at 10-day interval under high disease risk", "phiDays": 30 },
+      { "activeIngredient": "Mandipropamid 23.4% SC (Revus)", "dose": "200 ml per acre; 3rd and 4th spray at 10-day interval under high disease risk", "phiDays": null },
+      { "activeIngredient": "Famoxadone 16.6% + Cymoxanil 22.1% SC (Equation Pro)", "dose": "200 ml per acre; 3rd and 4th spray at 10-day interval under high disease risk", "phiDays": 40 }
+    ],
+    "preventive": [
+      "Use certified, disease-free seed tubers",
+      "Grow resistant varieties (PAU lists Kufri Jyoti, Kufri Sutlej, Kufri Badshah)",
+      "Do proper earthing up (hilling) to protect tubers",
+      "Plant early and use wider spacing where possible",
+      "Remove infected tubers and plants; destroy haulms a few days before harvest",
+      "Follow state late-blight forecasts and advisories and start protective sprays before the disease appears"
+    ],
+    "severity": "severe",
+    "sourceUrl": "https://pau.edu/potato/lb_mang.php"
+  },
+  {
+    "key": "potato_healthy",
+    "crop": "potato",
+    "isHealthy": true,
+    "commonName": "Healthy potato leaf",
+    "names": {},
+    "causalAgentType": "none",
+    "pathogen": "",
+    "symptoms": "A healthy potato leaf is made of several evenly green leaflets with a slightly wrinkled but clean surface. There are no brown spots with rings, no water-soaked or black patches, and no white mould on the underside.",
+    "favorableConditions": { "tempMinC": null, "tempMaxC": null, "humidityPct": null, "leafWetnessHours": null, "rainfall": "" },
+    "organicControl": [],
+    "chemicalControl": [],
+    "preventive": [
+      "Plant certified, disease-free seed tubers of recommended varieties",
+      "Scout the crop twice a week in cool, cloudy, foggy or rainy spells, checking the undersides of leaves",
+      "Follow late-blight advisories from the state agriculture department or SAU",
+      "Do proper earthing up and avoid waterlogging",
+      "Remove volunteer potato plants and cull piles, and destroy infected plant debris"
+    ],
+    "severity": "none",
+    "sourceUrl": "https://pau.edu/potato/lb_mang.php"
+  },
+  {
+    "key": "tomato_bacterial_spot",
+    "crop": "tomato",
+    "isHealthy": false,
+    "commonName": "Bacterial spot (bacterial leaf spot)",
+    "names": {},
+    "causalAgentType": "bacterial",
+    "pathogen": "Xanthomonas vesicatoria complex (reported in India as Xanthomonas axonopodis pv. vesicatoria / X. campestris pv. vesicatoria)",
+    "symptoms": "Small, brown, water-soaked, round spots with a yellow halo appear on leaves, mostly older ones, which may fall off. On green fruit, small water-soaked spots become raised, light brown and scabby with a rough surface.",
+    "favorableConditions": {
+      "tempMinC": null,
+      "tempMaxC": null,
+      "humidityPct": null,
+      "leafWetnessHours": null,
+      "rainfall": "Moist weather with splashing rain, high humidity or persistent dew; outbreaks often follow heavy rainstorms."
+    },
+    "organicControl": [],
+    "chemicalControl": [
+      { "activeIngredient": "Bactericide approved for tomato bacterial spot (older advice to use streptocycline is no longer valid; streptomycin + tetracycline is prohibited in Indian agriculture from 1 January 2024)", "dose": "Consult local KVK or agriculture officer for dosage", "phiDays": null }
+    ],
+    "preventive": [
+      "Use disease-free seed and healthy seedlings",
+      "Change the nursery bed location every season",
+      "Remove weeds, volunteer tomato plants and solanaceous weeds such as Solanum nigrum",
+      "Avoid overlapping tomato plantings in adjacent fields",
+      "Avoid overhead irrigation and working in the crop when leaves are wet"
+    ],
+    "severity": "moderate",
+    "sourceUrl": "https://agritech.tnau.ac.in/crop_protection/tomato_diseases_11.html"
+  },
+  {
+    "key": "tomato_early_blight",
+    "crop": "tomato",
+    "isHealthy": false,
+    "commonName": "Early blight",
+    "names": { "hi": "अगेती झुलसा" },
+    "causalAgentType": "fungal",
+    "pathogen": "Alternaria solani",
+    "symptoms": "Brown spots with concentric rings, like a target or bull's eye, appear on older leaves, often with a yellow border. Spots enlarge and leaves yellow and drop. Fruits may get brown ringed spots near the stem end.",
+    "favorableConditions": {
+      "tempMinC": 24,
+      "tempMaxC": 29,
+      "humidityPct": null,
+      "leafWetnessHours": null,
+      "rainfall": "Warm, humid, rainy and wet weather."
+    },
+    "organicControl": [
+      "Seed treatment with Trichoderma asperellum @ 4 g per kg of seed"
+    ],
+    "chemicalControl": [
+      { "activeIngredient": "Iprodione 50% WP", "dose": "600 g per acre", "phiDays": null },
+      { "activeIngredient": "Azoxystrobin 23% SC", "dose": "200 ml per acre", "phiDays": 3 },
+      { "activeIngredient": "Metiram 70% WG", "dose": "1.0 kg per acre", "phiDays": null },
+      { "activeIngredient": "Pyraclostrobin 20% WG", "dose": "200 g per acre", "phiDays": 3 },
+      { "activeIngredient": "Zineb 75% WP", "dose": "800 g per acre", "phiDays": null },
+      { "activeIngredient": "Azoxystrobin 18.2% + Difenoconazole 11.4% SC", "dose": "200 ml per acre", "phiDays": null },
+      { "activeIngredient": "Metiram 55% + Pyraclostrobin 5% WG", "dose": "600 g per acre", "phiDays": 5 },
+      { "activeIngredient": "Tebuconazole 50% + Trifloxystrobin 25% WG", "dose": "140 g per acre", "phiDays": null }
+    ],
+    "preventive": [
+      "Remove and destroy crop debris after harvest",
+      "Follow crop rotation with non-solanaceous crops",
+      "Remove lower infected leaves early",
+      "Stake plants so leaves and fruits do not touch the soil"
+    ],
+    "severity": "moderate",
+    "sourceUrl": "https://agritech.tnau.ac.in/crop_protection/tomato_diseases_2.html"
+  },
+  {
+    "key": "tomato_late_blight",
+    "crop": "tomato",
+    "isHealthy": false,
+    "commonName": "Late blight",
+    "names": { "hi": "पछेती झुलसा" },
+    "causalAgentType": "oomycete",
+    "pathogen": "Phytophthora infestans",
+    "symptoms": "Water-soaked, dark greasy patches appear on leaves and stems and spread fast until the whole leaf dies. White fluffy growth appears on the leaf underside in humid weather. Fruits get large dark brown, firm patches that later rot.",
+    "favorableConditions": {
+      "tempMinC": 18,
+      "tempMaxC": 22,
+      "humidityPct": 90,
+      "leafWetnessHours": null,
+      "rainfall": "Cool nights, warm days and long wet spells from rain and fog."
+    },
+    "organicControl": [
+      "Soil application of Trichoderma asperellum (viride) @ 1.0 kg per acre"
+    ],
+    "chemicalControl": [
+      { "activeIngredient": "Cyazofamid 34.5% SC", "dose": "80 ml per acre", "phiDays": null },
+      { "activeIngredient": "Azoxystrobin 23% SC", "dose": "200 ml per acre", "phiDays": 3 },
+      { "activeIngredient": "Zineb 75% WP", "dose": "800 g per acre", "phiDays": null },
+      { "activeIngredient": "Azoxystrobin 18.2% + Difenoconazole 11.4% SC", "dose": "200 ml per acre", "phiDays": null }
+    ],
+    "preventive": [
+      "Provide proper drainage",
+      "Follow crop rotation; do not plant tomato near potato fields affected by late blight",
+      "Use healthy, disease-free seedlings",
+      "Remove and destroy infected plants and fruits promptly",
+      "Keep watch during cool, foggy or rainy spells"
+    ],
+    "severity": "severe",
+    "sourceUrl": "https://agritech.tnau.ac.in/crop_protection/tomato_diseases_8.html"
+  },
+  {
+    "key": "tomato_leaf_mold",
+    "crop": "tomato",
+    "isHealthy": false,
+    "commonName": "Leaf mould",
+    "names": {},
+    "causalAgentType": "fungal",
+    "pathogen": "Passalora fulva (syn. Cladosporium fulvum, Fulvia fulva)",
+    "symptoms": "Pale green to yellowish spots appear on the upper side of older leaves. Under these spots, the underside of the leaf develops a velvety olive-green to brown mould. Spots turn brown and dead, and badly affected leaves wither.",
+    "favorableConditions": {
+      "tempMinC": null,
+      "tempMaxC": null,
+      "humidityPct": 85,
+      "leafWetnessHours": null,
+      "rainfall": "Very humid conditions, typical of poorly ventilated polyhouses and high tunnels."
+    },
+    "organicControl": [],
+    "chemicalControl": [
+      { "activeIngredient": "Fungicide for tomato leaf mould (no Indian dose recommendation found)", "dose": "Consult local KVK or agriculture officer for dosage", "phiDays": null }
+    ],
+    "preventive": [
+      "Keep humidity down: ventilate polyhouses and avoid wetting leaves",
+      "Give adequate plant spacing, staking and pruning for air movement",
+      "Remove diseased leaves and plants and sterilise tools",
+      "Rotate crops and source seed from reputable suppliers"
+    ],
+    "severity": "moderate",
+    "sourceUrl": "https://www.vegetables.cornell.edu/pest-management/disease-factsheets/tomato-leaf-mold/"
+  },
+  {
+    "key": "tomato_septoria_leaf_spot",
+    "crop": "tomato",
+    "isHealthy": false,
+    "commonName": "Septoria leaf spot",
+    "names": {},
+    "causalAgentType": "fungal",
+    "pathogen": "Septoria lycopersici",
+    "symptoms": "Many small round to irregular spots with a grey centre and dark margin appear on the lower leaves. Tiny black dots may be seen in the spot centres. Spots join, leaves blight and fall, and the plant can lose most of its leaves.",
+    "favorableConditions": {
+      "tempMinC": null,
+      "tempMaxC": null,
+      "humidityPct": null,
+      "leafWetnessHours": null,
+      "rainfall": "High humidity and wet foliage."
+    },
+    "organicControl": [
+      "Seed treatment with Trichoderma asperellum @ 4 g per kg of seed"
+    ],
+    "chemicalControl": [
+      { "activeIngredient": "Fluxapyroxad 250 g/l + Pyraclostrobin 250 g/l SC", "dose": "200-250 ml per ha", "phiDays": null },
+      { "activeIngredient": "Mancozeb 75% WP", "dose": "600-800 g in 300 litres of water per acre", "phiDays": null }
+    ],
+    "preventive": [
+      "Remove and destroy affected plant parts",
+      "Remove crop debris after harvest and rotate with non-solanaceous crops",
+      "Avoid overhead irrigation and working among wet plants"
+    ],
+    "severity": "moderate",
+    "sourceUrl": "https://agritech.tnau.ac.in/crop_protection/tomato_diseases_4.html"
+  },
+  {
+    "key": "tomato_spider_mites",
+    "crop": "tomato",
+    "isHealthy": false,
+    "commonName": "Two-spotted spider mite",
+    "names": {},
+    "causalAgentType": "pest",
+    "pathogen": "Tetranychus urticae",
+    "symptoms": "Leaves show many tiny pale or yellow speckles and later turn pale, bronzed and dry. Fine silk webbing and a dusty coating appear, especially on the underside, where tiny moving mites can be seen. Heavily infested plants are stunted.",
+    "favorableConditions": {
+      "tempMinC": null,
+      "tempMaxC": null,
+      "humidityPct": null,
+      "leafWetnessHours": null,
+      "rainfall": "Warm weather favours rapid multiplication; poorly ventilated, water-stressed and weedy plantings are more affected."
+    },
+    "organicControl": [
+      "Conserve predators such as predatory mites (Phytoseiulus spp., Amblyseius spp.), staphylinid beetles (Oligota spp.), lady bird beetles, lacewings, predatory thrips, anthocorid bugs (Orius spp.) and mirid bugs"
+    ],
+    "chemicalControl": [
+      { "activeIngredient": "Fenazaquin 10% EC", "dose": "500 ml in 200 litres of water per acre", "phiDays": null },
+      { "activeIngredient": "Spiromesifen 22.9% SC", "dose": "250 ml in 200 litres of water per acre", "phiDays": null }
+    ],
+    "preventive": [
+      "Keep the field and bunds clean; remove weeds that harbour mites",
+      "Rogue out heavily infested plants",
+      "Plant tall border crops such as maize or sorghum",
+      "Examine the undersides of leaves regularly during warm, dry spells",
+      "Avoid unnecessary broad-spectrum sprays that kill predatory mites"
+    ],
+    "severity": "moderate",
+    "sourceUrl": "https://niphm.gov.in/IPMPackages/Tomato.pdf"
+  },
+  {
+    "key": "tomato_target_spot",
+    "crop": "tomato",
+    "isHealthy": false,
+    "commonName": "Target spot",
+    "names": {},
+    "causalAgentType": "fungal",
+    "pathogen": "Corynespora cassiicola",
+    "symptoms": "Tiny dark brown spots appear on leaves and grow into lesions with light brown to grey centres and dark concentric rings, sometimes with a yellow halo. Spots can join and cause leaf blighting and drop. Fruits get small sunken brown specks that become deep pitted spots, often cracking.",
+    "favorableConditions": {
+      "tempMinC": 28,
+      "tempMaxC": 32,
+      "humidityPct": null,
+      "leafWetnessHours": 16,
+      "rainfall": "Warm, humid weather with long leaf wetness (16-44 hours); rain and wind spread spores."
+    },
+    "organicControl": [],
+    "chemicalControl": [
+      { "activeIngredient": "Fungicide for tomato target spot (no Indian dose recommendation found)", "dose": "Consult local KVK or agriculture officer for dosage", "phiDays": null }
+    ],
+    "preventive": [
+      "Rotate with crops outside the tomato family",
+      "Start with disease-free transplants",
+      "Remove weeds, volunteer plants and crop debris that carry the fungus",
+      "Prune and space plants to keep the inner canopy dry"
+    ],
+    "severity": "moderate",
+    "sourceUrl": "https://ask.ifas.ufl.edu/publication/PP351"
+  },
+  {
+    "key": "tomato_yellow_leaf_curl_virus",
+    "crop": "tomato",
+    "isHealthy": false,
+    "commonName": "Tomato leaf curl (yellow leaf curl) virus disease",
+    "names": {},
+    "causalAgentType": "viral",
+    "pathogen": "Tomato leaf curl virus complex (begomoviruses, including Tomato yellow leaf curl virus), transmitted by whitefly Bemisia tabaci",
+    "symptoms": "Young leaves curl downward or upward, crinkle and turn yellowish, and stay small. Older leaves become thick, leathery and brittle. Internodes shorten and many side branches form, giving a bushy, stunted plant with few fruits.",
+    "favorableConditions": {
+      "tempMinC": null,
+      "tempMaxC": null,
+      "humidityPct": null,
+      "leafWetnessHours": null,
+      "rainfall": "Spread by whitefly; conditions that favour whitefly build-up increase the disease."
+    },
+    "organicControl": [
+      "Spray neem seed kernel extract (NSKE) 5% or azadirachtin 5% W/W neem extract concentrate @ 80 g in 160 litres of water per acre (for whitefly)",
+      "Install yellow sticky traps @ 10 per acre to reduce whiteflies",
+      "Conserve whitefly parasitoids (Encarsia spp., Eretmocerus spp.) and predators"
+    ],
+    "chemicalControl": [
+      { "activeIngredient": "Imidacloprid 17.8% SL (controls the whitefly vector only; does not cure infected plants)", "dose": "60-70 ml in 200 litres of water per acre", "phiDays": 3 },
+      { "activeIngredient": "Thiamethoxam 25% WG (controls the whitefly vector only; does not cure infected plants)", "dose": "80 g in 200 litres of water per acre", "phiDays": 5 },
+      { "activeIngredient": "Spiromesifen 22.9% SC (controls the whitefly vector only; does not cure infected plants)", "dose": "250 ml in 200 litres of water per acre", "phiDays": null }
+    ],
+    "preventive": [
+      "There is no cure for infected plants; pull out and destroy them early",
+      "Raise the nursery under insect-proof net to keep whiteflies out",
+      "Use only healthy, symptom-free seedlings for transplanting",
+      "Grow barrier crops of maize or sorghum around the field",
+      "Remove alternate weed hosts such as Abutilon indicum"
+    ],
+    "severity": "severe",
+    "sourceUrl": "https://niphm.gov.in/IPMPackages/Tomato.pdf"
+  },
+  {
+    "key": "tomato_mosaic_virus",
+    "crop": "tomato",
+    "isHealthy": false,
+    "commonName": "Tomato mosaic",
+    "names": {},
+    "causalAgentType": "viral",
+    "pathogen": "Tomato mosaic virus (ToMV, genus Tobamovirus)",
+    "symptoms": "Leaves show a patchy light-green and dark-green mottle (mosaic). Leaflets become distorted, puckered and smaller, sometimes narrow and fern-like. Young leaves may wilt on sunny days and the plant looks stunted, pale and spindly.",
+    "favorableConditions": {
+      "tempMinC": null,
+      "tempMaxC": null,
+      "humidityPct": null,
+      "leafWetnessHours": null,
+      "rainfall": "Not weather-driven; spreads by contact through workers' hands and clothes, tools, touching of plants, and infected plant debris."
+    },
+    "organicControl": [],
+    "chemicalControl": [],
+    "preventive": [
+      "There is no chemical cure; remove and destroy infected plants",
+      "Select seed from disease-free healthy plants; rinse seeds thoroughly and dry in shade",
+      "Remove infected seedlings in the nursery and never transplant them",
+      "Rotate with crops other than tobacco, potato, chilli, capsicum, brinjal and other solanaceous crops",
+      "Wash hands and disinfect tools; avoid handling healthy plants after touching infected ones and do not use tobacco while working in the crop"
+    ],
+    "severity": "moderate",
+    "sourceUrl": "https://niphm.gov.in/IPMPackages/Tomato.pdf"
+  },
+  {
+    "key": "tomato_healthy",
+    "crop": "tomato",
+    "isHealthy": true,
+    "commonName": "Healthy tomato leaf",
+    "names": {},
+    "causalAgentType": "none",
+    "pathogen": "",
+    "symptoms": "A healthy tomato leaf is made of evenly green, flat leaflets with a normal serrated edge. There are no ringed or dark spots, yellow halos, mottling, curling, webbing or mould on either side of the leaf.",
+    "favorableConditions": { "tempMinC": null, "tempMaxC": null, "humidityPct": null, "leafWetnessHours": null, "rainfall": "" },
+    "organicControl": [],
+    "chemicalControl": [],
+    "preventive": [
+      "Raise seedlings in a clean nursery, preferably under insect-proof net, and transplant only healthy seedlings",
+      "Scout plants twice a week, including the undersides of leaves, for spots, curling, mites and whiteflies",
+      "Install yellow sticky traps to monitor whiteflies",
+      "Stake plants, remove lower leaves touching the soil and avoid wetting foliage",
+      "Rotate with non-solanaceous crops and remove crop debris and weeds"
+    ],
+    "severity": "none",
+    "sourceUrl": "https://niphm.gov.in/IPMPackages/Tomato.pdf"
+  },
+  {
+    "key": "grape_black_rot",
+    "crop": "grape",
+    "isHealthy": false,
+    "commonName": "Black rot",
+    "names": {},
+    "causalAgentType": "fungal",
+    "pathogen": "Guignardia bidwellii (anamorph Phyllosticta ampelicida)",
+    "symptoms": "Irregular reddish-brown to tan spots appear on young leaves, often with tiny black dots inside. Small, elliptical dark cankers can form on young shoots and tendrils. Berries get a black scab, then shrivel into hard black mummies.",
+    "favorableConditions": {
+      "tempMinC": null,
+      "tempMaxC": null,
+      "humidityPct": null,
+      "leafWetnessHours": null,
+      "rainfall": "Warm, moist climate with extended periods of rain and cloudy weather."
+    },
+    "organicControl": [],
+    "chemicalControl": [
+      { "activeIngredient": "Fungicide for grape black rot (no product has a CIB&RC label claim for this disease on grape in the ICAR-NRCG 2026-27 list)", "dose": "Consult local KVK or agriculture officer for dosage", "phiDays": null }
+    ],
+    "preventive": [
+      "Remove and destroy mummified berries, infected leaves and canes, since the fungus survives in plant debris",
+      "Keep the canopy open for good air movement and faster drying",
+      "Inspect young shoots, leaves and berries closely during rainy, cloudy spells"
+    ],
+    "severity": "severe",
+    "sourceUrl": "https://niphm.gov.in/IPMPackages/Grapes.pdf"
+  },
+  {
+    "key": "grape_esca",
+    "crop": "grape",
+    "isHealthy": false,
+    "commonName": "Esca (black measles)",
+    "names": {},
+    "causalAgentType": "fungal",
+    "pathogen": "Fungal trunk-disease complex including Phaeomoniella chlamydospora and Phaeoacremonium spp. (e.g. P. aleophilum)",
+    "symptoms": "Leaves show 'tiger-stripe' patterns: yellow (white varieties) or dark red (red varieties) stripes between the veins, with the tissue drying. Affected leaves may dry completely and drop early. Berries can show small dark spots ringed brown-purple, and may crack and dry.",
+    "favorableConditions": {
+      "tempMinC": null,
+      "tempMaxC": null,
+      "humidityPct": null,
+      "leafWetnessHours": null,
+      "rainfall": "Spores released during rain infect fresh pruning wounds, which stay susceptible for several weeks after pruning."
+    },
+    "organicControl": [],
+    "chemicalControl": [
+      { "activeIngredient": "Pruning-wound protectant (no product has a CIB&RC label claim for esca on grape in the ICAR-NRCG 2026-27 list; fungicides cannot eradicate established infections)", "dose": "Consult local KVK or agriculture officer for dosage", "phiDays": null }
+    ],
+    "preventive": [
+      "Protect pruning wounds and avoid pruning just before or during rain",
+      "Remove and destroy dead or infected wood and heavily affected vines",
+      "Mark vines that show tiger-stripe symptoms and check them every season",
+      "Use clean planting material; infections start in young vines even though symptoms appear years later"
+    ],
+    "severity": "severe",
+    "sourceUrl": "https://ipm.ucanr.edu/agriculture/grape/esca-black-measles/"
+  },
+  {
+    "key": "grape_isariopsis_leaf_spot",
+    "crop": "grape",
+    "isHealthy": false,
+    "commonName": "Leaf blight (Isariopsis leaf spot)",
+    "names": {},
+    "causalAgentType": "fungal",
+    "pathogen": "Pseudocercospora vitis (syn. Isariopsis clavispora)",
+    "symptoms": "Large, irregular spots form on the leaves, first dull red to brown. With age the spots turn black, dry and brittle. It usually appears late in the season on vines that have not been sprayed well.",
+    "favorableConditions": {
+      "tempMinC": null,
+      "tempMaxC": null,
+      "humidityPct": null,
+      "leafWetnessHours": null,
+      "rainfall": "Most common late in the season in poorly protected vineyards."
+    },
+    "organicControl": [],
+    "chemicalControl": [
+      { "activeIngredient": "Fungicide for grape leaf blight (no product has a CIB&RC label claim for this disease on grape in the ICAR-NRCG 2026-27 list)", "dose": "Consult local KVK or agriculture officer for dosage", "phiDays": null }
+    ],
+    "preventive": [
+      "Keep up the regular protective spray programme through the season, as advised by experts",
+      "Collect and destroy fallen infected leaves",
+      "Keep the canopy open for air movement"
+    ],
+    "severity": "low",
+    "sourceUrl": "https://cafs.famu.edu/departments-and-centers/research/center-for-viticulture-and-small-fruit-research/pdf/Post-Harvest-Vineyard-Management-fact-sheet.pdf"
+  },
+  {
+    "key": "grape_healthy",
+    "crop": "grape",
+    "isHealthy": true,
+    "commonName": "Healthy grape leaf",
+    "names": {},
+    "causalAgentType": "none",
+    "pathogen": "",
+    "symptoms": "A healthy grape leaf is evenly green, broad and lobed with clear veins. There are no brown, red or black spots, no striping between veins, no powdery or downy growth, and the edges are not dried or curled.",
+    "favorableConditions": { "tempMinC": null, "tempMaxC": null, "humidityPct": null, "leafWetnessHours": null, "rainfall": "" },
+    "organicControl": [],
+    "chemicalControl": [],
+    "preventive": [
+      "Scout the vineyard weekly, checking both leaf surfaces, young shoots and bunches",
+      "Keep the canopy open and remove diseased leaves, mummified berries and dead wood",
+      "Use only chemicals with CIB&RC label claims on grape and follow the dose and pre-harvest interval exactly",
+      "Do not repeat a pesticide that has failed; rotate chemical groups to slow resistance",
+      "Follow ICAR-NRCG weather-based advisories, especially in rainy or cloudy spells"
+    ],
+    "severity": "none",
+    "sourceUrl": "https://www.nrcgrapes.in/for%20farmers/Annexure%205%20for%20Grape%20Season%202026-27.pdf"
+  }
+]

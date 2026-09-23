@@ -2,8 +2,9 @@ import clsx from 'clsx';
 import { ArrowLeft, Camera, CloudRain, Droplets, Pencil, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate, useParams } from 'react-router';
-import { useDeletePlot, usePlot, usePlotRisk, useScans } from '../api/hooks.js';
+import { useDeletePlot, usePlot, usePlotRisk, useProgression, useScans } from '../api/hooks.js';
 import { RiskLevelBadge, ScanCard, useCropName } from '../components/domain.jsx';
+import { ProgressionSummary, SeverityChart, TreatmentLog, TrendBadge } from '../components/progression.jsx';
 import { Alert, EmptyState, ErrorState, FullPageSpinner, PageHeader, Spinner } from '../components/ui.jsx';
 import { localName } from '../i18n/index.js';
 import { daysSince, weekday } from '../lib/format.js';
@@ -99,6 +100,49 @@ function RiskPanel({ plotId }) {
   );
 }
 
+function ProgressionCard({ plotId }) {
+  const { t, i18n } = useTranslation();
+  const { data, isLoading, error, refetch } = useProgression(plotId);
+
+  return (
+    <section className="card p-5">
+      <div className="mb-1 flex flex-wrap items-center justify-between gap-2">
+        <h2 className="text-lg font-semibold">{t('progression.title')}</h2>
+        {data && <TrendBadge trend={data.overall.summary.trend} />}
+      </div>
+      <p className="mb-4 text-sm text-ink-muted">{t('progression.subtitle')}</p>
+      {isLoading ? (
+        <Spinner />
+      ) : error ? (
+        <ErrorState error={error} onRetry={refetch} />
+      ) : (
+        <div className="space-y-4">
+          <SeverityChart points={data.overall.points} treatments={data.treatments.items} />
+          <ProgressionSummary summary={data.overall.summary} />
+          {data.byDisease.filter((d) => d.summary.latestPercent != null).length > 1 && (
+            <ul className="flex flex-wrap gap-2">
+              {data.byDisease
+                .filter((d) => d.summary.latestPercent != null)
+                .map((d) => (
+                  <li key={d.diseaseKey} className="chip border border-line bg-canvas text-ink">
+                    {localName(d, i18n.language)}: {d.summary.latestPercent}%
+                  </li>
+                ))}
+            </ul>
+          )}
+        </div>
+      )}
+    </section>
+  );
+}
+
+function TreatmentsCard({ plot }) {
+  const { data, isLoading, error, refetch } = useProgression(plot.id);
+  if (isLoading) return <Spinner />;
+  if (error) return <ErrorState error={error} onRetry={refetch} />;
+  return <TreatmentLog plot={plot} treatments={data.treatments} diseaseOptions={data.byDisease.map((d) => d.diseaseKey)} />;
+}
+
 export default function PlotDetail() {
   const { id } = useParams();
   const { t } = useTranslation();
@@ -149,6 +193,14 @@ export default function PlotDetail() {
           </>
         }
       />
+
+      <div className="mb-6 grid gap-6 lg:grid-cols-[1.35fr_1fr]">
+        <ProgressionCard plotId={plot.id} />
+        <section className="card p-5">
+          <h2 className="mb-3 text-lg font-semibold">{t('treatments.title')}</h2>
+          <TreatmentsCard plot={plot} />
+        </section>
+      </div>
 
       <div className="grid gap-6 lg:grid-cols-[1.2fr_1fr]">
         <section className="card p-5">

@@ -42,7 +42,8 @@ const joinDisease = [
 const mapQuery = z.object({
   lat: latitude,
   lng: longitude,
-  radiusKm: z.coerce.number().min(1).max(300).default(100),
+  // Up to country scale: the map opens on all of India before a farmer picks a location.
+  radiusKm: z.coerce.number().min(1).max(2000).default(100),
   days: z.coerce.number().int().min(1).max(90).default(30),
   crop: z.string().trim().toLowerCase().max(40).optional(),
 });

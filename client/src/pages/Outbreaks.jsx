@@ -33,8 +33,9 @@ export default function Outbreaks() {
     if (geo.coords) setCenter(geo.coords);
   }, [geo.coords]);
 
+  // Before the farmer picks a location the map shows the whole country.
   const isCountryView = center === INDIA_CENTER;
-  const effectiveRadius = isCountryView ? 300 : radiusKm;
+  const effectiveRadius = isCountryView ? 1800 : radiusKm;
   const { data, isLoading, isFetching, error, refetch } = useOutbreakMap({
     lat: center?.lat,
     lng: center?.lng,

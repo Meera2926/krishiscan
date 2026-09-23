@@ -42,6 +42,15 @@ const scanSchema = new mongoose.Schema(
       warnings: [String],
     },
 
+    // Lesion share of leaf area, for progression tracking (see services/severity.js).
+    severity: {
+      percent: { type: Number, min: 0, max: 100, default: null },
+      grade: { type: Number, min: 0, max: 5, default: null },
+      leafFraction: Number,
+      reliable: { type: Boolean, default: false },
+      method: String,
+    },
+
     predictions: { type: [predictionSchema], default: [] },
     top: { type: predictionSchema, default: undefined },
     crop: { type: String, lowercase: true, default: null },

@@ -1,12 +1,55 @@
 import clsx from 'clsx';
-import { ArrowLeft, BookOpen, Camera, CheckCircle2, Clock, HelpCircle, Share2, Trash2, UserCheck, XCircle } from 'lucide-react';
+import { ArrowLeft, BookOpen, Camera, CheckCircle2, Clock, HelpCircle, Share2, Trash2, UserCheck, Volume2, VolumeX, XCircle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate, useParams } from 'react-router';
 import { useDeleteScan, useScan, useUpdateScan } from '../api/hooks.js';
 import { DiseaseAdvice, useCropName } from '../components/domain.jsx';
+import { SeverityMeter } from '../components/progression.jsx';
+import { useSpeech } from '../lib/useSpeech.js';
 import { Alert, ConfidenceBar, ErrorState, FullPageSpinner, SeverityBadge } from '../components/ui.jsx';
 import { localName } from '../i18n/index.js';
 import { pct, shortDate } from '../lib/format.js';
+
+/**
+ * Reads the result aloud: the verdict in the farmer's language, then the advisory text in
+ * English, since the knowledge base is English. Hidden when the device has no voices.
+ */
+function ListenButton({ scan, disease, className }) {
+  const { t, i18n } = useTranslation();
+  const { supported, speaking, speak, stop, hasVoiceFor } = useSpeech();
+  const lang = i18n.language;
+  if (!supported || !hasVoiceFor(lang)) return null;
+
+  const build = () => {
+    const name = localName(disease, lang) || t('common.unknown');
+    const lines = [];
+    if (scan.status === 'rejected') lines.push(t(`result.reason.${scan.statusReason}`));
+    else if (disease?.isHealthy) lines.push(`${t('result.healthyTitle')}. ${t('result.healthyBody')}`);
+    else {
+      lines.push(`${t(`result.${scan.status === 'confident' ? 'confident' : 'uncertain'}`)}: ${name}.`);
+      if (scan.top) lines.push(`${t('result.confidence')} ${Math.round(scan.top.confidence * 100)} %.`);
+      if (scan.severity?.reliable) lines.push(`${t('progression.severity')} ${scan.severity.percent} %.`);
+      if (scan.statusReason !== 'ok') lines.push(t(`result.reason.${scan.statusReason}`));
+    }
+    const parts = [{ text: lines.join(' '), lang }];
+    const advice = [...(disease?.organicControl ?? []), ...(disease?.preventive ?? [])].slice(0, 3);
+    // Advisory content is written in English, so read it with an English voice.
+    if (advice.length) parts.push({ text: advice.join('. '), lang: 'en' });
+    return parts;
+  };
+
+  return (
+    <button
+      type="button"
+      className={clsx('ml-auto inline-flex items-center gap-1.5 rounded-lg px-2 py-1 text-xs font-semibold hover:bg-black/10', className)}
+      onClick={() => (speaking ? stop() : speak(build()))}
+      aria-pressed={speaking}
+    >
+      {speaking ? <VolumeX className="size-4" aria-hidden="true" /> : <Volume2 className="size-4" aria-hidden="true" />}
+      {speaking ? t('voice.stop') : t('voice.listen')}
+    </button>
+  );
+}
 
 export default function ScanResult() {
   const { id } = useParams();
@@ -114,6 +157,7 @@ export default function ScanResult() {
             <div className={clsx('flex items-center gap-2 px-5 py-3 text-sm font-semibold', header.tone)}>
               <header.Icon className="size-5" aria-hidden="true" />
               {header.label}
+              <ListenButton scan={scan} disease={disease} className={status === 'confident' ? 'text-white' : ''} />
             </div>
             <div className="space-y-5 p-5">
               {scan.status === 'rejected' && !reviewed ? (
@@ -149,6 +193,8 @@ export default function ScanResult() {
                   </div>
                 </div>
               )}
+
+              {scan.status !== 'rejected' && <SeverityMeter severity={scan.severity} comparison={data.comparison} />}
 
               {scan.predictions?.length > 0 && scan.status !== 'rejected' && (
                 <div className="space-y-3">

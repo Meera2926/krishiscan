@@ -60,6 +60,7 @@ export function useCreateScan() {
       qc.setQueryData(keys.scan(data.scan.id), data);
       qc.invalidateQueries({ queryKey: ['scans'] });
       qc.invalidateQueries({ queryKey: keys.plots });
+      qc.invalidateQueries({ queryKey: ['progression'] });
     },
   });
 }
@@ -81,6 +82,7 @@ export function useDeleteScan() {
     mutationFn: (id) => api.delete(`/scans/${id}`),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['scans'] });
+      qc.invalidateQueries({ queryKey: ['progression'] });
       qc.invalidateQueries({ queryKey: keys.plots });
     },
   });
@@ -114,5 +116,24 @@ export function useReviewDecision() {
       qc.invalidateQueries({ queryKey: ['reviews'] });
       qc.invalidateQueries({ queryKey: keys.scan(id) });
     },
+  });
+}
+
+export const useProgression = (plotId) =>
+  useQuery({ queryKey: ['progression', plotId], queryFn: () => get(`/plots/${plotId}/progression`), enabled: Boolean(plotId) });
+
+export function useCreateTreatment(plotId) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body) => api.post(`/plots/${plotId}/treatments`, body).then((r) => r.data.treatment),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['progression', plotId] }),
+  });
+}
+
+export function useDeleteTreatment(plotId) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id) => api.delete(`/plots/${plotId}/treatments/${id}`),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['progression', plotId] }),
   });
 }

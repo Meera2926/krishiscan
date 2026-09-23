@@ -47,16 +47,18 @@ const SEVERITY_COLORS = { severe: '#b91c1c', moderate: '#c2410c', low: '#a16207'
 
 /** Outbreak cells: circle area scales with report count, colour with severity. */
 export function OutbreakMap({ center, radiusKm, cells, className = 'h-[28rem]', renderTooltip }) {
-  const zoom = radiusKm > 150 ? 7 : radiusKm > 60 ? 8 : radiusKm > 25 ? 9 : 10;
+  const zoom = radiusKm > 900 ? 4 : radiusKm > 150 ? 7 : radiusKm > 60 ? 8 : radiusKm > 25 ? 9 : 10;
   return (
     <MapContainer center={[center.lat, center.lng]} zoom={zoom} className={`${className} w-full rounded-2xl`} scrollWheelZoom>
       <TileLayer url={TILE_URL} attribution={ATTRIBUTION} />
       <Recenter center={center} zoom={zoom} />
-      <Circle
-        center={[center.lat, center.lng]}
-        radius={radiusKm * 1000}
-        pathOptions={{ color: '#166534', weight: 1, dashArray: '4 6', fillOpacity: 0.03 }}
-      />
+      {radiusKm <= 300 && (
+        <Circle
+          center={[center.lat, center.lng]}
+          radius={radiusKm * 1000}
+          pathOptions={{ color: '#166534', weight: 1, dashArray: '4 6', fillOpacity: 0.03 }}
+        />
+      )}
       {cells.map((cell) => (
         <CircleMarker
           key={`${cell.lat},${cell.lng},${cell.diseaseKey}`}
