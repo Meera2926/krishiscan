@@ -17,6 +17,9 @@ export const keys = {
   plotRisk: (id) => ['risk', 'plot', id],
   reviewQueue: (params) => ['reviews', 'queue', params],
   reviewMetrics: ['reviews', 'metrics'],
+  consultations: (params) => ['consultations', params],
+  consultation: (id) => ['consultation', id],
+  consultationSlots: ['consultations', 'slots'],
 };
 
 export const useCrops = () => useQuery({ queryKey: keys.crops, queryFn: () => get('/crops').then((d) => d.crops), staleTime: 60 * 60_000 });
@@ -137,3 +140,49 @@ export function useDeleteTreatment(plotId) {
     onSuccess: () => qc.invalidateQueries({ queryKey: ['progression', plotId] }),
   });
 }
+
+// --- expert consultations ---------------------------------------------------
+
+export const useConsultations = (params = {}) =>
+  useQuery({ queryKey: keys.consultations(params), queryFn: () => get('/consultations', params), placeholderData: keepPreviousData });
+
+export const useConsultation = (id) =>
+  useQuery({
+    queryKey: keys.consultation(id),
+    queryFn: () => get(`/consultations/${id}`).then((d) => d.consultation),
+    enabled: Boolean(id),
+    // A live chat should not need a refresh to show the expert's reply.
+    refetchInterval: (query) => (query.state.data?.status === 'completed' ? false : 15_000),
+  });
+
+export const useConsultationSlots = () =>
+  useQuery({ queryKey: keys.consultationSlots, queryFn: () => get('/consultations/slots').then((d) => d.slots), staleTime: 10 * 60_000 });
+
+/** Invalidates everything a consultation can change, including the scan it was raised for. */
+function useConsultationMutation(mutationFn, id) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn,
+    onSuccess: (data) => {
+      const consultation = data?.consultation ?? data;
+      if (consultation?.id) qc.setQueryData(keys.consultation(consultation.id), consultation);
+      qc.invalidateQueries({ queryKey: ['consultations'] });
+      qc.invalidateQueries({ queryKey: ['consultation', id] });
+      if (consultation?.scan?.id ?? consultation?.scan) {
+        qc.invalidateQueries({ queryKey: keys.scan(consultation.scan?.id ?? consultation.scan) });
+      }
+    },
+  });
+}
+
+export const useConsultationDecision = (id) =>
+  useConsultationMutation((body) => api.post(`/consultations/${id}/decision`, body).then((r) => r.data), id);
+
+export const useConsultationMessage = (id) =>
+  useConsultationMutation((body) => api.post(`/consultations/${id}/messages`, body).then((r) => r.data), id);
+
+export const useConsultationAction = (id) =>
+  useConsultationMutation((body) => api.patch(`/consultations/${id}`, body).then((r) => r.data), id);
+
+export const useRequestConsultation = () =>
+  useConsultationMutation((body) => api.post('/consultations', body).then((r) => r.data));

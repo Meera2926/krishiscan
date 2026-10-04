@@ -95,13 +95,17 @@ export const MODELS = {
 };
 
 /**
- * Which model(s) classify each crop. When two models share a crop's full class set their
- * probability distributions are averaged.
+ * Which model(s) classify each crop; where two are listed, their probability distributions are
+ * averaged. Measured on server/eval (see scripts/evaluate-models.js): routing maize through both
+ * models took maize accuracy from 22% to 44%, because the PlantVillage model alone called every
+ * common-rust photo grey leaf spot. The ViT does not have a northern-leaf-blight class, so maize
+ * keeps the PlantVillage model too rather than switching to the ViT outright — averaging halves
+ * that class's score, but dropping it would make the disease undiagnosable.
  */
 export const CROP_ROUTES = {
   tomato: ['plantvillage'],
   grape: ['plantvillage'],
-  maize: ['plantvillage'],
+  maize: ['plantvillage', 'cropvit'],
   potato: ['plantvillage', 'cropvit'],
   rice: ['cropvit'],
   wheat: ['cropvit'],
@@ -125,6 +129,16 @@ export function resolveCrop(name) {
 
 /** Model whose invalid class screens every photo for "this is not a crop leaf at all". */
 export const OOD_GATE_MODEL = 'cropvit';
+
+/**
+ * Crops the gate model was trained on. On any other crop its "invalid" score is a guess rather
+ * than evidence: on the eval set a healthy tomato leaf scored 0.71 and a grape leaf 0.60, while
+ * every genuine non-leaf photo scored at least 0.997. Only photos of these crops are held to the
+ * lower "the gate is unsure" bar.
+ */
+export const GATE_MODEL_CROPS = Object.freeze([
+  ...new Set(Object.values(MODELS[OOD_GATE_MODEL].labelToKey).map((key) => key.split('_')[0])),
+]);
 
 export function unifiedLabel(modelKey, rawLabel) {
   const model = MODELS[modelKey];

@@ -33,7 +33,7 @@ describe('image quality', () => {
     expect(phone.warnings).not.toContain('blurry');
     expect(small.warnings).not.toContain('blurry');
     // The regression: sharpness used to be measured on the original, so the same scene scored
-    // roughly half as sharp when shot at full phone resolution and every photo was called blurry.
+    // roughly half as sharp at full phone resolution and every photo was called blurry.
     expect(phone.sharpness).toBeCloseTo(small.sharpness, 0);
   });
 

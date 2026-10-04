@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { idParams, objectId, validate } from '../middleware/validate.js';
 import { Disease, Plot, Scan, TREATMENT_TYPES, Treatment } from '../models/index.js';
+import { offerConsultation } from '../services/consultationOffers.js';
 import { evaluateTreatment, safeHarvestDate } from '../services/progression.js';
 import { notFound, unprocessable } from '../utils/httpError.js';
 
@@ -46,8 +47,24 @@ export async function treatmentsWithEfficacy(plotId) {
   const now = new Date();
   const items = treatments.map(({ _id, __v, ...t }) => ({ id: String(_id), ...t, efficacy: evaluateTreatment(t, effective, now) }));
   const safeFrom = safeHarvestDate(treatments);
+
+  // A spray that did not work is the other moment the app should hand over to a human. The
+  // efficacy verdict only exists once a follow-up scan has come in, which is why the offer is
+  // raised here rather than when the treatment is logged. offerConsultation is idempotent.
+  const consultations = await Promise.all(
+    items.map((t) =>
+      offerConsultation({
+        trigger: 'treatment_not_working',
+        treatment: { ...t, _id: t.id },
+        plot: plotId,
+        efficacy: t.efficacy,
+        now,
+      }),
+    ),
+  );
+
   return {
-    items,
+    items: items.map((t, i) => ({ ...t, consultationId: consultations[i] ? String(consultations[i].id ?? consultations[i]._id) : null })),
     safeHarvestFrom: safeFrom,
     safeToHarvestNow: safeFrom ? now >= safeFrom : true,
   };

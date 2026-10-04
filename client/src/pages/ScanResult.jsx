@@ -3,6 +3,7 @@ import { ArrowLeft, BookOpen, Camera, CheckCircle2, Clock, HelpCircle, Share2, T
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate, useParams } from 'react-router';
 import { useDeleteScan, useScan, useUpdateScan } from '../api/hooks.js';
+import { ConsultationOffer } from '../components/consultation.jsx';
 import { DiseaseAdvice, useCropName } from '../components/domain.jsx';
 import { SeverityMeter } from '../components/progression.jsx';
 import { useSpeech } from '../lib/useSpeech.js';
@@ -195,6 +196,8 @@ export default function ScanResult() {
               )}
 
               {scan.status !== 'rejected' && <SeverityMeter severity={scan.severity} comparison={data.comparison} />}
+
+              {data.consultation && <ConsultationOffer consultation={data.consultation} />}
 
               {scan.predictions?.length > 0 && scan.status !== 'rejected' && (
                 <div className="space-y-3">

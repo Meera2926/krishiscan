@@ -10,10 +10,10 @@ const NORMALISED_EDGE = 512;
 export const QUALITY_THRESHOLDS = Object.freeze({
   tooDark: 45,
   tooBright: 230,
-  // sharp reports sharpness as the standard deviation of a Laplacian convolution. On the
-  // normalised copy, 300 clear PlantVillage leaves scored 1.28-2.15 and clear field photos
-  // 2.5-5.2, while a field photo blurred until the lesion edges smear scored 0.69. 0.8 sits
-  // below every clear sample and above visibly unusable ones.
+  // sharp reports sharpness as the standard deviation of a Laplacian convolution. Measured on
+  // the normalised copy over the 63 real photos in server/eval: 1.11 at the lowest, median 2.98,
+  // and none flagged. A field photo blurred until its lesion edges smear scores 0.69. 0.8 sits
+  // between the two, so only a genuinely unusable photo is called blurry.
   blurry: 0.8,
   lowGreenFraction: 0.08,
 });

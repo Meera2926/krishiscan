@@ -1,11 +1,11 @@
-import { AlertTriangle, Camera, CheckCircle2, ClipboardList, Map, Plus, ScanLine, Sprout } from 'lucide-react';
+import { AlertTriangle, Camera, CheckCircle2, ClipboardList, Map, Plus, ScanLine, Sprout, UserCheck } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
-import { useOutbreakAlerts, usePlots, useScans, useScanSummary } from '../api/hooks.js';
+import { useConsultations, useOutbreakAlerts, usePlots, useScans, useScanSummary } from '../api/hooks.js';
 import { useAuth } from '../auth/AuthProvider.jsx';
 import { ScanCard } from '../components/domain.jsx';
 import { EmptyState, SeverityBadge, Spinner, StatCard } from '../components/ui.jsx';
-import { relativeTime } from '../lib/format.js';
+import { relativeTime, shortDate } from '../lib/format.js';
 
 /** Scans per week as plain CSS bars; a charting library would add ~100 KB for this one chart. */
 function WeeklyBars({ data }) {
@@ -36,6 +36,10 @@ export default function Dashboard() {
   const recent = useScans({ limit: 4 });
   const plots = usePlots();
   const alerts = useOutbreakAlerts();
+  const consultations = useConsultations({ scope: 'mine', limit: 20 });
+  // Offers the farmer has not answered. These are what the week-long reminders are about, and
+  // the app has no email or SMS channel, so this list is where a reminder actually lands.
+  const unanswered = (consultations.data?.items ?? []).filter((c) => c.decision !== 'scheduled' && c.expiresAt);
 
   const s = summary.data;
   const lang = i18n.language;
@@ -57,6 +61,30 @@ export default function Dashboard() {
           {t('dashboard.newScan')}
         </Link>
       </header>
+
+      {unanswered.length > 0 && (
+        <section className="card border-warn/40 bg-warn-bg/30 p-5">
+          <h2 className="mb-3 flex items-center gap-2 font-semibold">
+            <UserCheck className="size-5 text-warn" aria-hidden="true" />
+            {t('dashboard.expertOffers')}
+          </h2>
+          <ul className="space-y-2">
+            {unanswered.map((c) => (
+              <li key={c.id} className="flex flex-wrap items-center justify-between gap-2 text-sm">
+                <span className="min-w-0">
+                  <span className="font-medium">{c.caseSummary?.diseaseName || t('consult.caseTitle')}</span>
+                  <span className="block text-ink-muted">
+                    {t('consult.retentionNotice', { date: shortDate(c.expiresAt, i18n.language) })}
+                  </span>
+                </span>
+                <Link to={`/consultations/${c.id}`} className="btn-secondary">
+                  {c.reminder ? t('dashboard.reminderNth', { n: c.reminder.index, of: c.reminder.of }) : t('consult.open')}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       <section className="grid grid-cols-2 gap-3 lg:grid-cols-4" aria-busy={summary.isLoading}>
         <StatCard icon={ScanLine} label={t('dashboard.totalScans')} value={s?.total ?? '—'} />

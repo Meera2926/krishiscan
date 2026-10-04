@@ -1,4 +1,11 @@
 export { User, ROLES } from './User.js';
+export {
+  Consultation,
+  CONSULTATION_DECISIONS,
+  CONSULTATION_MODES,
+  CONSULTATION_STATUSES,
+  CONSULTATION_TRIGGERS,
+} from './Consultation.js';
 export { Crop } from './Crop.js';
 export { Disease } from './Disease.js';
 export { Plot } from './Plot.js';

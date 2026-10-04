@@ -76,6 +76,17 @@ export async function toTensor(imageBuffer, pre) {
   return new ort.Tensor('float32', tensor, [1, 3, size, size]);
 }
 
+/** Mean of several probability distributions; a label missing from one counts as 0 there. */
+export function average(distributions) {
+  const merged = new Map();
+  for (const dist of distributions) {
+    for (const { label, confidence } of dist) {
+      merged.set(label, (merged.get(label) ?? 0) + confidence / distributions.length);
+    }
+  }
+  return [...merged].map(([label, confidence]) => ({ label, confidence }));
+}
+
 export function softmax(logits) {
   const max = Math.max(...logits);
   const exps = Array.from(logits, (x) => Math.exp(x - max));
@@ -137,17 +148,11 @@ export async function createLocalClassifier({ cacheDir, threads = 0 }) {
       const gateDist = gate ?? perModel[route.indexOf(OOD_GATE_MODEL)];
       const invalidProbability = gateDist.find((p) => p.label === INVALID_LABEL)?.confidence ?? 0;
 
-      // Average the distributions. Labels one model lacks count as 0 for that model,
-      // so the result is still a proper probability distribution.
-      const merged = new Map();
-      for (const dist of perModel) {
-        for (const { label, confidence } of dist) {
-          merged.set(label, (merged.get(label) ?? 0) + confidence / perModel.length);
-        }
-      }
+      // Average across models. Labels one model lacks count as 0 for that model, so the result
+      // is still a proper probability distribution.
       const used = needsGate ? [...route, OOD_GATE_MODEL] : route;
       return {
-        predictions: [...merged].map(([label, confidence]) => ({ label, confidence })),
+        predictions: average(perModel),
         invalidProbability,
         modelVersion: modelVersion(used),
         perModel: Object.fromEntries(

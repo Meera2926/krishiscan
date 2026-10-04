@@ -1,5 +1,5 @@
 import clsx from 'clsx';
-import { BookOpen, Camera, ClipboardCheck, History, Home, LogOut, Map, Sprout, User } from 'lucide-react';
+import { BookOpen, Camera, ClipboardCheck, History, Home, LogOut, Map, Sprout, User, UserCheck } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link, NavLink, Outlet, ScrollRestoration } from 'react-router';
 import { useAuth } from '../auth/AuthProvider.jsx';
@@ -49,6 +49,7 @@ export default function Layout() {
         { to: '/scan', label: t('nav.scan'), icon: Camera, primary: true },
         { to: '/history', label: t('nav.history'), icon: History },
         { to: '/plots', label: t('nav.plots'), icon: Sprout },
+        { to: '/consultations', label: t('nav.consultations'), icon: UserCheck },
         { to: '/outbreaks', label: t('nav.outbreaks'), icon: Map },
         { to: '/library', label: t('nav.library'), icon: BookOpen },
         ...(user.role !== 'farmer' ? [{ to: '/reviews', label: t('nav.reviews'), icon: ClipboardCheck }] : []),

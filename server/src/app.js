@@ -9,6 +9,7 @@ import { config } from './config/env.js';
 import { databaseStatus } from './config/db.js';
 import { errorHandler, notFoundHandler } from './middleware/error.js';
 import authRoutes from './routes/auth.routes.js';
+import consultationRoutes from './routes/consultation.routes.js';
 import libraryRoutes from './routes/library.routes.js';
 import outbreakRoutes from './routes/outbreak.routes.js';
 import plotRoutes from './routes/plot.routes.js';
@@ -82,6 +83,7 @@ export function createApp() {
   app.use('/api/outbreaks', outbreakRoutes);
   app.use('/api/risk', riskRoutes);
   app.use('/api/reviews', reviewRoutes);
+  app.use('/api/consultations', consultationRoutes);
   app.use('/api', notFoundHandler);
 
   if (config.STORAGE_DRIVER === 'local') {

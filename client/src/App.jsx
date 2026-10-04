@@ -21,6 +21,8 @@ const Library = lazy(() => import('./pages/Library.jsx'));
 const DiseaseDetail = lazy(() => import('./pages/DiseaseDetail.jsx'));
 const Outbreaks = lazy(() => import('./pages/Outbreaks.jsx'));
 const ReviewQueue = lazy(() => import('./pages/ReviewQueue.jsx'));
+const Consultations = lazy(() => import('./pages/Consultations.jsx'));
+const ConsultationDetail = lazy(() => import('./pages/ConsultationDetail.jsx'));
 const Profile = lazy(() => import('./pages/Profile.jsx'));
 
 function Root() {
@@ -63,6 +65,8 @@ const router = createBrowserRouter([
               { path: 'plots/new', element: <PlotForm /> },
               { path: 'plots/:id', element: <PlotDetail /> },
               { path: 'plots/:id/edit', element: <PlotForm /> },
+              { path: 'consultations', element: <Consultations /> },
+              { path: 'consultations/:id', element: <ConsultationDetail /> },
               { path: 'profile', element: <Profile /> },
             ],
           },

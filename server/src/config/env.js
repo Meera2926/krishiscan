@@ -35,10 +35,10 @@ const schema = z.object({
   MODEL_CACHE_DIR: z.string().default(path.join(serverRoot, 'models-cache')),
   // 0 lets onnxruntime pick. Set 1 on tiny shared-CPU hosts to avoid thread thrashing.
   ORT_THREADS: z.coerce.number().int().min(0).max(64).default(0),
-  // Top-1 confidence at or above this is reported as a confident diagnosis.
+  // Top-1 confidence at or above this is reported as a confident diagnosis; below it the
+  // answer is still shown, but flagged and queued for an expert. Rejection is decided by the
+  // not-a-leaf gate in services/diagnosis.js, not by this threshold.
   CONFIDENCE_HIGH: z.coerce.number().min(0).max(1).default(0.7),
-  // Below this the image is rejected as "not a recognisable supported leaf".
-  CONFIDENCE_LOW: z.coerce.number().min(0).max(1).default(0.35),
 
   WEATHER_API_BASE: z.string().url().default('https://api.open-meteo.com/v1/forecast'),
 
@@ -71,11 +71,6 @@ for (const key of ['JWT_ACCESS_SECRET', 'JWT_REFRESH_SECRET']) {
 
 if (isProd && !env.MONGO_URI) {
   console.error('MONGO_URI must be set in production.');
-  process.exit(1);
-}
-
-if (env.CONFIDENCE_LOW >= env.CONFIDENCE_HIGH) {
-  console.error('CONFIDENCE_LOW must be lower than CONFIDENCE_HIGH.');
   process.exit(1);
 }
 

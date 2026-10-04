@@ -1,5 +1,5 @@
 import clsx from 'clsx';
-import { CalendarCheck, Leaf, Minus, Plus, ShieldAlert, Trash2, TrendingDown, TrendingUp } from 'lucide-react';
+import { CalendarCheck, Leaf, Minus, Plus, ShieldAlert, Trash2, TrendingDown, TrendingUp, UserCheck } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
@@ -189,6 +189,13 @@ export function TreatmentLog({ plot, treatments, diseaseOptions }) {
                     ? t('treatments.noBaselineHint')
                     : null}
             </p>
+            {tr.consultationId && (
+              // The spray did not work, so the app stops guessing and offers a person.
+              <Link to={`/consultations/${tr.consultationId}`} className="btn-secondary mt-2">
+                <UserCheck className="size-4" aria-hidden="true" />
+                {t('treatments.askExpert')}
+              </Link>
+            )}
           </li>
         ))}
       </ul>

@@ -5,11 +5,12 @@ import { config } from '../config/env.js';
 import { requireAuth } from '../middleware/auth.js';
 import { uploadImage } from '../middleware/upload.js';
 import { cropKey, idParams, objectId, validate } from '../middleware/validate.js';
-import { Disease, Plot, SCAN_STATUS, Scan } from '../models/index.js';
+import { Consultation, Disease, Plot, SCAN_STATUS, Scan } from '../models/index.js';
+import { offerConsultation } from '../services/consultationOffers.js';
 import { diagnose } from '../services/diagnosis.js';
 import { prepareImage } from '../services/imageQuality.js';
 import { estimateSeverity } from '../services/severity.js';
-import { SUPPORTED_CROPS } from '../services/inference/catalog.js';
+import { GATE_MODEL_CROPS, SUPPORTED_CROPS } from '../services/inference/catalog.js';
 import { classify } from '../services/inference/index.js';
 import { getLabelIndex } from '../services/labelIndex.js';
 import { storage } from '../services/storage/index.js';
@@ -133,8 +134,8 @@ router.post('/', uploadImage, validate({ body: createBody }), async (req, res) =
     labelIndex: await getLabelIndex(),
     declaredCrop,
     invalidProbability,
+    gateKnowsCrop: GATE_MODEL_CROPS.includes(declaredCrop),
     high: config.CONFIDENCE_HIGH,
-    low: config.CONFIDENCE_LOW,
   });
 
   const saved = await storage.put(stored.buffer, { extension: 'jpg' });
@@ -168,7 +169,21 @@ router.post('/', uploadImage, validate({ body: createBody }), async (req, res) =
   }
 
   if (plot) await scan.populate('plot', 'name crop');
-  res.status(201).json({ scan: serialise(scan), ...(await loadAdvisory(scan)), comparison: await compareWithPrevious(scan) });
+  const advisory = await loadAdvisory(scan);
+  // When the app is not sure, offer the farmer a human expert rather than leaving them with a
+  // hedge. The offer carries the case, so a booked chat does not start from a blank page.
+  const consultation = await offerConsultation({
+    trigger: 'uncertain_diagnosis',
+    scan,
+    plot,
+    disease: advisory.disease,
+  });
+  res.status(201).json({
+    scan: serialise(scan),
+    ...advisory,
+    comparison: await compareWithPrevious(scan),
+    consultation: consultation ? consultation.toJSON() : null,
+  });
 });
 
 router.get('/', validate({ query: listQuery }), async (req, res) => {
@@ -256,7 +271,14 @@ router.get('/summary', async (req, res) => {
 
 router.get('/:id', validate({ params: idParams }), async (req, res) => {
   const { scan } = await findVisibleScan(req);
-  res.json({ scan: serialise(scan), ...(await loadAdvisory(scan)), comparison: await compareWithPrevious(scan) });
+  // The expert-review offer travels with the scan, so re-opening the result still shows it.
+  const consultation = await Consultation.findOne({ scan: scan._id }).populate('expert', 'name');
+  res.json({
+    scan: serialise(scan),
+    ...(await loadAdvisory(scan)),
+    comparison: await compareWithPrevious(scan),
+    consultation: consultation ? consultation.toJSON() : null,
+  });
 });
 
 router.patch('/:id', validate({ params: idParams, body: patchBody }), async (req, res) => {

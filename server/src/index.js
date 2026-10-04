@@ -2,6 +2,7 @@ import { createApp } from './app.js';
 import { config } from './config/env.js';
 import { connectDatabase, disconnectDatabase } from './config/db.js';
 import { loadClassifier } from './services/inference/index.js';
+import { startRetentionScheduler } from './services/retention.js';
 
 async function main() {
   const { inMemory } = await connectDatabase();
@@ -20,12 +21,16 @@ async function main() {
   // Load the model after the port is bound so platform health checks pass during a slow download.
   loadClassifier();
 
+  // Reminds farmers about unanswered expert reviews and clears the ones they never booked.
+  const stopRetention = startRetentionScheduler();
+
   let closing = false;
   const shutdown = async (signal) => {
     if (closing) return;
     closing = true;
     console.log(`[server] ${signal} received, shutting down`);
     server.close();
+    stopRetention();
     await disconnectDatabase().catch(() => {});
     process.exit(0);
   };

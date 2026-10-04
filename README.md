@@ -19,7 +19,8 @@ picking the wrong crop does not fail — it routes the photo to another crop's c
 | **Treatment efficacy + safe harvest** | Log a spray, and the app compares severity before and after it to say whether it worked, and computes the safe-to-harvest date from the product's pre-harvest interval. |
 | **Weather risk forecast** | 13 rules from published epidemiology (Hutton Criteria, ICAR-CPRI **JHULSACAST**, TOMCAST, TNAU rice blast and others) run over a 7-day Open-Meteo forecast. |
 | **Outbreak map** | Shared scans are aggregated on a ~5 km grid so no farm can be identified, and farmers are alerted to disease reported within 10 km of their plots. |
-| **Expert review** | Uncertain scans queue for an agronomist; their corrections never overwrite the model's original answer, so model-vs-expert agreement measures real field accuracy. |
+| **Expert consultations** | When the app is unsure, or progression shows a spray did not work, the farmer is *asked* whether they want an expert — phone call, live chat or farm visit — and picks a slot. The chat opens with the case already written out, so nobody retells it. Unanswered offers are reminded for a week, then deleted with their photo. |
+| **Expert review** | Uncertain scans also queue for an agronomist's label check; their corrections never overwrite the model's original answer, so model-vs-expert agreement measures real field accuracy. |
 | **Accessibility** | English and Hindi UI, spoken advice through the browser's speech API, installable PWA, works on a free hosting tier. |
 
 ## Quick start
@@ -55,7 +56,7 @@ Cloudinary instead of the server's disk, which most free hosts wipe on every dep
 |---|---|
 | `npm run dev` | API on :5000 and Vite on :5173 (Vite proxies `/api`, so dev matches production) |
 | `npm run dev:watch -w server` | Same, with the API restarting on source changes |
-| `npm test` | 74 server tests: diagnosis triage, photo quality, severity, progression, risk rules, API |
+| `npm test` | 89 server tests: diagnosis triage, photo quality, severity, progression, consultations, retention, risk rules, API |
 | `npm run build` | Production React build; Express serves it from the same origin |
 | `npm run seed` | Crops and diseases (`-- --demo` adds demo data) |
 | `node server/scripts/evaluate-models.js <dir>` | Accuracy, rejection rate and latency on your own labelled photos |
@@ -64,12 +65,14 @@ Cloudinary instead of the server's disk, which most free hosts wipe on every dep
 
 ```
 server/src
-  routes/        auth, plots, scans, treatments, library, outbreaks, risk, reviews
+  routes/        auth, plots, scans, treatments, library, outbreaks, risk, reviews, consultations
   services/
     inference/   catalog.js (pinned models), local.js (ONNX), mock.js (tests)
     diagnosis.js triage: not-a-leaf gate, crop conditioning, confidence bands
     severity.js  lesion-area severity estimate
     progression.js trend, AUDPC, treatment efficacy
+    consultation.js when to offer an expert, slots, reminder schedule (pure)
+    retention.js  reminders and the week-long delete sweep
     risk/        weather-risk rules and engine
   seed/data/     disease knowledge base (symptoms, treatments, sources)
 client/src
@@ -94,12 +97,18 @@ The ViT's `Invalid` class doubles as the not-a-leaf gate for every crop. Measure
 
 Read these before quoting any accuracy number.
 
-- **The models were trained mostly on lab-style images.** Published work shows accuracy falling from
-  ~99% on PlantVillage to ~31% on field photos (Mohanty et al., 2016). Our own 41-image smoke test
-  scored well, but most of those images are likely in the models' training data, so it is **not** an
-  accuracy measurement. Measure on your own field photos with `evaluate-models.js`.
-- **Wheat is the weakest crop.** On real field photos the model confused wheat rust with maize rust;
-  the app recovers by trusting the farmer's crop choice and marking such results uncertain.
+- **Measured accuracy is modest, and this is the honest number.** On `server/eval` — 63 real field
+  photos of the six crops plus six non-leaf photos, gathered from Wikimedia Commons and checked by
+  eye — the app answers **98% of leaf photos**, is right **50% of the time** when it answers, and
+  **67% of the time** on the answers it marks confident. It rejects **100%** of the non-leaf photos.
+  Published work sees the same collapse from lab to field: ~99% on PlantVillage, ~31% on field
+  photos (Mohanty et al., 2016). Rebuild the benchmark with your own photos and re-run
+  `evaluate-models.js` before quoting any figure.
+- **Wide shots of a whole field are the main failure.** Healthy rice and wheat photographed as a
+  field, rather than as one leaf, are read as diseased. Photograph a single leaf filling the frame.
+- **Test-time augmentation did not help.** Averaging over a leaf-region crop, a centre crop and a
+  horizontal flip was measured and made top-1 accuracy the same or worse at twice the cost, so the
+  app classifies the photo as given.
 - **Severity is an estimate from colour**, not a lab measurement. Dark, water-soaked lesions are
   under-counted. It is meant for comparing scans of the same plot over time.
 - **Weather risk is an early warning, not a diagnosis.** Several rules are extension-service
@@ -113,6 +122,27 @@ Read these before quoting any accuracy number.
 - **No pre-harvest interval is pre-filled.** None could be confirmed from the sources available, so
   the app asks the farmer to enter the interval from the product label when logging a spray, and
   computes the safe-to-harvest date from that. Always read the label.
+
+## Expert consultations and what gets deleted
+
+The app offers a human expert exactly where it should not be trusted alone: an uncertain
+diagnosis, or a treatment that progression tracking shows is not working. The farmer answers yes
+or no — they are never silently added to a queue.
+
+| Answer | What happens |
+|---|---|
+| **Yes** | They pick a phone call, a live chat or a farm visit, and a slot. The case is kept until it is answered or cancelled. The chat thread opens with the diagnosis, confidence, severity and treatment history already written into the first message, so neither side starts from a blank page. |
+| **No**, or no answer | Reminders appear on the dashboard on day 2 and day 5. On day 7 the consultation **and the scan it was raised for, including the photo**, are deleted. |
+
+The deadline is shown on the result page, on the dashboard and on the consultation itself, with the
+exact date, before the farmer answers. Only cases the farmer never booked are ever deleted; booked
+consultations have no expiry, and scans that were never flagged are untouched. The sweep runs
+hourly from `services/retention.js`; `RETENTION_DAYS` and the reminder days live in
+`services/consultation.js`.
+
+Two things a real deployment would need: reminders go to the dashboard, not to email or SMS, because
+no provider is configured; and the sweep assumes a single instance, which is what the free Render
+tier gives.
 
 ## Deployment
 

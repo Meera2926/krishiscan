@@ -8,6 +8,8 @@ export const STATUS_REASONS = [
   'not_recognised',
   'crop_mismatch',
   'crop_not_supported',
+  // Answered, but the not-a-leaf gate had doubts: shown with a warning, never acted on blindly.
+  'maybe_not_leaf',
 ];
 export const REVIEW_STATUS = ['none', 'pending', 'confirmed', 'corrected'];
 

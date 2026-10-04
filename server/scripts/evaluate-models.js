@@ -13,7 +13,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { diagnose } from '../src/services/diagnosis.js';
-import { MODELS, SUPPORTED_CROPS } from '../src/services/inference/catalog.js';
+import { GATE_MODEL_CROPS, MODELS, SUPPORTED_CROPS } from '../src/services/inference/catalog.js';
 import { createLocalClassifier } from '../src/services/inference/local.js';
 
 const [dir, ...rest] = process.argv.slice(2);
@@ -25,7 +25,6 @@ const jsonIndex = rest.indexOf('--json');
 const jsonOut = jsonIndex >= 0 ? rest[jsonIndex + 1] : null;
 
 const HIGH = Number(process.env.CONFIDENCE_HIGH ?? 0.7);
-const LOW = Number(process.env.CONFIDENCE_LOW ?? 0.35);
 const IMAGE = /\.(jpe?g|png|webp)$/i;
 
 const labelIndex = new Map();
@@ -68,8 +67,8 @@ for (const s of samples) {
     labelIndex,
     declaredCrop: s.crop,
     invalidProbability: out.invalidProbability,
+    gateKnowsCrop: GATE_MODEL_CROPS.includes(s.crop),
     high: HIGH,
-    low: LOW,
   });
   rows.push({ ...s, ms, status: d.status, reason: d.statusReason, predicted: d.diseaseKey, confidence: d.top.confidence, invalidProbability: out.invalidProbability });
 }
