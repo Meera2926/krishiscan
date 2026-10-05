@@ -1,118 +1,107 @@
 [
   {
-    "key": "rice_brown_spot",
-    "crop": "rice",
+    "key": "broccoli_alternaria_leaf_spot",
+    "crop": "broccoli",
     "isHealthy": false,
-    "commonName": "Brown spot",
+    "commonName": "Alternaria leaf spot (black spot / leaf blight)",
     "names": {
-      "hi": "भूरा धब्बा"
+      "hi": "काला धब्बा"
     },
     "causalAgentType": "fungal",
-    "pathogen": "Bipolaris oryzae (syn. Helminthosporium oryzae, Drechslera oryzae; teleomorph Cochliobolus miyabeanus)",
-    "symptoms": "Leaves first show tiny brown dots that grow into oval or round brown spots about the size of a sesame seed (0.5-2 mm), often with a grey or light centre. Many spots can join into large dead brown patches. The disease can also spread to the panicle neck and grains, which turn discoloured.",
+    "pathogen": "Alternaria brassicae (Berkeley) Saccardo; Alternaria brassicicola is also reported on cole crops",
+    "symptoms": "Small dark spots appear first on the older, lower leaves. Each spot becomes round and is about 1 mm across to begin with, then widens and shows dark rings inside it, one inside the other like a target, often with a yellow halo around the edge. In humid weather or persistent dew a sooty dark growth forms in the middle of the spot. As spots keep enlarging they run together and whole leaves dry up and blight. Narrow dark streaks also appear on the leaf stalks and stems, and dark spots spoil the green head after it has formed. Seed from affected plants is shrivelled and germinates poorly.",
     "favorableConditions": {
-      "tempMinC": 25,
-      "tempMaxC": 30,
-      "humidityPct": 80,
-      "leafWetnessHours": 8,
-      "rainfall": "Humid weather with leaves staying wet for 8-24 hours; excess nitrogen fertiliser makes the disease worse."
+      "tempMinC": 28,
+      "tempMaxC": 28,
+      "humidityPct": null,
+      "leafWetnessHours": null,
+      "rainfall": "Soil temperature of around 28°C, high humidity or persistent dew, and moist weather with intermittent showers. The fungus survives as mycelium in the seed, as spores on the seed and in crop debris, and then spreads by wind-borne or insect-borne spores."
     },
     "organicControl": [
-      "Seed treatment with Pseudomonas fluorescens @ 10 g per kg of seed",
-      "Hot water seed treatment at 53-54°C for 10-12 minutes",
-      "Soil amendment with calcium silicate slag"
+      "Hot water seed treatment at 50°C for 30 minutes before sowing (National Horticulture Board advice for leaf spot and blight of cole crops)",
+      "Apply Trichoderma viride or Trichoderma harzianum and Pseudomonas fluorescens as a seed treatment, a nursery treatment and a soil application at sowing/transplanting (DPPQS/NIPHM broccoli IPM package)",
+      "Seed treatment with Trichoderma viride at 3-4 g per kg of seed (National Horticulture Board rate for cole crop seed treatment; TNAU gives 4 g per kg of seed for cabbage) to cut down seed-borne fungus"
     ],
     "chemicalControl": [
       {
         "activeIngredient": "Mancozeb",
-        "dose": "2.0 g per litre of water; 2 to 3 sprays at 10-15 day intervals depending on disease intensity",
+        "dose": "0.25% foliar spray (0.25% is 2.5 g of commercial Mancozeb 75% WP per litre of water), repeated at about one month interval - TNAU Agritech recommendation for black spot (Alternaria) of cabbage and cauliflower. Note: the tridemorph listed alongside mancozeb on that TNAU page is banned for manufacture, import and use in India (S.O. 3951(E) dated 8 August 2018) and must not be used. Mancozeb itself is restricted only on guava, jowar and tapioca, so it may be used on cole crops.",
         "phiDays": null
       },
       {
-        "activeIngredient": "Edifenphos",
-        "dose": "1 ml per litre of water; 2 to 3 sprays at 10-15 day intervals",
-        "phiDays": null
-      },
-      {
-        "activeIngredient": "Captan or Thiram (seed treatment)",
-        "dose": "2.0 g per kg of seed",
+        "activeIngredient": "Copper oxychloride",
+        "dose": "0.5% spray. The National Horticulture Board gives this (or Captan 0.2%) for cole crops grown as a SEED crop, sprayed at full bloom, pod set and pre-harvest stage. It is not given there as a spray for a head crop, so check with your KVK or State Agriculture Department before using it on a broccoli head crop.",
         "phiDays": null
       }
     ],
     "preventive": [
-      "Use disease-free seed",
-      "Grow tolerant varieties recommended locally (TNAU lists ADT 44, PY 4, CORH 1, CO 44, Cauvery, Bhavani, TPS 4, Dhanu)",
-      "Apply balanced nutrition; avoid excess nitrogen",
-      "Maintain proper irrigation and avoid moisture stress"
+      "Use disease-free certified seed - the fungus is carried in and on the seed",
+      "Rotate for 3 years with crops that are not cruciferous, and remove cruciferous weeds such as wild mustard",
+      "Prune off the diseased lower leaves and burn them; collect and destroy crop debris after harvest",
+      "Allow good aeration - wide spacing, rows parallel to the prevailing wind, and not planted tight against hedgerows",
+      "Give adequate drainage to avoid excessive soil moisture, and avoid low-lying land for this crop",
+      "Grow resistant or tolerant varieties recommended by your ICAR institute, KVK or State Agricultural University"
     ],
     "severity": "moderate",
-    "sourceUrl": "https://agritech.tnau.ac.in/expert_system/paddy/cpdisbrownspot.html"
+    "sourceUrl": "https://ppqs.gov.in/sites/default/files/broccoli.pdf"
   },
   {
-    "key": "rice_leaf_blast",
-    "crop": "rice",
+    "key": "broccoli_black_rot",
+    "crop": "broccoli",
     "isHealthy": false,
-    "commonName": "Leaf blast",
+    "commonName": "Black rot",
     "names": {
-      "hi": "झोंका रोग"
+      "hi": "काली सड़न"
     },
-    "causalAgentType": "fungal",
-    "pathogen": "Magnaporthe oryzae (anamorph Pyricularia oryzae)",
-    "symptoms": "Small white to grey-green spots with brown borders appear on leaves. They grow into eye- or spindle-shaped spots (0.5-1.5 cm long) with an ash-grey centre and brown margin. In severe attack many spots merge and the field looks burnt. The panicle neck or nodes may also turn black and break.",
+    "causalAgentType": "bacterial",
+    "pathogen": "Xanthomonas campestris pv. campestris (Dowson) Dye",
+    "symptoms": "Start by looking at the edge of the leaf. Pale yellow wedge-shaped or 'V' shaped patches begin at the leaf margin and spread inward towards the midrib; they later turn brown and then black, and that part of the leaf edge dies. Inside the patch the veins and small veinlets turn brown and then black, and the blackening runs on along the midrib into the leaf stalk and stem - if you cut the stem across, you see a black ring where the veins are. A sticky bacterial ooze can sometimes be seen on affected parts. Seedlings and young plants infected early turn yellow, shed their lower leaves, wilt and die, and often only one side of the plant is affected. Plants infected late make small, poor-quality heads that are unfit for market and may go on to rot soft and foul-smelling. Plants grown from infected seed can look healthy for several weeks before symptoms show.",
     "favorableConditions": {
-      "tempMinC": 25,
-      "tempMaxC": 28,
+      "tempMinC": null,
+      "tempMaxC": null,
       "humidityPct": 90,
       "leafWetnessHours": null,
-      "rainfall": "Cloudy skies, frequent rain and drizzle keeping leaves wet; high nitrogen doses favour the disease."
+      "rainfall": "Relative humidity above 90%, high soil moisture and frequent rains. The bacteria are carried inside the seed and in soil, and then spread from plant to plant in irrigation water and rain splash. Common in warm, wet weather."
     },
     "organicControl": [
-      "Seed treatment with Pseudomonas fluorescens talc formulation @ 10 g per kg of seed",
-      "Spray Pseudomonas fluorescens at 0.5% from 45 days after transplanting at 10-day intervals"
+      "Treat the seed in hot water at 58°C for 30 minutes before sowing - this is the measure the Government of India broccoli IPM package lists against black rot",
+      "Apply Trichoderma viride or Trichoderma harzianum and Pseudomonas fluorescens as a seed treatment, a nursery treatment and a soil application at sowing/transplanting (DPPQS/NIPHM broccoli IPM package); if you buy a ready-made product, check that it carries a label claim"
     ],
     "chemicalControl": [
       {
-        "activeIngredient": "Tricyclazole",
-        "dose": "1 g per litre of water; spray at nursery, tillering and panicle initiation stages as needed",
+        "activeIngredient": "Bleaching powder (calcium hypochlorite), soil application",
+        "dose": "10.0 to 12.5 kg per hectare (TNAU Agritech recommendation for black rot of cabbage)",
         "phiDays": null
       },
       {
-        "activeIngredient": "Edifenphos",
-        "dose": "1 ml per litre of water",
-        "phiDays": null
-      },
-      {
-        "activeIngredient": "Carbendazim",
-        "dose": "1.0 g per litre of water",
-        "phiDays": null
-      },
-      {
-        "activeIngredient": "Captan or Carbendazim or Thiram or Tricyclazole (seed treatment)",
-        "dose": "2.0 g per kg of seed",
+        "activeIngredient": "Copper oxychloride",
+        "dose": "Consult your local KVK or State Agriculture Department for the current recommended dose",
         "phiDays": null
       }
     ],
     "preventive": [
-      "Grow resistant varieties recommended locally (TNAU lists CO 47, CO 50, ADT 36, ADT 37, ADT 39, ADT 44, BPT 5204, IR 64, IR 36, Jaya)",
-      "Avoid excess nitrogen; apply nitrogen in three split doses",
-      "Avoid dry nurseries",
-      "Remove and destroy infected stubble and straw after harvest",
-      "Scout the crop at tillering and panicle stages, especially during cloudy, drizzly weather"
+      "Do not use streptocycline or any streptomycin + tetracycline product, which older Indian advisories still recommend for black rot: it has been prohibited in Indian agriculture since 1 January 2024.",
+      "Use disease-free certified seed and disease-free transplants - the bacteria travel inside the seed",
+      "Grow black rot tolerant or resistant varieties; ask your ICAR institute, KVK or State Agricultural University which ones are recommended locally",
+      "Keep strict crop sanitation - pull out and destroy affected plants as soon as you spot the V-shaped margin patches",
+      "Plant on raised beds and keep a proper drainage system so water does not carry the bacteria from plant to plant",
+      "Do not plant where crucifers (cabbage, cauliflower, broccoli, knol-khol, radish, mustard) have been grown in the last 2 years",
+      "Avoid splashing irrigation and avoid handling or working in the crop while the leaves are wet"
     ],
     "severity": "severe",
-    "sourceUrl": "https://agritech.tnau.ac.in/expert_system/paddy/cpdisblast.html"
+    "sourceUrl": "https://ppqs.gov.in/sites/default/files/broccoli.pdf"
   },
   {
-    "key": "rice_healthy",
-    "crop": "rice",
+    "key": "broccoli_healthy",
+    "crop": "broccoli",
     "isHealthy": true,
-    "commonName": "Healthy rice leaf",
+    "commonName": "Healthy broccoli leaf",
     "names": {
-      "hi": "स्वस्थ धान"
+      "hi": "स्वस्थ हरी गोभी"
     },
     "causalAgentType": "none",
     "pathogen": "",
-    "symptoms": "A healthy rice leaf is uniformly green from base to tip, long and narrow with smooth parallel veins. There are no brown dots, spindle-shaped grey spots, streaks or yellowing, and the leaf tip is not dried or burnt.",
+    "symptoms": "A healthy broccoli leaf is large, thick and blue-green to grey-green with a slight waxy bloom on the surface, a broad pale midrib and clear pale veins running out from it. The leaf edge is smooth and firm, with no pale yellow wedge or V-shaped patches running in from the margin. The veins are green or whitish and never brown or black. There are no dark spots with rings inside them, no sooty growth, no yellowing between the veins, and the leaf does not wilt in the day. The central head is tight, dark green and evenly beaded, with no sunken or blackened patches.",
     "favorableConditions": {
       "tempMinC": null,
       "tempMaxC": null,
@@ -123,113 +112,395 @@
     "organicControl": [],
     "chemicalControl": [],
     "preventive": [
-      "Walk the field at least once a week, checking leaves in different parts of the field for spots or discolouration",
-      "Use certified, disease-free seed and treat seed before sowing",
-      "Apply nitrogen in split doses based on crop need; avoid excess nitrogen",
-      "Keep bunds and channels free of weeds and remove infected stubble after harvest",
-      "Watch closely during cloudy, humid or drizzly spells, when blast and brown spot spread fastest"
+      "Walk through the field at least once a week and turn over the lower, older leaves - both black rot and Alternaria leaf spot start on the oldest leaves and at the leaf margins",
+      "Use disease-free certified seed and healthy transplants; both main broccoli leaf diseases are carried inside the seed",
+      "Grow resistant or tolerant varieties - ask your ICAR institute, KVK or State Agricultural University which ones suit your area (DPPQS/NIPHM broccoli IPM package)",
+      "Keep crop sanitation: collect and destroy diseased leaves and crop debris instead of leaving them in the field",
+      "Plant on raised beds with proper drainage and avoid water stagnation, so bacteria cannot move from plant to plant in standing water",
+      "Rotate for 3 years with non-cruciferous crops and pull out cruciferous weeds such as wild mustard",
+      "Keep spacing wide and rows parallel to the prevailing wind so the leaves dry quickly after rain or dew",
+      "Check the crop most carefully in humid, dewy or showery spells - that is when both diseases spread fastest"
     ],
     "severity": "none",
-    "sourceUrl": "https://agritech.tnau.ac.in/expert_system/paddy/cpdisblast.html"
+    "sourceUrl": "https://ppqs.gov.in/sites/default/files/broccoli.pdf"
   },
   {
-    "key": "wheat_brown_rust",
-    "crop": "wheat",
+    "key": "cabbage_alternaria_leaf_spot",
+    "crop": "cabbage",
     "isHealthy": false,
-    "commonName": "Brown rust (leaf rust)",
+    "commonName": "Alternaria leaf spot (black spot)",
     "names": {
-      "hi": "भूरा रतुआ"
+      "hi": "अल्टरनेरिया पत्ती धब्बा"
     },
     "causalAgentType": "fungal",
-    "pathogen": "Puccinia triticina (syn. P. recondita f. sp. tritici)",
-    "symptoms": "Small round or slightly oval orange-brown pustules appear scattered on the upper surface of leaves, not in lines. Rubbing a pustule leaves orange-brown powder on the finger. Pustules usually stay separate; late in the season dark brown to black spots may form.",
+    "pathogen": "Alternaria brassicae and Alternaria brassicicola",
+    "symptoms": "Small brown to black spots appear on the leaves, leaf stalks and stem. They are circular to slightly elongated and often show faint rings inside, like a target. Spots join together into large dead patches and the oldest, lowest leaves go first. On a mature crop the spots carry on into the head, and in a seed crop they damage the pods. In damp weather a dark sooty growth of spores can be seen on the spot.",
+    "favorableConditions": {
+      "tempMinC": 20,
+      "tempMaxC": 27,
+      "humidityPct": 90,
+      "leafWetnessHours": 9,
+      "rainfall": "Warm wet weather with long leaf wetness from rain, dew or overhead irrigation. Dense planting that keeps the canopy damp makes it worse."
+    },
+    "organicControl": [
+      "Use certified disease-free seed; the fungus is carried on and in the seed",
+      "Hot water seed treatment at 50°C for 20-30 minutes before sowing",
+      "Treat seed with Trichoderma viride or Pseudomonas fluorescens before sowing",
+      "Remove and destroy infected lower leaves and all crop residue after harvest",
+      "Three-year rotation away from all cole crops and mustard, and control cruciferous weeds"
+    ],
+    "chemicalControl": [
+      {
+        "activeIngredient": "Tridemorph",
+        "dose": "0.1% foliar spray, applied first (TNAU Agritech, cabbage black spot)",
+        "phiDays": null
+      },
+      {
+        "activeIngredient": "Mancozeb",
+        "dose": "0.25% foliar spray (2.5 g of Mancozeb 75% WP per litre of water), applied a month after the first spray (TNAU Agritech, cabbage black spot)",
+        "phiDays": null
+      }
+    ],
+    "preventive": [
+      "Space plants so the canopy dries quickly, and irrigate at the base rather than overhead",
+      "Start scouting the oldest leaves from three weeks after transplanting",
+      "Do not work in the field while the foliage is wet; spores move on hands and clothes",
+      "Harvest and remove residue promptly rather than leaving it to rot in the field"
+    ],
+    "severity": "moderate",
+    "sourceUrl": "https://agritech.tnau.ac.in/crop_protection/cabbage_disease_4.html"
+  },
+  {
+    "key": "cabbage_cabbage_butterfly",
+    "crop": "cabbage",
+    "isHealthy": false,
+    "commonName": "Cabbage butterfly caterpillar damage",
+    "names": {
+      "hi": "गोभी की तितली की इल्ली"
+    },
+    "causalAgentType": "pest",
+    "pathogen": "Pieris brassicae (large white cabbage butterfly); Pieris rapae also causes the same damage",
+    "symptoms": "Leaves are eaten into large irregular holes, and in a heavy attack only the veins and midrib are left. The damage is chewing damage, not spotting: edges are ragged and torn, with no ring or halo. Look on the underside for clusters of upright yellow eggs, and for velvety caterpillars - pale yellow-green with black spots and a yellow stripe down the back - feeding in groups. Dark green pellets of droppings collect in the leaf axils and inside the head. Older caterpillars bore into the head itself, which spoils it for market even when the outer leaves look fine.",
+    "favorableConditions": {
+      "tempMinC": 15,
+      "tempMaxC": 25,
+      "humidityPct": null,
+      "leafWetnessHours": null,
+      "rainfall": "Mild winter and spring weather in the plains and the whole season in the hills. Numbers build on a continuous supply of cole crops, so staggered plantings next to each other keep the pest going."
+    },
+    "organicControl": [
+      "Collect and destroy the caterpillars and egg clusters in the early stage of attack, before they reach the head (TNAU)",
+      "Conserve the parasitoid Cotesia glomeratus, which attacks the caterpillars naturally; avoid broad-spectrum sprays that kill it (TNAU)",
+      "Spray Bacillus thuringiensis var. kurstaki, which kills caterpillars and spares the parasitoids and bees",
+      "Spray neem seed kernel extract 5%, or azadirachtin 5% at 5.0 ml per 10 litres of water, which TNAU gives for the diamondback moth on the same crop",
+      "Set up light traps at 1 per hectare to catch the adults, and grow a mustard trap crop around the field"
+    ],
+    "chemicalControl": [
+      {
+        "activeIngredient": "Quinalphos 25 EC",
+        "dose": "TNAU gives 1000 ml for cabbage butterfly without stating the spray volume, so confirm the per-litre dilution and the pre-harvest interval on the product label with your local KVK before spraying. Use it only if hand collection and Bacillus thuringiensis have not held the pest, and never on a crop close to harvest.",
+        "phiDays": null
+      }
+    ],
+    "preventive": [
+      "Inspect the undersides of leaves weekly and crush egg clusters, which is faster than spraying later",
+      "Do not plant a new cole crop next to one that is already infested",
+      "Plough and remove residue after harvest so pupae do not carry over",
+      "Spray only when caterpillars are small; large ones inside the head cannot be reached"
+    ],
+    "severity": "moderate",
+    "sourceUrl": "https://agritech.tnau.ac.in/crop_protection/crop_prot_crop_insect-veg_cole%20crops_pest&disease.html"
+  },
+  {
+    "key": "cabbage_grey_mould",
+    "crop": "cabbage",
+    "isHealthy": false,
+    "commonName": "Grey mould",
+    "names": {
+      "hi": "धूसर फफूंदी"
+    },
+    "causalAgentType": "fungal",
+    "pathogen": "Botrytis cinerea",
+    "symptoms": "Soft, water-soaked brown or grey patches appear on the leaf, usually starting at a wound, a bruise or an old dying leaf rather than in the middle of healthy tissue. In damp weather the patch is covered with a grey, fuzzy coat of mould that puffs up in a cloud if you touch it. The rot is soft and mushy, not dry and papery. Hard black bodies the size of a grain may form under the rotted part later. It spreads fastest on leaves already damaged by caterpillars, hail or frost, and on heads in storage.",
+    "favorableConditions": {
+      "tempMinC": 15,
+      "tempMaxC": 22,
+      "humidityPct": 93,
+      "leafWetnessHours": 12,
+      "rainfall": "Cool damp weather with high humidity and poor air movement. It takes hold on plant debris and weak tissue - old flowers, dying lower leaves, bruised or overripe produce - rather than on healthy growing leaves."
+    },
+    "organicControl": [
+      "Remove and destroy dying lower leaves, fallen debris and infected plant material promptly, which is the main control",
+      "Avoid overhead watering and wetting the foliage; the fungus spreads in splashing water and wind",
+      "Space plants widely and avoid overcrowding, since grey mould thrives in shaded, crowded plantings",
+      "Handle heads carefully at harvest: almost every infection starts at a bruise or a cut",
+      "Copper fungicides and neem oil are permitted organic options, though neem is a weak fungicide against this pathogen"
+    ],
+    "chemicalControl": [
+      {
+        "activeIngredient": "Fungicide registered for Botrytis on cole crops",
+        "dose": "Consult your local KVK or State Agriculture Department for the current recommended dose. No Indian extension source giving a dose for grey mould specifically on cabbage could be confirmed, so none is stated here rather than carrying one across from another crop.",
+        "phiDays": null
+      }
+    ],
+    "preventive": [
+      "Keep the crop growing steadily; stressed, aging and frost-damaged tissue is what the fungus colonises first",
+      "Do not leave harvested heads lying in a damp heap in the field",
+      "Rotate fungicide groups if you do spray, because Botrytis develops resistance quickly",
+      "Improve drainage and avoid irrigating late in the day so the canopy is dry by nightfall"
+    ],
+    "severity": "moderate",
+    "sourceUrl": "https://hgic.clemson.edu/factsheet/gray-mold-botrytis-blight-2/"
+  },
+  {
+    "key": "cabbage_healthy",
+    "crop": "cabbage",
+    "isHealthy": true,
+    "commonName": "Healthy cabbage leaf",
+    "names": {
+      "hi": "स्वस्थ पत्ता गोभी"
+    },
+    "causalAgentType": "none",
+    "pathogen": "",
+    "symptoms": "A healthy cabbage leaf is broad, thick and smooth with a pale waxy bloom, blue-green to grey-green, with a stout white midrib and clear veins spreading from it. The margin is entire and firm, not browned, scorched or papery. There are no brown to black circular spots with rings inside them, no grey fuzzy mould, no large chewed holes between the veins, and no clusters of yellow eggs or green caterpillars on the underside. The head, if formed, is tight and firm with clean wrapper leaves.",
+    "favorableConditions": {
+      "tempMinC": null,
+      "tempMaxC": null,
+      "humidityPct": null,
+      "leafWetnessHours": null,
+      "rainfall": ""
+    },
+    "organicControl": [],
+    "chemicalControl": [],
+    "preventive": [
+      "Raise seedlings in a clean nursery bed and reject any with spots or chewed leaves at transplanting",
+      "Turn the leaves over once a week and look at the undersides, where caterpillars and eggs sit",
+      "Keep irrigation steady and avoid both water stress and waterlogging",
+      "Follow a three-year rotation away from cabbage, cauliflower, broccoli, turnip and mustard",
+      "Avoid overhead irrigation late in the day so the foliage is not wet overnight"
+    ],
+    "severity": "none",
+    "sourceUrl": "https://agritech.tnau.ac.in/crop_protection/crop_prot_crop%20diseases_veg_cabbage.html"
+  },
+  {
+    "key": "cabbage_tip_burn",
+    "crop": "cabbage",
+    "isHealthy": false,
+    "commonName": "Tip burn",
+    "names": {
+      "hi": "टिप बर्न (पत्ती किनारा झुलसना)"
+    },
+    "causalAgentType": "abiotic",
+    "pathogen": "Not a disease and not catching. A physiological disorder: the plant cannot move enough calcium to the young inner leaves fast enough, so their margins die. High fertility, high temperatures, water stress followed by rapid growth, low humidity, and an imbalance between nitrogen, potassium and calcium all bring it on.",
+    "symptoms": "The margins of the leaves scorch and die, turning brown or black and going papery and brittle. The line between dead and living tissue is sharp. Crucially it is the inner leaves that are affected, so a head can look perfectly sound from the outside and be brown along the leaf edges when it is cut open. There is no mould, no spot with a ring, no soft rot and no spore growth, and it does not spread from plant to plant - neighbouring plants are affected because they share the same soil and weather, not because of infection.",
+    "favorableConditions": {
+      "tempMinC": 25,
+      "tempMaxC": 35,
+      "humidityPct": 40,
+      "leafWetnessHours": null,
+      "rainfall": "Hot weather with low humidity, and a dry spell followed by heavy irrigation or rain that pushes sudden fast growth. Heavy nitrogen or potassium makes it worse by competing with calcium uptake."
+    },
+    "organicControl": [
+      "Irrigate evenly and often enough that the crop never swings between water stress and a growth flush, which is what interrupts calcium movement",
+      "Hold nitrogen down to what the crop actually needs and prefer nitrate forms over ammonium",
+      "Avoid excess potassium and other nutrients that compete with calcium uptake",
+      "Get the soil tested and correct calcium and base saturation before planting rather than after symptoms appear",
+      "Harvest at proper maturity instead of leaving heads to become over-firm",
+      "Grow varieties known locally to be less prone; susceptibility differs widely between varieties"
+    ],
+    "chemicalControl": [],
+    "preventive": [
+      "No spray cures it: a calcium spray reaches the outer leaves, and the damage is on the inner ones",
+      "Mulch to keep soil moisture and temperature even",
+      "Do not apply a heavy dose of nitrogen just before heading",
+      "If it appears every season on the same field, treat it as a soil and irrigation problem, not a spray problem"
+    ],
+    "severity": "low",
+    "sourceUrl": "https://pnwhandbooks.org/plantdisease/host-disease/cabbage-cauliflower-brassica-oleracea-tip-burn"
+  },
+  {
+    "key": "garlic_healthy",
+    "crop": "garlic",
+    "isHealthy": true,
+    "commonName": "Healthy garlic leaf",
+    "names": {
+      "hi": "स्वस्थ लहसुन"
+    },
+    "causalAgentType": "none",
+    "pathogen": "",
+    "symptoms": "A healthy garlic leaf is a long flat strap, folded along the middle, evenly blue-green to grey-green from base to tip, standing firm and upright out of the false stem. The very tip is still green and pointed, not white, straw-coloured, brown or papery. There are no yellow or orange flecks or streaks in the middle of the leaf, no spindle-shaped spots with a pink edge, no silvery-white rubbed patches, and the leaf is not twisted, curled or flattened. Pull a plant up and the roots are white and firm, with no pink colour, no rot at the base of the bulb and no white fluffy growth.",
+    "favorableConditions": {
+      "tempMinC": null,
+      "tempMaxC": null,
+      "humidityPct": null,
+      "leafWetnessHours": null,
+      "rainfall": ""
+    },
+    "organicControl": [],
+    "chemicalControl": [],
+    "preventive": [
+      "Plant big, healthy cloves over 1.5 g and reject small, diseased or damaged cloves",
+      "Plant in well-drained fertile loamy soil of pH 6-8; garlic is sensitive to highly acidic, alkali and saline soils and to waterlogging",
+      "Get the soil tested before planting and apply nutrients to the test recommendation instead of guessing",
+      "Irrigate immediately after planting and then at 7-10 day intervals; the crop is very sensitive to moisture stress at bulb initiation and bulb development, and excess irrigation is always harmful",
+      "Stop irrigation when the crop reaches maturity, 10-15 days before harvest",
+      "Walk the field weekly from 30 days after planting, checking leaf tips and both leaf surfaces for flecks, streaks, silvering or drying",
+      "Collect and burn crop residues and follow long rotations with non-host crops",
+      "Use only chemicals with a CIB&RC label claim for garlic and follow the dose and pre-harvest interval on the label"
+    ],
+    "severity": "none",
+    "sourceUrl": "https://www.dogr.res.in/index.php/component/content/article/garlicagropedia"
+  },
+  {
+    "key": "garlic_tipburn",
+    "crop": "garlic",
+    "isHealthy": false,
+    "commonName": "Leaf tip burn (tip dieback)",
+    "names": {
+      "hi": "पत्ती की नोक का झुलसना (टिप बर्न)"
+    },
+    "causalAgentType": "abiotic",
+    "pathogen": "No single cause - tip burn is a symptom, not one disease. Indian extension material (NIPHM / Directorate of Plant Protection, Quarantine & Storage) records tip burn in garlic under potassium deficiency, phosphorus deficiency and manganese deficiency. Agronomic causes are moisture stress and salinity: garlic is very sensitive to moisture stress at bulb initiation and development and to saline soil, with yield falling once saturation-extract EC crosses 3.9 dS/m (ICAR-DOGR). Pathogens can produce the same look - Stemphylium vesicarium (Stemphylium blight; spots progress from the tip to the base of the leaf), Sclerotium cepivorum (white rot; yellowing and dying back of leaf tips), Fusarium basal rot (leaves dry from tip downwards) and Pyrenochaeta terrestris (pink root; tip burn and die back). Identify the cause before spraying.",
+    "symptoms": "The tip of the long flat leaf dries up and the dead area creeps downwards. It starts as a pale yellow or straw-coloured patch at the very point of the leaf, then turns white, light brown or papery and brittle, usually 1-5 cm down the leaf but sometimes much more. The line between dead and green tissue is fairly sharp. Older, outer leaves go first. Then check for the extra clues that tell you why: small yellow to orange flecks or streaks in the middle of the leaf that grow into spindle-shaped spots with a pinkish margin mean Stemphylium blight; leaves dark green and erect with older leaves turning yellow and dead mean potassium is short; light-coloured curling leaves with delayed bulbing and thick necks mean manganese is short; light green leaves with slow growth mean phosphorus is short. Now pull up two or three affected plants - pink or reddish roots, a rotting bulb base, or white fluffy growth carrying black bodies the size of mustard grains all mean the trouble is in the root or bulb and no leaf spray will fix it.",
     "favorableConditions": {
       "tempMinC": 18,
       "tempMaxC": 25,
       "humidityPct": null,
-      "leafWetnessHours": null,
-      "rainfall": "High humidity with moderate temperatures; spores spread by wind."
+      "leafWetnessHours": 16,
+      "rainfall": "Tip burn from stress worsens in hot dry windy spells, with irregular irrigation, in saline soil or saline irrigation water, and where potassium, phosphorus or manganese is short. Where Stemphylium blight is the cause instead, warm humid weather of 18-25 C with leaves staying wet 16 hours or more favours it, and waterlogging brings on basal rot and purple blotch. The temperature and leaf wetness figures here apply to the Stemphylium cause only, not to the nutrient or moisture causes."
     },
     "organicControl": [
-      "Seed treatment with Pseudomonas fluorescens 1.75% WP @ 5 g per kg of seed (NIPHM wheat IPM package)",
-      "Apply Trichoderma viride/harzianum and Pseudomonas fluorescens as seed treatment and soil application; NIPHM directs growers to follow these common biological practices for the wheat rusts (NIPHM wheat IPM package)"
+      "If leaves are dark green and erect with older leaves yellowing, correct potassium: foliar application of K2SO4 @ 1% twice at weekly interval",
+      "If leaf tips are light coloured and curling with delayed bulbing and thick necks, correct manganese: foliar spray of MnSO4 @ 0.3% twice at fortnightly interval",
+      "If older leaves show tip burn with light green colour and slow growth, correct phosphorus: foliar spray of DAP 2% twice at fortnightly intervals",
+      "Soak garlic seed cloves in hot water at 50 C for 20 minutes before planting to cut carry-over of Stemphylium blight and purple blotch",
+      "Apply Trichoderma spp. and Pseudomonas fluorescens as clove, bulb and planting-material treatment and as soil application (check the label claim if you buy a commercial product)",
+      "Add well rotten FYM @ 10 t/acre or vermicompost @ 4 t/acre at field preparation to hold moisture and nutrients more evenly",
+      "Field sanitation - collect and burn crop residues, follow long rotations with non-host crops, keep field drainage good and reduce plant density",
+      "Keep irrigation even at 7-10 day intervals so the crop never goes through moisture stress at bulb initiation and bulb development, and never waterlog it"
     ],
     "chemicalControl": [
       {
-        "activeIngredient": "Propiconazole 25% EC",
-        "dose": "0.1% (1 ml per litre of water; 200 ml in 200 litres of water per acre)",
+        "activeIngredient": "Mancozeb",
+        "dose": "Spray @ 0.25% (0.25% works out to 2.5 g per litre of water) at 10-15 days interval from 30 days after planting or as soon as the disease appears - ICAR-DOGR recommendation for Stemphylium blight of garlic Note: only if Stemphylium blight is confirmed as the cause",
         "phiDays": null
       },
       {
-        "activeIngredient": "Tebuconazole 50% + Trifloxystrobin 25% WG",
-        "dose": "Consult local KVK or agriculture officer for dosage",
+        "activeIngredient": "Hexaconazole",
+        "dose": "Spray @ 0.1% (0.1% works out to 1 ml per litre of water) at 10-15 days interval from 30 days after planting or as soon as the disease appears - ICAR-DOGR recommendation for Stemphylium blight of garlic Note: only if Stemphylium blight is confirmed as the cause",
+        "phiDays": null
+      },
+      {
+        "activeIngredient": "Propiconazole",
+        "dose": "Spray @ 0.1% (0.1% works out to 1 ml per litre of water) at 10-15 days interval from 30 days after planting or as soon as the disease appears - ICAR-DOGR recommendation for Stemphylium blight of garlic Note: only if Stemphylium blight is confirmed as the cause",
+        "phiDays": null
+      },
+      {
+        "activeIngredient": "Tricyclazole",
+        "dose": "Spray @ 0.1% (0.1% works out to 1 g per litre of water for a wettable powder) at 10-15 days interval from 30 days after planting or as soon as the disease appears - ICAR-DOGR recommendation for Stemphylium blight of garlic Note: only if Stemphylium blight is confirmed as the cause",
+        "phiDays": null
+      },
+      {
+        "activeIngredient": "Carbendazim (only if white rot is confirmed as the cause)",
+        "dose": "@ 0.1% (0.1% works out to 1 g per litre of water) applied to the soil around affected plants - ICAR-DOGR states carbendazim @ 0.1% may be applied for white rot, alongside crop rotation, destroying infected plants and soil solarization",
         "phiDays": null
       }
     ],
     "preventive": [
-      "Grow rust-resistant varieties recommended for your zone",
-      "Visit the crop regularly and confirm rust with the nearest ICAR institute, SAU or KVK before spraying",
-      "Spray the infected area first to stop further spread",
-      "If one fungicide was used last season, use the alternate recommended fungicide this season"
+      "Soil test before planting and apply to the recommendation; ICAR-DOGR advises 75:40:40:40 kg NPKS/ha for most of India and 100:50:50:50 kg NPKS + 20 t FYM/ha for Haryana, Uttarakhand and Uttar Pradesh",
+      "Apply one third of the nitrogen and the full recommended phosphorus, potassium and sulphur as basal at planting, and the remaining nitrogen in two equal splits at 30 and 45 days after planting",
+      "Apply 30 kg sulphur/ha where soil sulphur is below 25 kg/ha, ZnSO4 @ 10 kg/ha as basal for zinc deficiency and borax @ 10 kg/ha for boron deficiency",
+      "Plant in well-drained loamy soil of pH 6-8 and avoid saline land and saline irrigation water - garlic yield starts declining once saturation-extract EC crosses 3.9 dS/m",
+      "Irrigate at 7-10 day intervals and never let the crop go through moisture stress at bulb initiation and bulb development; excess irrigation is also harmful",
+      "Reject small, diseased or damaged cloves and plant big cloves over 1.5 g",
+      "Collect and burn crop residues, follow long rotations with non-host crops and keep plant density moderate so leaves dry faster",
+      "Pull up two or three affected plants and check roots and bulb base before deciding to spray - tip burn with pink roots, a rotting bulb or white fluffy growth is a root or bulb problem that a leaf fungicide will not fix",
+      "Ask your local KVK or State Agriculture Department to confirm the cause if the nutrient corrections and better irrigation do not stop the tips drying"
     ],
     "severity": "moderate",
-    "sourceUrl": "https://iiwbr.org.in/wp-content/uploads/2025/01/16-31-Jan-English.pdf"
+    "sourceUrl": "https://agriculture.vikaspedia.in/viewcontent/agriculture/crop-production/integrated-pest-managment/ipm-for-spice-crops/ipm-strategies-for-garlic/garlic-nutritional-deficienciesdisorders?lgn=en"
   },
   {
-    "key": "wheat_yellow_rust",
-    "crop": "wheat",
+    "key": "grape_black_rot",
+    "crop": "grape",
     "isHealthy": false,
-    "commonName": "Yellow rust (stripe rust)",
-    "names": {
-      "hi": "पीला रतुआ"
-    },
+    "commonName": "Black rot",
+    "names": {},
     "causalAgentType": "fungal",
-    "pathogen": "Puccinia striiformis f. sp. tritici",
-    "symptoms": "Yellow to orange-yellow powdery pustules form in narrow stripes along the leaf veins and on leaf sheaths. Touching an infected leaf leaves yellow powder on the fingers or clothes. The disease starts in small patches in the field and spreads quickly in cool, foggy weather.",
+    "pathogen": "Guignardia bidwellii (anamorph Phyllosticta ampelicida)",
+    "symptoms": "Irregular reddish-brown to tan spots appear on young leaves, often with tiny black dots inside. Small, elliptical dark cankers can form on young shoots and tendrils. Berries get a black scab, then shrivel into hard black mummies.",
     "favorableConditions": {
-      "tempMinC": 6,
-      "tempMaxC": 16,
+      "tempMinC": null,
+      "tempMaxC": null,
       "humidityPct": null,
       "leafWetnessHours": null,
-      "rainfall": "Cool weather with fog, cloud and intermittent rain (Punjab, Haryana, Jammu and Kashmir, tarai of UP and Uttarakhand)."
+      "rainfall": "Warm, moist climate with extended periods of rain and cloudy weather."
     },
     "organicControl": [
-      "Seed treatment with Pseudomonas fluorescens 1.75% WP @ 5 g per kg of seed (NIPHM wheat IPM package)",
-      "Apply Trichoderma viride/harzianum and Pseudomonas fluorescens as seed treatment and soil application; NIPHM directs growers to follow these common biological practices for the wheat rusts (NIPHM wheat IPM package)"
+      "Apply Trichoderma viride/harzianum and Pseudomonas fluorescens to the cuttings/planting material and as a soil application (NIPHM grapes IPM package)"
     ],
     "chemicalControl": [
       {
-        "activeIngredient": "Propiconazole 25% EC",
-        "dose": "0.1% (1 ml per litre of water; 200 ml in 200 litres of water per acre)",
-        "phiDays": null
-      },
-      {
-        "activeIngredient": "Tebuconazole 50% + Trifloxystrobin 25% WG",
+        "activeIngredient": "Fungicide for grape black rot (no product has a CIB&RC label claim for this disease on grape in the ICAR-NRCG 2026-27 list)",
         "dose": "Consult local KVK or agriculture officer for dosage",
         "phiDays": null
       }
     ],
     "preventive": [
-      "Grow newly released yellow-rust-resistant varieties (IIWBR lists DBW 370, DBW 371, DBW 372, DBW 327, DBW 332, DBW 187, DBW 303, WH 1270, HD 3226)",
-      "Replace old varieties after a few years; susceptibility increases with time",
-      "Keep strict watch from December to February, especially in foggy weather",
-      "Confirm with a KVK or SAU expert, since leaf yellowing can have other causes",
-      "Do not over-apply urea when the crop shows yellowing"
+      "Remove and destroy mummified berries, infected leaves and canes, since the fungus survives in plant debris",
+      "Keep the canopy open for good air movement and faster drying",
+      "Inspect young shoots, leaves and berries closely during rainy, cloudy spells"
     ],
     "severity": "severe",
-    "sourceUrl": "https://iiwbr.org.in/wp-content/uploads/2025/01/16-31-Jan-English.pdf"
+    "sourceUrl": "https://niphm.gov.in/IPMPackages/Grapes.pdf"
   },
   {
-    "key": "wheat_healthy",
-    "crop": "wheat",
+    "key": "grape_esca",
+    "crop": "grape",
+    "isHealthy": false,
+    "commonName": "Esca (black measles)",
+    "names": {},
+    "causalAgentType": "fungal",
+    "pathogen": "Fungal trunk-disease complex including Phaeomoniella chlamydospora and Phaeoacremonium spp. (e.g. P. aleophilum)",
+    "symptoms": "Leaves show 'tiger-stripe' patterns: yellow (white varieties) or dark red (red varieties) stripes between the veins, with the tissue drying. Affected leaves may dry completely and drop early. Berries can show small dark spots ringed brown-purple, and may crack and dry.",
+    "favorableConditions": {
+      "tempMinC": null,
+      "tempMaxC": null,
+      "humidityPct": null,
+      "leafWetnessHours": null,
+      "rainfall": "Spores released during rain infect fresh pruning wounds, which stay susceptible for several weeks after pruning."
+    },
+    "organicControl": [
+      "Apply Trichoderma viride/harzianum and Pseudomonas fluorescens to the cuttings/planting material and as a soil application (NIPHM grapes IPM package)",
+      "Prune only in dry weather and protect large pruning wounds; cut out and burn dead wood, since the fungi live in the wood and no spray reaches them (NIPHM grapes IPM package)"
+    ],
+    "chemicalControl": [
+      {
+        "activeIngredient": "Pruning-wound protectant (no product has a CIB&RC label claim for esca on grape in the ICAR-NRCG 2026-27 list; fungicides cannot eradicate established infections)",
+        "dose": "Consult local KVK or agriculture officer for dosage",
+        "phiDays": null
+      }
+    ],
+    "preventive": [
+      "Protect pruning wounds and avoid pruning just before or during rain",
+      "Remove and destroy dead or infected wood and heavily affected vines",
+      "Mark vines that show tiger-stripe symptoms and check them every season",
+      "Use clean planting material; infections start in young vines even though symptoms appear years later"
+    ],
+    "severity": "severe",
+    "sourceUrl": "https://ipm.ucanr.edu/agriculture/grape/esca-black-measles/"
+  },
+  {
+    "key": "grape_healthy",
+    "crop": "grape",
     "isHealthy": true,
-    "commonName": "Healthy wheat leaf",
+    "commonName": "Healthy grape leaf",
     "names": {
-      "hi": "स्वस्थ गेहूं"
+      "hi": "स्वस्थ अंगूर"
     },
     "causalAgentType": "none",
     "pathogen": "",
-    "symptoms": "A healthy wheat leaf is evenly green and smooth with parallel veins. There are no yellow stripes, orange-brown or black powdery pustules, and no powder comes off on the fingers when the leaf is rubbed.",
+    "symptoms": "A healthy grape leaf is evenly green, broad and lobed with clear veins. There are no brown, red or black spots, no striping between veins, no powdery or downy growth, and the edges are not dried or curled.",
     "favorableConditions": {
       "tempMinC": null,
       "tempMaxC": null,
@@ -240,47 +511,48 @@
     "organicControl": [],
     "chemicalControl": [],
     "preventive": [
-      "Scout the field weekly, especially from December to February, and rub suspicious leaves to check for rust powder",
-      "Sow varieties recommended for your zone and sowing time",
-      "Avoid excess urea, particularly in foggy or cloudy weather",
-      "Irrigate on time and avoid irrigating just before forecast rain",
-      "Do not burn crop residue; keep it on or mix it into the soil"
+      "Scout the vineyard weekly, checking both leaf surfaces, young shoots and bunches",
+      "Keep the canopy open and remove diseased leaves, mummified berries and dead wood",
+      "Use only chemicals with CIB&RC label claims on grape and follow the dose and pre-harvest interval exactly",
+      "Do not repeat a pesticide that has failed; rotate chemical groups to slow resistance",
+      "Follow ICAR-NRCG weather-based advisories, especially in rainy or cloudy spells"
     ],
     "severity": "none",
-    "sourceUrl": "https://iiwbr.org.in/wp-content/uploads/2024/11/Hindi-Advisory-1-15-Dec-2024-Scanned.pdf"
+    "sourceUrl": "https://www.nrcgrapes.in/for%20farmers/Annexure%205%20for%20Grape%20Season%202026-27.pdf"
   },
   {
-    "key": "maize_gray_leaf_spot",
-    "crop": "maize",
+    "key": "grape_isariopsis_leaf_spot",
+    "crop": "grape",
     "isHealthy": false,
-    "commonName": "Grey leaf spot",
+    "commonName": "Leaf blight (Isariopsis leaf spot)",
     "names": {},
     "causalAgentType": "fungal",
-    "pathogen": "Cercospora zeae-maydis",
-    "symptoms": "Long, narrow, rectangular spots (up to about 5 cm) form on the leaves, first light tan and later grey. The spots are boxed in by the leaf veins, so they have straight sides. Spots can join and kill whole leaves, starting on lower leaves a few weeks before tasselling.",
+    "pathogen": "Pseudocercospora vitis (syn. Isariopsis clavispora)",
+    "symptoms": "Large, irregular spots form on the leaves, first dull red to brown. With age the spots turn black, dry and brittle. It usually appears late in the season on vines that have not been sprayed well.",
     "favorableConditions": {
       "tempMinC": null,
       "tempMaxC": null,
-      "humidityPct": 90,
+      "humidityPct": null,
       "leafWetnessHours": null,
-      "rainfall": "Warm (about 27°C), humid weather with relative humidity above 90% for 12 hours or more; worse where maize follows maize."
+      "rainfall": "Most common late in the season in poorly protected vineyards."
     },
-    "organicControl": [],
+    "organicControl": [
+      "Apply Trichoderma viride/harzianum and Pseudomonas fluorescens to the cuttings/planting material and as a soil application (NIPHM grapes IPM package)"
+    ],
     "chemicalControl": [
       {
-        "activeIngredient": "Fungicide for grey leaf spot (no Indian dose recommendation found)",
+        "activeIngredient": "Fungicide for grape leaf blight (no product has a CIB&RC label claim for this disease on grape in the ICAR-NRCG 2026-27 list)",
         "dose": "Consult local KVK or agriculture officer for dosage",
         "phiDays": null
       }
     ],
     "preventive": [
-      "Plant resistant hybrids",
-      "Rotate maize with non-host crops; avoid maize after maize",
-      "Reduce infected crop residue on the soil surface by tillage or residue management",
-      "Scout lower leaves from knee-high stage onwards in warm, humid weather"
+      "Keep up the regular protective spray programme through the season, as advised by experts",
+      "Collect and destroy fallen infected leaves",
+      "Keep the canopy open for air movement"
     ],
-    "severity": "moderate",
-    "sourceUrl": "https://cropprotectionnetwork.org/encyclopedia/gray-leaf-spot-of-corn"
+    "severity": "low",
+    "sourceUrl": "https://cafs.famu.edu/departments-and-centers/research/center-for-viticulture-and-small-fruit-research/pdf/Post-Harvest-Vineyard-Management-fact-sheet.pdf"
   },
   {
     "key": "maize_common_rust",
@@ -322,6 +594,69 @@
     "sourceUrl": "https://iimr.icar.gov.in/?page_id=2134"
   },
   {
+    "key": "maize_gray_leaf_spot",
+    "crop": "maize",
+    "isHealthy": false,
+    "commonName": "Grey leaf spot",
+    "names": {},
+    "causalAgentType": "fungal",
+    "pathogen": "Cercospora zeae-maydis",
+    "symptoms": "Long, narrow, rectangular spots (up to about 5 cm) form on the leaves, first light tan and later grey. The spots are boxed in by the leaf veins, so they have straight sides. Spots can join and kill whole leaves, starting on lower leaves a few weeks before tasselling.",
+    "favorableConditions": {
+      "tempMinC": null,
+      "tempMaxC": null,
+      "humidityPct": 90,
+      "leafWetnessHours": null,
+      "rainfall": "Warm (about 27°C), humid weather with relative humidity above 90% for 12 hours or more; worse where maize follows maize."
+    },
+    "organicControl": [],
+    "chemicalControl": [
+      {
+        "activeIngredient": "Fungicide for grey leaf spot (no Indian dose recommendation found)",
+        "dose": "Consult local KVK or agriculture officer for dosage",
+        "phiDays": null
+      }
+    ],
+    "preventive": [
+      "Plant resistant hybrids",
+      "Rotate maize with non-host crops; avoid maize after maize",
+      "Reduce infected crop residue on the soil surface by tillage or residue management",
+      "Scout lower leaves from knee-high stage onwards in warm, humid weather"
+    ],
+    "severity": "moderate",
+    "sourceUrl": "https://cropprotectionnetwork.org/encyclopedia/gray-leaf-spot-of-corn"
+  },
+  {
+    "key": "maize_healthy",
+    "crop": "maize",
+    "isHealthy": true,
+    "commonName": "Healthy maize leaf",
+    "names": {
+      "hi": "स्वस्थ मक्का"
+    },
+    "causalAgentType": "none",
+    "pathogen": "",
+    "symptoms": "A healthy maize leaf is broad, evenly green and glossy with a clear midrib. There are no long tan or grey cigar-shaped spots, no rectangular grey lesions and no brown or red powdery pustules.",
+    "favorableConditions": {
+      "tempMinC": null,
+      "tempMaxC": null,
+      "humidityPct": null,
+      "leafWetnessHours": null,
+      "rainfall": ""
+    },
+    "organicControl": [],
+    "chemicalControl": [],
+    "preventive": [
+      "Use certified seed of hybrids recommended for your region, with resistance to local diseases",
+      "Scout the lower leaves weekly, especially in humid or rainy weeks and around tasselling and silking",
+      "Rotate maize with legumes or other non-host crops",
+      "Remove or plough in crop residue after harvest",
+      "Ensure good field drainage and balanced fertilisation"
+    ],
+    "severity": "none",
+    "sourceUrl": "https://www.niphm.gov.in/IPMPackages/Maize.pdf"
+  },
+  {
     "key": "maize_northern_leaf_blight",
     "crop": "maize",
     "isHealthy": false,
@@ -361,16 +696,16 @@
     "sourceUrl": "https://iimr.icar.gov.in/?page_id=2134"
   },
   {
-    "key": "maize_healthy",
-    "crop": "maize",
+    "key": "onion_healthy",
+    "crop": "onion",
     "isHealthy": true,
-    "commonName": "Healthy maize leaf",
+    "commonName": "Healthy onion leaf",
     "names": {
-      "hi": "स्वस्थ मक्का"
+      "hi": "स्वस्थ प्याज़"
     },
     "causalAgentType": "none",
     "pathogen": "",
-    "symptoms": "A healthy maize leaf is broad, evenly green and glossy with a clear midrib. There are no long tan or grey cigar-shaped spots, no rectangular grey lesions and no brown or red powdery pustules.",
+    "symptoms": "A healthy onion leaf is a hollow, round tube standing upright out of the neck, evenly blue-green or grey-green from base to tip with a slight waxy bloom. The tip is still green and tapered, not straw-coloured or papery. There are no yellow or orange flecks in the middle of the leaf, no spindle-shaped spots with a pinkish or purple edge, no straw-coloured diamond-shaped patches, and no silvery streaks or white blotches from thrips feeding. The leaf is firm, not soft, water-soaked or collapsed, and the base of the plant is firm and white when pulled up.",
     "favorableConditions": {
       "tempMinC": null,
       "tempMaxC": null,
@@ -381,14 +716,123 @@
     "organicControl": [],
     "chemicalControl": [],
     "preventive": [
-      "Use certified seed of hybrids recommended for your region, with resistance to local diseases",
-      "Scout the lower leaves weekly, especially in humid or rainy weeks and around tasselling and silking",
-      "Rotate maize with legumes or other non-host crops",
-      "Remove or plough in crop residue after harvest",
-      "Ensure good field drainage and balanced fertilisation"
+      "Use healthy, disease-free seed or seedlings and reject thin, twisted or discoloured transplants",
+      "Walk the field weekly from 30 days after transplanting, looking at the middle of the leaf as well as the tip",
+      "Keep irrigation even; onion is sensitive to moisture stress at bulb initiation and bulb development, and to waterlogging",
+      "Follow a three-year rotation with non-host crops and remove volunteer onion plants and weeds, which carry both thrips and virus between seasons",
+      "Avoid excess nitrogen, which makes the foliage soft and more attractive to thrips"
     ],
     "severity": "none",
-    "sourceUrl": "https://www.niphm.gov.in/IPMPackages/Maize.pdf"
+    "sourceUrl": "https://www.dogr.res.in/index.php/component/content/article/onion-agropedia-2"
+  },
+  {
+    "key": "onion_iris_yellow_spot_virus",
+    "crop": "onion",
+    "isHealthy": false,
+    "commonName": "Iris yellow spot virus",
+    "names": {
+      "hi": "आइरिस येलो स्पॉट वायरस"
+    },
+    "causalAgentType": "viral",
+    "pathogen": "Iris yellow spot virus (IYSV), a tospovirus spread only by onion thrips (Thrips tabaci)",
+    "symptoms": "Straw-coloured, dry, tan lesions shaped like a spindle or a diamond appear on the leaf and on the seed stalk. They often have a distinct green centre, with yellow or tan borders. Unlike a fungal spot there is no mould growth on the lesion in damp weather. Severely affected leaves and seed stalks bend over and break at the lesion. Look for silvery streaks and tiny thrips in the leaf axils at the same time, because the virus only arrives with them.",
+    "favorableConditions": {
+      "tempMinC": 25,
+      "tempMaxC": 35,
+      "humidityPct": null,
+      "leafWetnessHours": null,
+      "rainfall": "Hot, dry weather, which builds thrips numbers quickly. Spread follows the vector, not leaf wetness, so it is worst in dry spells and in crops next to older onion fields, volunteer plants or weeds carrying thrips."
+    },
+    "organicControl": [
+      "Use virus-free transplants: the virus arrives with infected seedlings as often as with thrips",
+      "Three-year crop rotation, and destroy volunteer onion plants and weeds, which carry both the virus and the thrips through the off season",
+      "Sow two rows of a barrier crop such as maize or wheat around the field 30 days before transplanting, so thrips land on the barrier rather than the onion (ICAR-DOGR)",
+      "Avoid crop stress: a water-stressed or under-fed crop shows far worse symptoms",
+      "Use blue sticky traps to watch thrips numbers so sprays start at the right time rather than on a calendar"
+    ],
+    "chemicalControl": [
+      {
+        "activeIngredient": "Fipronil (against the thrips vector, not the virus)",
+        "dose": "0.1% spray (1 ml per litre of water). ICAR-DOGR advises spraying only once thrips cross 30 thrips per plant, not on a fixed schedule. Nothing sprayed can cure a plant already infected with the virus.",
+        "phiDays": null
+      },
+      {
+        "activeIngredient": "Profenofos (against the thrips vector, not the virus)",
+        "dose": "0.1% spray (1 ml per litre of water), at the 30 thrips per plant threshold (ICAR-DOGR)",
+        "phiDays": null
+      },
+      {
+        "activeIngredient": "Carbosulfan (against the thrips vector, not the virus)",
+        "dose": "0.2% spray (2 ml per litre of water), at the 30 thrips per plant threshold (ICAR-DOGR). Check the current label claim and pre-harvest interval with your local KVK before use.",
+        "phiDays": null
+      }
+    ],
+    "preventive": [
+      "There is no cure once a plant is infected: everything here is about keeping the virus out",
+      "Buy or raise transplants from a nursery kept away from older onion crops",
+      "Rogue out and destroy clearly infected plants early, before thrips move off them",
+      "Do not plant a new onion crop next to or downwind of an older one",
+      "Rotate insecticide groups so thrips do not build resistance, and spray in the evening when thrips are active"
+    ],
+    "severity": "severe",
+    "sourceUrl": "https://www.dogr.res.in/index.php/component/content/article/onion-agropedia-2"
+  },
+  {
+    "key": "onion_stemphylium_leaf_blight",
+    "crop": "onion",
+    "isHealthy": false,
+    "commonName": "Stemphylium leaf blight",
+    "names": {
+      "hi": "स्टेम्फिलियम पत्ती झुलसा"
+    },
+    "causalAgentType": "fungal",
+    "pathogen": "Stemphylium vesicarium",
+    "symptoms": "Small yellow to orange flecks or streaks appear in the middle of the leaf, not at the tip. They stretch out into elongated, spindle-shaped spots with a distinctive pinkish margin around them. As the spots join up the leaf dies back from the middle outwards and finally collapses. It is easy to confuse with purple blotch; purple blotch spots turn purplish-brown with a pale yellow halo and tend to girdle the leaf, while Stemphylium spots keep the pink edge. Both often sit on the same leaf.",
+    "favorableConditions": {
+      "tempMinC": 18,
+      "tempMaxC": 25,
+      "humidityPct": 90,
+      "leafWetnessHours": 16,
+      "rainfall": "Warm humid weather with long dew periods; leaves staying wet for 16 hours or more. Worst on crops already weakened by thrips feeding, which opens the wounds the fungus enters through."
+    },
+    "organicControl": [
+      "Soak seed bulbs or cloves in hot water at 50°C for 20 minutes before planting to cut carry-over",
+      "Field sanitation: collect and burn crop residue, since the fungus survives on it between seasons",
+      "Follow a three-year rotation with non-host crops",
+      "Keep thrips under control, because their feeding wounds are the entry point",
+      "Space rows and avoid dense planting so the foliage dries quickly after dew or irrigation"
+    ],
+    "chemicalControl": [
+      {
+        "activeIngredient": "Mancozeb",
+        "dose": "0.25% spray (2.5 g per litre of water), at 10-15 day intervals from 30 days after transplanting or as soon as the disease appears (ICAR-DOGR)",
+        "phiDays": null
+      },
+      {
+        "activeIngredient": "Hexaconazole",
+        "dose": "0.1% spray (1 ml per litre of water), at 10-15 day intervals from 30 days after transplanting (ICAR-DOGR)",
+        "phiDays": null
+      },
+      {
+        "activeIngredient": "Propiconazole",
+        "dose": "0.1% spray (1 ml per litre of water), at 10-15 day intervals from 30 days after transplanting (ICAR-DOGR)",
+        "phiDays": null
+      },
+      {
+        "activeIngredient": "Tricyclazole",
+        "dose": "0.1% spray (1 g per litre of water for a wettable powder), at 10-15 day intervals from 30 days after transplanting (ICAR-DOGR)",
+        "phiDays": null
+      }
+    ],
+    "preventive": [
+      "Start scouting 30 days after transplanting and look at the middle of the leaf, where this disease starts",
+      "Do not plant onion after onion or garlic; rotate for three years",
+      "Add a sticker/spreader to sprays, because onion leaves are waxy and shed plain water",
+      "Control thrips early, since their damage lets the fungus in",
+      "Alternate fungicide groups between sprays rather than repeating the same active ingredient"
+    ],
+    "severity": "severe",
+    "sourceUrl": "https://www.dogr.res.in/index.php/component/content/article/onion-agropedia-2"
   },
   {
     "key": "potato_early_blight",
@@ -437,6 +881,36 @@
     ],
     "severity": "moderate",
     "sourceUrl": "https://agritech.tnau.ac.in/crop_protection/crop_prot_crop%20diseases_veg_potato_2.html"
+  },
+  {
+    "key": "potato_healthy",
+    "crop": "potato",
+    "isHealthy": true,
+    "commonName": "Healthy potato leaf",
+    "names": {
+      "hi": "स्वस्थ आलू"
+    },
+    "causalAgentType": "none",
+    "pathogen": "",
+    "symptoms": "A healthy potato leaf is made of several evenly green leaflets with a slightly wrinkled but clean surface. There are no brown spots with rings, no water-soaked or black patches, and no white mould on the underside.",
+    "favorableConditions": {
+      "tempMinC": null,
+      "tempMaxC": null,
+      "humidityPct": null,
+      "leafWetnessHours": null,
+      "rainfall": ""
+    },
+    "organicControl": [],
+    "chemicalControl": [],
+    "preventive": [
+      "Plant certified, disease-free seed tubers of recommended varieties",
+      "Scout the crop twice a week in cool, cloudy, foggy or rainy spells, checking the undersides of leaves",
+      "Follow late-blight advisories from the state agriculture department or SAU",
+      "Do proper earthing up and avoid waterlogging",
+      "Remove volunteer potato plants and cull piles, and destroy infected plant debris"
+    ],
+    "severity": "none",
+    "sourceUrl": "https://pau.edu/potato/lb_mang.php"
   },
   {
     "key": "potato_late_blight",
@@ -519,16 +993,65 @@
     "sourceUrl": "https://pau.edu/potato/lb_mang.php"
   },
   {
-    "key": "potato_healthy",
-    "crop": "potato",
-    "isHealthy": true,
-    "commonName": "Healthy potato leaf",
+    "key": "rice_brown_spot",
+    "crop": "rice",
+    "isHealthy": false,
+    "commonName": "Brown spot",
     "names": {
-      "hi": "स्वस्थ आलू"
+      "hi": "भूरा धब्बा"
+    },
+    "causalAgentType": "fungal",
+    "pathogen": "Bipolaris oryzae (syn. Helminthosporium oryzae, Drechslera oryzae; teleomorph Cochliobolus miyabeanus)",
+    "symptoms": "Leaves first show tiny brown dots that grow into oval or round brown spots about the size of a sesame seed (0.5-2 mm), often with a grey or light centre. Many spots can join into large dead brown patches. The disease can also spread to the panicle neck and grains, which turn discoloured.",
+    "favorableConditions": {
+      "tempMinC": 25,
+      "tempMaxC": 30,
+      "humidityPct": 80,
+      "leafWetnessHours": 8,
+      "rainfall": "Humid weather with leaves staying wet for 8-24 hours; excess nitrogen fertiliser makes the disease worse."
+    },
+    "organicControl": [
+      "Seed treatment with Pseudomonas fluorescens @ 10 g per kg of seed",
+      "Hot water seed treatment at 53-54°C for 10-12 minutes",
+      "Soil amendment with calcium silicate slag"
+    ],
+    "chemicalControl": [
+      {
+        "activeIngredient": "Mancozeb",
+        "dose": "2.0 g per litre of water; 2 to 3 sprays at 10-15 day intervals depending on disease intensity",
+        "phiDays": null
+      },
+      {
+        "activeIngredient": "Edifenphos",
+        "dose": "1 ml per litre of water; 2 to 3 sprays at 10-15 day intervals",
+        "phiDays": null
+      },
+      {
+        "activeIngredient": "Captan or Thiram (seed treatment)",
+        "dose": "2.0 g per kg of seed",
+        "phiDays": null
+      }
+    ],
+    "preventive": [
+      "Use disease-free seed",
+      "Grow tolerant varieties recommended locally (TNAU lists ADT 44, PY 4, CORH 1, CO 44, Cauvery, Bhavani, TPS 4, Dhanu)",
+      "Apply balanced nutrition; avoid excess nitrogen",
+      "Maintain proper irrigation and avoid moisture stress"
+    ],
+    "severity": "moderate",
+    "sourceUrl": "https://agritech.tnau.ac.in/expert_system/paddy/cpdisbrownspot.html"
+  },
+  {
+    "key": "rice_healthy",
+    "crop": "rice",
+    "isHealthy": true,
+    "commonName": "Healthy rice leaf",
+    "names": {
+      "hi": "स्वस्थ धान"
     },
     "causalAgentType": "none",
     "pathogen": "",
-    "symptoms": "A healthy potato leaf is made of several evenly green leaflets with a slightly wrinkled but clean surface. There are no brown spots with rings, no water-soaked or black patches, and no white mould on the underside.",
+    "symptoms": "A healthy rice leaf is uniformly green from base to tip, long and narrow with smooth parallel veins. There are no brown dots, spindle-shaped grey spots, streaks or yellowing, and the leaf tip is not dried or burnt.",
     "favorableConditions": {
       "tempMinC": null,
       "tempMaxC": null,
@@ -539,14 +1062,68 @@
     "organicControl": [],
     "chemicalControl": [],
     "preventive": [
-      "Plant certified, disease-free seed tubers of recommended varieties",
-      "Scout the crop twice a week in cool, cloudy, foggy or rainy spells, checking the undersides of leaves",
-      "Follow late-blight advisories from the state agriculture department or SAU",
-      "Do proper earthing up and avoid waterlogging",
-      "Remove volunteer potato plants and cull piles, and destroy infected plant debris"
+      "Walk the field at least once a week, checking leaves in different parts of the field for spots or discolouration",
+      "Use certified, disease-free seed and treat seed before sowing",
+      "Apply nitrogen in split doses based on crop need; avoid excess nitrogen",
+      "Keep bunds and channels free of weeds and remove infected stubble after harvest",
+      "Watch closely during cloudy, humid or drizzly spells, when blast and brown spot spread fastest"
     ],
     "severity": "none",
-    "sourceUrl": "https://pau.edu/potato/lb_mang.php"
+    "sourceUrl": "https://agritech.tnau.ac.in/expert_system/paddy/cpdisblast.html"
+  },
+  {
+    "key": "rice_leaf_blast",
+    "crop": "rice",
+    "isHealthy": false,
+    "commonName": "Leaf blast",
+    "names": {
+      "hi": "झोंका रोग"
+    },
+    "causalAgentType": "fungal",
+    "pathogen": "Magnaporthe oryzae (anamorph Pyricularia oryzae)",
+    "symptoms": "Small white to grey-green spots with brown borders appear on leaves. They grow into eye- or spindle-shaped spots (0.5-1.5 cm long) with an ash-grey centre and brown margin. In severe attack many spots merge and the field looks burnt. The panicle neck or nodes may also turn black and break.",
+    "favorableConditions": {
+      "tempMinC": 25,
+      "tempMaxC": 28,
+      "humidityPct": 90,
+      "leafWetnessHours": null,
+      "rainfall": "Cloudy skies, frequent rain and drizzle keeping leaves wet; high nitrogen doses favour the disease."
+    },
+    "organicControl": [
+      "Seed treatment with Pseudomonas fluorescens talc formulation @ 10 g per kg of seed",
+      "Spray Pseudomonas fluorescens at 0.5% from 45 days after transplanting at 10-day intervals"
+    ],
+    "chemicalControl": [
+      {
+        "activeIngredient": "Tricyclazole",
+        "dose": "1 g per litre of water; spray at nursery, tillering and panicle initiation stages as needed",
+        "phiDays": null
+      },
+      {
+        "activeIngredient": "Edifenphos",
+        "dose": "1 ml per litre of water",
+        "phiDays": null
+      },
+      {
+        "activeIngredient": "Carbendazim",
+        "dose": "1.0 g per litre of water",
+        "phiDays": null
+      },
+      {
+        "activeIngredient": "Captan or Carbendazim or Thiram or Tricyclazole (seed treatment)",
+        "dose": "2.0 g per kg of seed",
+        "phiDays": null
+      }
+    ],
+    "preventive": [
+      "Grow resistant varieties recommended locally (TNAU lists CO 47, CO 50, ADT 36, ADT 37, ADT 39, ADT 44, BPT 5204, IR 64, IR 36, Jaya)",
+      "Avoid excess nitrogen; apply nitrogen in three split doses",
+      "Avoid dry nurseries",
+      "Remove and destroy infected stubble and straw after harvest",
+      "Scout the crop at tillering and panicle stages, especially during cloudy, drizzly weather"
+    ],
+    "severity": "severe",
+    "sourceUrl": "https://agritech.tnau.ac.in/expert_system/paddy/cpdisblast.html"
   },
   {
     "key": "tomato_bacterial_spot",
@@ -660,6 +1237,36 @@
     "sourceUrl": "https://agritech.tnau.ac.in/crop_protection/tomato_diseases_2.html"
   },
   {
+    "key": "tomato_healthy",
+    "crop": "tomato",
+    "isHealthy": true,
+    "commonName": "Healthy tomato leaf",
+    "names": {
+      "hi": "स्वस्थ टमाटर"
+    },
+    "causalAgentType": "none",
+    "pathogen": "",
+    "symptoms": "A healthy tomato leaf is made of evenly green, flat leaflets with a normal serrated edge. There are no ringed or dark spots, yellow halos, mottling, curling, webbing or mould on either side of the leaf.",
+    "favorableConditions": {
+      "tempMinC": null,
+      "tempMaxC": null,
+      "humidityPct": null,
+      "leafWetnessHours": null,
+      "rainfall": ""
+    },
+    "organicControl": [],
+    "chemicalControl": [],
+    "preventive": [
+      "Raise seedlings in a clean nursery, preferably under insect-proof net, and transplant only healthy seedlings",
+      "Scout plants twice a week, including the undersides of leaves, for spots, curling, mites and whiteflies",
+      "Install yellow sticky traps to monitor whiteflies",
+      "Stake plants, remove lower leaves touching the soil and avoid wetting foliage",
+      "Rotate with non-solanaceous crops and remove crop debris and weeds"
+    ],
+    "severity": "none",
+    "sourceUrl": "https://niphm.gov.in/IPMPackages/Tomato.pdf"
+  },
+  {
     "key": "tomato_late_blight",
     "crop": "tomato",
     "isHealthy": false,
@@ -747,6 +1354,36 @@
     ],
     "severity": "moderate",
     "sourceUrl": "https://www.vegetables.cornell.edu/pest-management/disease-factsheets/tomato-leaf-mold/"
+  },
+  {
+    "key": "tomato_mosaic_virus",
+    "crop": "tomato",
+    "isHealthy": false,
+    "commonName": "Tomato mosaic",
+    "names": {
+      "hi": "मोसैक विषाणु"
+    },
+    "causalAgentType": "viral",
+    "pathogen": "Tomato mosaic virus (ToMV, genus Tobamovirus)",
+    "symptoms": "Leaves show a patchy light-green and dark-green mottle (mosaic). Leaflets become distorted, puckered and smaller, sometimes narrow and fern-like. Young leaves may wilt on sunny days and the plant looks stunted, pale and spindly.",
+    "favorableConditions": {
+      "tempMinC": null,
+      "tempMaxC": null,
+      "humidityPct": null,
+      "leafWetnessHours": null,
+      "rainfall": "Not weather-driven; spreads by contact through workers' hands and clothes, tools, touching of plants, and infected plant debris."
+    },
+    "organicControl": [],
+    "chemicalControl": [],
+    "preventive": [
+      "There is no chemical cure; remove and destroy infected plants",
+      "Select seed from disease-free healthy plants; rinse seeds thoroughly and dry in shade",
+      "Remove infected seedlings in the nursery and never transplant them",
+      "Rotate with crops other than tobacco, potato, chilli, capsicum, brinjal and other solanaceous crops",
+      "Wash hands and disinfect tools; avoid handling healthy plants after touching infected ones and do not use tobacco while working in the crop"
+    ],
+    "severity": "moderate",
+    "sourceUrl": "https://niphm.gov.in/IPMPackages/Tomato.pdf"
   },
   {
     "key": "tomato_septoria_leaf_spot",
@@ -917,180 +1554,113 @@
     "sourceUrl": "https://niphm.gov.in/IPMPackages/Tomato.pdf"
   },
   {
-    "key": "tomato_mosaic_virus",
-    "crop": "tomato",
+    "key": "turnip_alternaria_leaf_spot",
+    "crop": "turnip",
     "isHealthy": false,
-    "commonName": "Tomato mosaic",
+    "commonName": "Alternaria leaf spot (Alternaria blight)",
     "names": {
-      "hi": "मोसैक विषाणु"
+      "hi": "अल्टरनेरिया पर्ण धब्बा"
     },
-    "causalAgentType": "viral",
-    "pathogen": "Tomato mosaic virus (ToMV, genus Tobamovirus)",
-    "symptoms": "Leaves show a patchy light-green and dark-green mottle (mosaic). Leaflets become distorted, puckered and smaller, sometimes narrow and fern-like. Young leaves may wilt on sunny days and the plant looks stunted, pale and spindly.",
+    "causalAgentType": "fungal",
+    "pathogen": "Alternaria brassicae and Alternaria brassicicola",
+    "symptoms": "Small dark brown to black dots appear first on the older, lower leaves. They swell into round spots about 1 mm across, then grow to roughly 5-10 mm - about the size of a small coin. Inside each spot you can see faint concentric rings, like a target, and often a thin yellow edge. Many spots run together so whole patches of leaf turn brown, dry and papery, and in a bad attack the bottom leaves blight and drop. Dark, stretched-out streaks also appear on leaf stalks and stems, and on pods in a seed crop. On young turnip seedlings the same fungus causes black, corky, cracked lesions right at the collar where the leaves meet the root crown, and the leaves slowly dry up.",
     "favorableConditions": {
-      "tempMinC": null,
-      "tempMaxC": null,
-      "humidityPct": null,
+      "tempMinC": 15,
+      "tempMaxC": 25,
+      "humidityPct": 75,
       "leafWetnessHours": null,
-      "rainfall": "Not weather-driven; spreads by contact through workers' hands and clothes, tools, touching of plants, and infected plant debris."
+      "rainfall": "Moist weather with intermittent showers, high humidity or persistent dew on the leaves. PAU gives 15-25°C with relative humidity above 75% as favourable for Alternaria brassicae; the NIPHM cole-crop note adds a soil temperature of around 28°C."
     },
-    "organicControl": [],
-    "chemicalControl": [],
+    "organicControl": [
+      "Hot water treatment of seeds at 50°C for 30 minutes before sowing (TNAU organic farming recommendation for Alternaria leaf spot of crucifers)",
+      "Seed treatment with Trichoderma viride @ 4 g per kg of seed (TNAU cole crop seed treatment)",
+      "Apply Trichoderma as seed and nursery treatment, and Pseudomonas fluorescens as seed treatment, nursery treatment and soil application (NIPHM cole crop IPM package)",
+      "Incorporate well rotten farmyard manure @ 8-10 t per acre or vermicompost @ 5 t per acre treated with Trichoderma spp. and/or Pseudomonas sp. @ 2 kg per acre, 1-3 weeks before sowing or transplanting (NIPHM cole crop IPM package)"
+    ],
+    "chemicalControl": [
+      {
+        "activeIngredient": "Mancozeb 75% WP",
+        "dose": "500 g in 200 litres of water per acre, sprayed at 7 day intervals (PAU, given as Indofil M-45 for cole crops including radish and turnip). TNAU gives 2 g per litre of water, or 0.25%, for leaf spot and black spot of cabbage.",
+        "phiDays": null
+      },
+      {
+        "activeIngredient": "Captan (seed and nursery treatment)",
+        "dose": "3 g per kg of seed before sowing (PAU). For the collar/crown rot stage on seedlings, PAU gives a soil drench of 200 g Captan per 100 litres of water, twice, on the 7th and 15th day after sowing.",
+        "phiDays": null
+      }
+    ],
     "preventive": [
-      "There is no chemical cure; remove and destroy infected plants",
-      "Select seed from disease-free healthy plants; rinse seeds thoroughly and dry in shade",
-      "Remove infected seedlings in the nursery and never transplant them",
-      "Rotate with crops other than tobacco, potato, chilli, capsicum, brinjal and other solanaceous crops",
-      "Wash hands and disinfect tools; avoid handling healthy plants after touching infected ones and do not use tobacco while working in the crop"
+      "Use treated or certified seed - the fungus is carried inside the seed and causes shrivelled seed and poor germination",
+      "Long rotation of 3 years without crucifer crops, and remove cruciferous weeds such as wild mustard (NIPHM)",
+      "Put later sowings upwind of older sowings, and keep wide spacing with rows along the prevailing wind so leaves dry quickly (NIPHM)",
+      "Practise crop rotation with non-cruciferous crops and avoid overhead irrigation (TNAU organic farming)",
+      "Collect and destroy the affected plant debris after harvest (PAU)",
+      "Scout the lower leaves after every spell of overcast, drizzly weather or heavy dew"
     ],
     "severity": "moderate",
-    "sourceUrl": "https://niphm.gov.in/IPMPackages/Tomato.pdf"
+    "sourceUrl": "https://pau.edu/content/ccil/pf/pp_veg.pdf"
   },
   {
-    "key": "tomato_healthy",
-    "crop": "tomato",
-    "isHealthy": true,
-    "commonName": "Healthy tomato leaf",
-    "names": {
-      "hi": "स्वस्थ टमाटर"
-    },
-    "causalAgentType": "none",
-    "pathogen": "",
-    "symptoms": "A healthy tomato leaf is made of evenly green, flat leaflets with a normal serrated edge. There are no ringed or dark spots, yellow halos, mottling, curling, webbing or mould on either side of the leaf.",
-    "favorableConditions": {
-      "tempMinC": null,
-      "tempMaxC": null,
-      "humidityPct": null,
-      "leafWetnessHours": null,
-      "rainfall": ""
-    },
-    "organicControl": [],
-    "chemicalControl": [],
-    "preventive": [
-      "Raise seedlings in a clean nursery, preferably under insect-proof net, and transplant only healthy seedlings",
-      "Scout plants twice a week, including the undersides of leaves, for spots, curling, mites and whiteflies",
-      "Install yellow sticky traps to monitor whiteflies",
-      "Stake plants, remove lower leaves touching the soil and avoid wetting foliage",
-      "Rotate with non-solanaceous crops and remove crop debris and weeds"
-    ],
-    "severity": "none",
-    "sourceUrl": "https://niphm.gov.in/IPMPackages/Tomato.pdf"
-  },
-  {
-    "key": "grape_black_rot",
-    "crop": "grape",
+    "key": "turnip_black_rot",
+    "crop": "turnip",
     "isHealthy": false,
     "commonName": "Black rot",
-    "names": {},
-    "causalAgentType": "fungal",
-    "pathogen": "Guignardia bidwellii (anamorph Phyllosticta ampelicida)",
-    "symptoms": "Irregular reddish-brown to tan spots appear on young leaves, often with tiny black dots inside. Small, elliptical dark cankers can form on young shoots and tendrils. Berries get a black scab, then shrivel into hard black mummies.",
-    "favorableConditions": {
-      "tempMinC": null,
-      "tempMaxC": null,
-      "humidityPct": null,
-      "leafWetnessHours": null,
-      "rainfall": "Warm, moist climate with extended periods of rain and cloudy weather."
-    },
-    "organicControl": [
-      "Apply Trichoderma viride/harzianum and Pseudomonas fluorescens to the cuttings/planting material and as a soil application (NIPHM grapes IPM package)"
-    ],
-    "chemicalControl": [
-      {
-        "activeIngredient": "Fungicide for grape black rot (no product has a CIB&RC label claim for this disease on grape in the ICAR-NRCG 2026-27 list)",
-        "dose": "Consult local KVK or agriculture officer for dosage",
-        "phiDays": null
-      }
-    ],
-    "preventive": [
-      "Remove and destroy mummified berries, infected leaves and canes, since the fungus survives in plant debris",
-      "Keep the canopy open for good air movement and faster drying",
-      "Inspect young shoots, leaves and berries closely during rainy, cloudy spells"
-    ],
-    "severity": "severe",
-    "sourceUrl": "https://niphm.gov.in/IPMPackages/Grapes.pdf"
-  },
-  {
-    "key": "grape_esca",
-    "crop": "grape",
-    "isHealthy": false,
-    "commonName": "Esca (black measles)",
-    "names": {},
-    "causalAgentType": "fungal",
-    "pathogen": "Fungal trunk-disease complex including Phaeomoniella chlamydospora and Phaeoacremonium spp. (e.g. P. aleophilum)",
-    "symptoms": "Leaves show 'tiger-stripe' patterns: yellow (white varieties) or dark red (red varieties) stripes between the veins, with the tissue drying. Affected leaves may dry completely and drop early. Berries can show small dark spots ringed brown-purple, and may crack and dry.",
-    "favorableConditions": {
-      "tempMinC": null,
-      "tempMaxC": null,
-      "humidityPct": null,
-      "leafWetnessHours": null,
-      "rainfall": "Spores released during rain infect fresh pruning wounds, which stay susceptible for several weeks after pruning."
-    },
-    "organicControl": [
-      "Apply Trichoderma viride/harzianum and Pseudomonas fluorescens to the cuttings/planting material and as a soil application (NIPHM grapes IPM package)",
-      "Prune only in dry weather and protect large pruning wounds; cut out and burn dead wood, since the fungi live in the wood and no spray reaches them (NIPHM grapes IPM package)"
-    ],
-    "chemicalControl": [
-      {
-        "activeIngredient": "Pruning-wound protectant (no product has a CIB&RC label claim for esca on grape in the ICAR-NRCG 2026-27 list; fungicides cannot eradicate established infections)",
-        "dose": "Consult local KVK or agriculture officer for dosage",
-        "phiDays": null
-      }
-    ],
-    "preventive": [
-      "Protect pruning wounds and avoid pruning just before or during rain",
-      "Remove and destroy dead or infected wood and heavily affected vines",
-      "Mark vines that show tiger-stripe symptoms and check them every season",
-      "Use clean planting material; infections start in young vines even though symptoms appear years later"
-    ],
-    "severity": "severe",
-    "sourceUrl": "https://ipm.ucanr.edu/agriculture/grape/esca-black-measles/"
-  },
-  {
-    "key": "grape_isariopsis_leaf_spot",
-    "crop": "grape",
-    "isHealthy": false,
-    "commonName": "Leaf blight (Isariopsis leaf spot)",
-    "names": {},
-    "causalAgentType": "fungal",
-    "pathogen": "Pseudocercospora vitis (syn. Isariopsis clavispora)",
-    "symptoms": "Large, irregular spots form on the leaves, first dull red to brown. With age the spots turn black, dry and brittle. It usually appears late in the season on vines that have not been sprayed well.",
-    "favorableConditions": {
-      "tempMinC": null,
-      "tempMaxC": null,
-      "humidityPct": null,
-      "leafWetnessHours": null,
-      "rainfall": "Most common late in the season in poorly protected vineyards."
-    },
-    "organicControl": [
-      "Apply Trichoderma viride/harzianum and Pseudomonas fluorescens to the cuttings/planting material and as a soil application (NIPHM grapes IPM package)"
-    ],
-    "chemicalControl": [
-      {
-        "activeIngredient": "Fungicide for grape leaf blight (no product has a CIB&RC label claim for this disease on grape in the ICAR-NRCG 2026-27 list)",
-        "dose": "Consult local KVK or agriculture officer for dosage",
-        "phiDays": null
-      }
-    ],
-    "preventive": [
-      "Keep up the regular protective spray programme through the season, as advised by experts",
-      "Collect and destroy fallen infected leaves",
-      "Keep the canopy open for air movement"
-    ],
-    "severity": "low",
-    "sourceUrl": "https://cafs.famu.edu/departments-and-centers/research/center-for-viticulture-and-small-fruit-research/pdf/Post-Harvest-Vineyard-Management-fact-sheet.pdf"
-  },
-  {
-    "key": "grape_healthy",
-    "crop": "grape",
-    "isHealthy": true,
-    "commonName": "Healthy grape leaf",
     "names": {
-      "hi": "स्वस्थ अंगूर"
+      "hi": "काला सड़न"
+    },
+    "causalAgentType": "bacterial",
+    "pathogen": "Xanthomonas campestris pv. campestris",
+    "symptoms": "Look at the edge of the older, lower leaves first. A pale yellow patch appears on the leaf margin and spreads inwards as a clear V or wedge shape, with the point of the V aimed at the middle of the leaf. The yellow area later turns brown and papery, and the veins and small veinlets running through it turn dark brown to black. If you cut across the leaf stalk or the top of the root, the ring of water-carrying tissue inside looks blackened. Affected plants are stunted and often lopsided because one side of the plant is hit harder, leaves get malformed, dry up and die. In warm wet weather a sticky bacterial ooze can be seen on the affected parts, and a soft, foul-smelling rot follows. Plants infected early wilt and die outright.",
+    "favorableConditions": {
+      "tempMinC": null,
+      "tempMaxC": null,
+      "humidityPct": 90,
+      "leafWetnessHours": null,
+      "rainfall": "Relative humidity above 90%, high soil moisture and frequent rains favour the disease (NIPHM). The bacteria come in on internally infected seed and from the soil, and then spread through irrigation water and rain splashes. No temperature range was given on the sources fetched, so it is left blank."
+    },
+    "organicControl": [
+      "Hot water seed treatment at 50°C for 30 minutes before sowing, then dry the seed (PAU package of practices, cole crops including radish and turnip)",
+      "Apply Trichoderma as seed and nursery treatment, and Pseudomonas fluorescens as seed treatment, nursery treatment and soil application (NIPHM cole crop IPM package)",
+      "Application of Trichoderma viride @ 5 kg per hectare and Pseudomonas fluorescens @ 5 kg per hectare at the time of land preparation, against soil-borne carry-over (TNAU organic farming, cole crops)",
+      "Incorporate well rotten farmyard manure @ 8-10 t per acre or vermicompost @ 5 t per acre treated with Trichoderma spp. and/or Pseudomonas sp. @ 2 kg per acre before transplanting (NIPHM cole crop IPM package)"
+    ],
+    "chemicalControl": [
+      {
+        "activeIngredient": "Copper oxychloride",
+        "dose": "2 g per litre of water, two sprays - the first after planting and the second at head/root bulking stage (TNAU cabbage recommendation; copper component only). Copper only protects healthy tissue, it cannot cure a plant that is already systemically infected.",
+        "phiDays": null
+      },
+      {
+        "activeIngredient": "Bactericide registered for black rot of crucifers",
+        "dose": "Consult your local KVK or State Agriculture Department for the current recommended dose",
+        "phiDays": null
+      }
+    ],
+    "preventive": [
+      "Do not use streptocycline or any streptomycin + tetracycline product, which older Indian advisories still recommend for black rot: it has been prohibited in Indian agriculture since 1 January 2024.",
+      "Take seed only from disease-free plants grown in bacterium-free areas, and prefer certified seed (PAU)",
+      "Rotate for 2-3 years with non-cruciferous crops; never follow turnip with cabbage, cauliflower, broccoli, knol-khol, radish or mustard (NIPHM)",
+      "Use sanitary measures and destroy the diseased debris in the field after harvesting (PAU)",
+      "Remove cruciferous weeds such as wild mustard in and around the field",
+      "Avoid overhead irrigation and flooding, and do not let water run from an infected patch into a clean one - the bacteria travel in irrigation water and rain splash",
+      "Do not weed, thin or handle the crop while the leaves are still wet, and clean tools before moving to a clean field",
+      "Rogue out and destroy the first wilting or V-marked plants instead of leaving them in the field",
+      "Ask your KVK which locally recommended resistant or tolerant varieties are available (NIPHM lists resistant varieties as a cultural control)"
+    ],
+    "severity": "severe",
+    "sourceUrl": "https://pau.edu/content/ccil/pf/pp_veg.pdf"
+  },
+  {
+    "key": "turnip_healthy",
+    "crop": "turnip",
+    "isHealthy": true,
+    "commonName": "Healthy turnip leaf",
+    "names": {
+      "hi": "स्वस्थ शलजम"
     },
     "causalAgentType": "none",
     "pathogen": "",
-    "symptoms": "A healthy grape leaf is evenly green, broad and lobed with clear veins. There are no brown, red or black spots, no striping between veins, no powdery or downy growth, and the edges are not dried or curled.",
+    "symptoms": "A healthy turnip leaf is an even bright to mid green, with a slightly rough, hairy surface, deeply notched or lobed edges and a thick pale midrib. The leaves stand up in a rosette from the crown of the root. There is no pale yellow wedge creeping in from the leaf margin, no darkened veins, no brown target-ringed spots, no white blister-like pustules on the underside, and no yellowing or drying of the older bottom leaves. The leaf stalk and the top of the root are firm, pale and unblackened when cut.",
     "favorableConditions": {
       "tempMinC": null,
       "tempMaxC": null,
@@ -1101,13 +1671,132 @@
     "organicControl": [],
     "chemicalControl": [],
     "preventive": [
-      "Scout the vineyard weekly, checking both leaf surfaces, young shoots and bunches",
-      "Keep the canopy open and remove diseased leaves, mummified berries and dead wood",
-      "Use only chemicals with CIB&RC label claims on grape and follow the dose and pre-harvest interval exactly",
-      "Do not repeat a pesticide that has failed; rotate chemical groups to slow resistance",
-      "Follow ICAR-NRCG weather-based advisories, especially in rainy or cloudy spells"
+      "Walk the field at least once a week and turn over the older bottom leaves - both black rot and Alternaria leaf spot show there first",
+      "Use certified seed, or treat the seed with hot water at 50°C for 30 minutes and dry it before sowing (PAU cole crop recommendation)",
+      "Keep a 2-3 year gap from other crucifers (cabbage, cauliflower, broccoli, knol-khol, radish, mustard) in the same field",
+      "Pull out cruciferous weeds such as wild mustard from the field and the bunds",
+      "Irrigate lightly and frequently instead of flooding; avoid overhead irrigation and waterlogging, which rots the root and spreads bacteria",
+      "Collect and destroy crop debris after harvest instead of leaving it in the field",
+      "Scout most carefully during cool, overcast, drizzly spells and when heavy dew sits on the leaves"
     ],
     "severity": "none",
-    "sourceUrl": "https://www.nrcgrapes.in/for%20farmers/Annexure%205%20for%20Grape%20Season%202026-27.pdf"
+    "sourceUrl": "https://pau.edu/content/ccil/pf/pp_veg.pdf"
+  },
+  {
+    "key": "wheat_brown_rust",
+    "crop": "wheat",
+    "isHealthy": false,
+    "commonName": "Brown rust (leaf rust)",
+    "names": {
+      "hi": "भूरा रतुआ"
+    },
+    "causalAgentType": "fungal",
+    "pathogen": "Puccinia triticina (syn. P. recondita f. sp. tritici)",
+    "symptoms": "Small round or slightly oval orange-brown pustules appear scattered on the upper surface of leaves, not in lines. Rubbing a pustule leaves orange-brown powder on the finger. Pustules usually stay separate; late in the season dark brown to black spots may form.",
+    "favorableConditions": {
+      "tempMinC": 18,
+      "tempMaxC": 25,
+      "humidityPct": null,
+      "leafWetnessHours": null,
+      "rainfall": "High humidity with moderate temperatures; spores spread by wind."
+    },
+    "organicControl": [
+      "Seed treatment with Pseudomonas fluorescens 1.75% WP @ 5 g per kg of seed (NIPHM wheat IPM package)",
+      "Apply Trichoderma viride/harzianum and Pseudomonas fluorescens as seed treatment and soil application; NIPHM directs growers to follow these common biological practices for the wheat rusts (NIPHM wheat IPM package)"
+    ],
+    "chemicalControl": [
+      {
+        "activeIngredient": "Propiconazole 25% EC",
+        "dose": "0.1% (1 ml per litre of water; 200 ml in 200 litres of water per acre)",
+        "phiDays": null
+      },
+      {
+        "activeIngredient": "Tebuconazole 50% + Trifloxystrobin 25% WG",
+        "dose": "Consult local KVK or agriculture officer for dosage",
+        "phiDays": null
+      }
+    ],
+    "preventive": [
+      "Grow rust-resistant varieties recommended for your zone",
+      "Visit the crop regularly and confirm rust with the nearest ICAR institute, SAU or KVK before spraying",
+      "Spray the infected area first to stop further spread",
+      "If one fungicide was used last season, use the alternate recommended fungicide this season"
+    ],
+    "severity": "moderate",
+    "sourceUrl": "https://iiwbr.org.in/wp-content/uploads/2025/01/16-31-Jan-English.pdf"
+  },
+  {
+    "key": "wheat_healthy",
+    "crop": "wheat",
+    "isHealthy": true,
+    "commonName": "Healthy wheat leaf",
+    "names": {
+      "hi": "स्वस्थ गेहूं"
+    },
+    "causalAgentType": "none",
+    "pathogen": "",
+    "symptoms": "A healthy wheat leaf is evenly green and smooth with parallel veins. There are no yellow stripes, orange-brown or black powdery pustules, and no powder comes off on the fingers when the leaf is rubbed.",
+    "favorableConditions": {
+      "tempMinC": null,
+      "tempMaxC": null,
+      "humidityPct": null,
+      "leafWetnessHours": null,
+      "rainfall": ""
+    },
+    "organicControl": [],
+    "chemicalControl": [],
+    "preventive": [
+      "Scout the field weekly, especially from December to February, and rub suspicious leaves to check for rust powder",
+      "Sow varieties recommended for your zone and sowing time",
+      "Avoid excess urea, particularly in foggy or cloudy weather",
+      "Irrigate on time and avoid irrigating just before forecast rain",
+      "Do not burn crop residue; keep it on or mix it into the soil"
+    ],
+    "severity": "none",
+    "sourceUrl": "https://iiwbr.org.in/wp-content/uploads/2024/11/Hindi-Advisory-1-15-Dec-2024-Scanned.pdf"
+  },
+  {
+    "key": "wheat_yellow_rust",
+    "crop": "wheat",
+    "isHealthy": false,
+    "commonName": "Yellow rust (stripe rust)",
+    "names": {
+      "hi": "पीला रतुआ"
+    },
+    "causalAgentType": "fungal",
+    "pathogen": "Puccinia striiformis f. sp. tritici",
+    "symptoms": "Yellow to orange-yellow powdery pustules form in narrow stripes along the leaf veins and on leaf sheaths. Touching an infected leaf leaves yellow powder on the fingers or clothes. The disease starts in small patches in the field and spreads quickly in cool, foggy weather.",
+    "favorableConditions": {
+      "tempMinC": 6,
+      "tempMaxC": 16,
+      "humidityPct": null,
+      "leafWetnessHours": null,
+      "rainfall": "Cool weather with fog, cloud and intermittent rain (Punjab, Haryana, Jammu and Kashmir, tarai of UP and Uttarakhand)."
+    },
+    "organicControl": [
+      "Seed treatment with Pseudomonas fluorescens 1.75% WP @ 5 g per kg of seed (NIPHM wheat IPM package)",
+      "Apply Trichoderma viride/harzianum and Pseudomonas fluorescens as seed treatment and soil application; NIPHM directs growers to follow these common biological practices for the wheat rusts (NIPHM wheat IPM package)"
+    ],
+    "chemicalControl": [
+      {
+        "activeIngredient": "Propiconazole 25% EC",
+        "dose": "0.1% (1 ml per litre of water; 200 ml in 200 litres of water per acre)",
+        "phiDays": null
+      },
+      {
+        "activeIngredient": "Tebuconazole 50% + Trifloxystrobin 25% WG",
+        "dose": "Consult local KVK or agriculture officer for dosage",
+        "phiDays": null
+      }
+    ],
+    "preventive": [
+      "Grow newly released yellow-rust-resistant varieties (IIWBR lists DBW 370, DBW 371, DBW 372, DBW 327, DBW 332, DBW 187, DBW 303, WH 1270, HD 3226)",
+      "Replace old varieties after a few years; susceptibility increases with time",
+      "Keep strict watch from December to February, especially in foggy weather",
+      "Confirm with a KVK or SAU expert, since leaf yellowing can have other causes",
+      "Do not over-apply urea when the crop shows yellowing"
+    ],
+    "severity": "severe",
+    "sourceUrl": "https://iiwbr.org.in/wp-content/uploads/2025/01/16-31-Jan-English.pdf"
   }
 ]
