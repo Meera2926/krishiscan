@@ -27,7 +27,17 @@ const messageSchema = new mongoose.Schema(
   {
     sender: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     senderRole: { type: String, enum: ['farmer', 'expert', 'admin'], required: true },
-    body: { type: String, required: true, trim: true, maxlength: 2000 },
+    // Either is enough on its own: a photo with no caption is a perfectly good reply to
+    // "send me a picture of the underside".
+    body: { type: String, trim: true, maxlength: 2000, default: '' },
+    image: {
+      url: String,
+      storageKey: String,
+      width: Number,
+      height: Number,
+      bytes: Number,
+      format: String,
+    },
     sentAt: { type: Date, default: Date.now },
   },
   { _id: true },

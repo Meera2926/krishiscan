@@ -13,7 +13,7 @@ import {
 import { __setClassifierForTests } from '../src/services/inference/index.js';
 import { createMockClassifier } from '../src/services/inference/mock.js';
 import { purgeExpired, runRetentionSweep, sendDueReminders } from '../src/services/retention.js';
-import { TEST_DISEASES, cleanUploads, fixedClassifier, leafJpeg, registerUser, setupTestApp, teardownTestApp } from './helpers.js';
+import { TEST_DISEASES, cleanUploads, fixedClassifier, leafJpeg, registerUser, setupTestApp, storedFileExists, teardownTestApp } from './helpers.js';
 
 const DAY = 86_400_000;
 let app;
@@ -300,6 +300,88 @@ describe('choosing an expert', () => {
     expect(String(booked.body.consultation.expert?.id ?? booked.body.consultation.expert)).toBe(expertId);
     // Requested is not the same as accepted: the expert still has to take it.
     expect(booked.body.consultation.status).toBe('open');
+  });
+});
+
+describe('photos in the conversation', () => {
+  /** Books a chat so there is somewhere to post. */
+  async function bookedChat(token, seed) {
+    const { consultation } = await uncertainScan(token, seed);
+    await request(app)
+      .post(`/api/consultations/${consultation.id}/decision`)
+      .set(bearer(token))
+      .send({ decision: 'scheduled', mode: 'chat', scheduledFor: nextSlot() })
+      .expect(200);
+    return consultation;
+  }
+
+  it('lets the farmer answer "send me another photo" with one', async () => {
+    const { token } = await registerUser(app);
+    const consultation = await bookedChat(token, 40);
+
+    const res = await request(app)
+      .post(`/api/consultations/${consultation.id}/messages`)
+      .set(bearer(token))
+      .field('body', 'Underside of a middle leaf.')
+      .attach('image', await leafJpeg(41), { filename: 'underside.jpg', contentType: 'image/jpeg' })
+      .expect(201);
+
+    const last = res.body.consultation.messages.at(-1);
+    expect(last.body).toBe('Underside of a middle leaf.');
+    expect(last.image.url).toMatch(/\.jpg$/);
+    // Stored through the same pipeline as a scan, so it is re-encoded rather than kept as sent.
+    expect(last.image.format).toBe('jpeg');
+    expect(last.image.bytes).toBeGreaterThan(0);
+  });
+
+  it('accepts a photo with no caption, and rejects a message with neither', async () => {
+    const { token } = await registerUser(app);
+    const consultation = await bookedChat(token, 42);
+
+    const photoOnly = await request(app)
+      .post(`/api/consultations/${consultation.id}/messages`)
+      .set(bearer(token))
+      .attach('image', await leafJpeg(43), { filename: 'leaf.jpg', contentType: 'image/jpeg' })
+      .expect(201);
+    expect(photoOnly.body.consultation.messages.at(-1).image.url).toBeTruthy();
+
+    await request(app).post(`/api/consultations/${consultation.id}/messages`).set(bearer(token)).send({}).expect(400);
+  });
+
+  it('refuses a file that is not really an image', async () => {
+    const { token } = await registerUser(app);
+    const consultation = await bookedChat(token, 44);
+    await request(app)
+      .post(`/api/consultations/${consultation.id}/messages`)
+      .set(bearer(token))
+      .attach('image', Buffer.from('not a jpeg'), { filename: 'x.jpg', contentType: 'image/jpeg' })
+      .expect(400);
+  });
+
+  it('deletes chat photos when the case is swept away', async () => {
+    const { token } = await registerUser(app);
+    const { consultation } = await uncertainScan(token, 45);
+    await request(app)
+      .post(`/api/consultations/${consultation.id}/decision`)
+      .set(bearer(token))
+      .send({ decision: 'scheduled', mode: 'chat', scheduledFor: nextSlot() })
+      .expect(200);
+    const withPhoto = await request(app)
+      .post(`/api/consultations/${consultation.id}/messages`)
+      .set(bearer(token))
+      .attach('image', await leafJpeg(46), { filename: 'leaf.jpg', contentType: 'image/jpeg' })
+      .expect(201);
+    const key = withPhoto.body.consultation.messages.at(-1).image.storageKey;
+    expect(await storedFileExists(key)).toBe(true);
+
+    // The farmer cancels the appointment, which puts the case back on the retention clock.
+    await request(app).patch(`/api/consultations/${consultation.id}`).set(bearer(token)).send({ action: 'cancel' }).expect(200);
+    await Consultation.collection.updateOne(
+      { _id: new Consultation.base.Types.ObjectId(String(consultation.id)) },
+      { $set: { expiresAt: new Date(Date.now() - DAY) } },
+    );
+    await runRetentionSweep();
+    expect(await storedFileExists(key)).toBe(false);
   });
 });
 

@@ -188,8 +188,9 @@ function useConsultationMutation(mutationFn, id) {
 export const useConsultationDecision = (id) =>
   useConsultationMutation((body) => api.post(`/consultations/${id}/decision`, body).then((r) => r.data), id);
 
+/** Takes FormData, so a message can carry a photo as well as text. */
 export const useConsultationMessage = (id) =>
-  useConsultationMutation((body) => api.post(`/consultations/${id}/messages`, body).then((r) => r.data), id);
+  useConsultationMutation((form) => api.post(`/consultations/${id}/messages`, form).then((r) => r.data), id);
 
 export const useConsultationAction = (id) =>
   useConsultationMutation((body) => api.patch(`/consultations/${id}`, body).then((r) => r.data), id);

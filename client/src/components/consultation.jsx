@@ -1,5 +1,5 @@
-import { Award, BadgeCheck, CalendarClock, Languages, MapPin, MessageSquare, Phone, Send, UserCheck } from 'lucide-react';
-import { useState } from 'react';
+import { Award, BadgeCheck, CalendarClock, ImagePlus, Languages, MapPin, MessageSquare, Phone, Send, UserCheck, X } from 'lucide-react';
+import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
 import { useConsultationDecision, useConsultationMessage, useConsultationSlots, useExperts } from '../api/hooks.js';
@@ -359,15 +359,40 @@ export function CaseSummary({ consultation }) {
 export function ChatThread({ consultation, meId, id }) {
   const { t, i18n } = useTranslation();
   const [body, setBody] = useState('');
+  const [photo, setPhoto] = useState(null);
+  const fileRef = useRef(null);
   const send = useConsultationMessage(consultation.id);
   const closed = ['completed', 'cancelled'].includes(consultation.status);
   const title = consultation.mode === 'chat' ? t('consult.chatTitle') : t('consult.messagesTitle');
 
+  // An expert asking "send me a photo of the underside" needs the farmer to be able to answer
+  // in the thread, so a message is text, a photo, or both.
+  const attach = (file) => {
+    if (!file) return;
+    setPhoto({ file, preview: URL.createObjectURL(file) });
+  };
+  const clearPhoto = () => {
+    if (photo) URL.revokeObjectURL(photo.preview);
+    setPhoto(null);
+    if (fileRef.current) fileRef.current.value = '';
+  };
+
   const submit = (e) => {
     e.preventDefault();
-    if (!body.trim()) return;
-    send.mutate({ body: body.trim() }, { onSuccess: () => setBody('') });
+    const text = body.trim();
+    if (!text && !photo) return;
+    const form = new FormData();
+    if (text) form.append('body', text);
+    if (photo) form.append('image', photo.file);
+    send.mutate(form, {
+      onSuccess: () => {
+        setBody('');
+        clearPhoto();
+      },
+    });
   };
+
+  const error = send.error?.response?.data?.error?.message;
 
   return (
     <section className="card p-5" id={id}>
@@ -403,11 +428,27 @@ export function ChatThread({ consultation, meId, id }) {
           const mine = String(m.sender?.id ?? m.sender) === String(meId);
           return (
             <li key={m.id ?? m.sentAt} className={`flex ${mine ? 'justify-end' : 'justify-start'}`}>
-              <div className={`max-w-[85%] rounded-2xl px-4 py-2 text-sm ${mine ? 'bg-brand-700 text-white' : 'bg-surface border border-line'}`}>
-                <p className="whitespace-pre-wrap leading-relaxed">{m.body}</p>
-                <p className={`mt-1 text-xs ${mine ? 'text-white/70' : 'text-ink-muted'}`}>
-                  {t(`consult.role.${m.senderRole}`)} · {shortDate(m.sentAt, i18n.language)}
-                </p>
+              <div
+                className={`max-w-[85%] overflow-hidden rounded-2xl text-sm ${
+                  mine ? 'bg-brand-700 text-white' : 'border border-line bg-surface'
+                } ${m.image?.url ? 'p-1.5' : 'px-4 py-2'}`}
+              >
+                {m.image?.url && (
+                  <a href={m.image.url} target="_blank" rel="noreferrer noopener" className="block">
+                    <img
+                      src={m.image.url}
+                      alt={t('consult.sentPhoto')}
+                      loading="lazy"
+                      className="max-h-64 w-full rounded-xl object-cover"
+                    />
+                  </a>
+                )}
+                <div className={m.image?.url ? 'px-2.5 pb-1 pt-2' : ''}>
+                  {m.body && <p className="whitespace-pre-wrap leading-relaxed">{m.body}</p>}
+                  <p className={`mt-1 text-xs ${mine ? 'text-white/70' : 'text-ink-muted'}`}>
+                    {t(`consult.role.${m.senderRole}`)} · {shortDate(m.sentAt, i18n.language)}
+                  </p>
+                </div>
               </div>
             </li>
           );
@@ -416,19 +457,52 @@ export function ChatThread({ consultation, meId, id }) {
       </ol>
 
       {!closed && (
-        <form className="mt-4 flex gap-2" onSubmit={submit}>
-          <input
-            className="input flex-1"
-            value={body}
-            onChange={(e) => setBody(e.target.value)}
-            placeholder={t('consult.chatPlaceholder')}
-            maxLength={2000}
-            aria-label={title}
-          />
-          <button type="submit" className="btn-primary" disabled={send.isPending || !body.trim()}>
-            <Send className="size-4" aria-hidden="true" />
-            <span className="sr-only">{t('consult.send')}</span>
-          </button>
+        <form className="mt-4" onSubmit={submit}>
+          {photo && (
+            <div className="mb-2 flex items-center gap-3 rounded-card border border-line bg-surface-sunken p-2">
+              <img src={photo.preview} alt="" className="size-14 shrink-0 rounded-control border border-line object-cover" />
+              <p className="min-w-0 flex-1 truncate text-sm font-medium">{photo.file.name}</p>
+              <button type="button" className="btn-ghost px-2" onClick={clearPhoto} aria-label={t('common.cancel')}>
+                <X className="size-4" aria-hidden="true" />
+              </button>
+            </div>
+          )}
+          <div className="flex gap-2">
+            <input
+              ref={fileRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp,image/heic,image/heif"
+              capture="environment"
+              className="sr-only"
+              onChange={(e) => attach(e.target.files?.[0])}
+            />
+            <button
+              type="button"
+              className="btn-secondary px-3"
+              onClick={() => fileRef.current?.click()}
+              aria-label={t('consult.attachPhoto')}
+              title={t('consult.attachPhoto')}
+            >
+              <ImagePlus className="size-4" aria-hidden="true" />
+            </button>
+            <input
+              className="input flex-1"
+              value={body}
+              onChange={(e) => setBody(e.target.value)}
+              placeholder={photo ? t('consult.captionPlaceholder') : t('consult.chatPlaceholder')}
+              maxLength={2000}
+              aria-label={title}
+            />
+            <button type="submit" className="btn-primary" disabled={send.isPending || (!body.trim() && !photo)}>
+              {send.isPending ? <Spinner className="size-4" /> : <Send className="size-4" aria-hidden="true" />}
+              <span className="sr-only">{t('consult.send')}</span>
+            </button>
+          </div>
+          {error && (
+            <Alert tone="danger" className="mt-2">
+              {error}
+            </Alert>
+          )}
         </form>
       )}
     </section>

@@ -1,4 +1,5 @@
 import fs from 'node:fs/promises';
+import path from 'node:path';
 import sharp from 'sharp';
 import request from 'supertest';
 import { connectDatabase, disconnectDatabase } from '../src/config/db.js';
@@ -73,6 +74,17 @@ export function fixedClassifier(distribution, invalidProbability = 0) {
       };
     },
   };
+}
+
+/** Whether a stored upload still exists on disk, for retention tests. */
+export async function storedFileExists(storageKey) {
+  if (!storageKey) return false;
+  try {
+    await fs.access(path.join(process.env.UPLOAD_DIR, storageKey));
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 export async function cleanUploads() {

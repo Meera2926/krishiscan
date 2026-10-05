@@ -37,10 +37,18 @@ export async function purgeExpired(now = new Date()) {
   const expired = await Consultation.find({
     decision: { $ne: 'scheduled' },
     expiresAt: { $lte: now },
-  }).select('scan farmer');
+  }).select('scan farmer messages');
 
   let scansDeleted = 0;
   for (const consultation of expired) {
+    // Photos sent inside the conversation are the farmer's too, and go with it.
+    for (const message of consultation.messages ?? []) {
+      if (message.image?.storageKey) {
+        await storage
+          .remove(message.image.storageKey)
+          .catch((err) => console.warn('[retention] chat image cleanup failed:', err.message));
+      }
+    }
     if (consultation.scan) {
       const scan = await Scan.findById(consultation.scan).select('image');
       if (scan) {

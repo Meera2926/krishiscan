@@ -2,6 +2,7 @@ import { Router } from 'express';
 import mongoose from 'mongoose';
 import { z } from 'zod';
 import { requireAuth } from '../middleware/auth.js';
+import { uploadImage } from '../middleware/upload.js';
 import { cropKey, idParams, objectId, validate } from '../middleware/validate.js';
 import { CONSULTATION_MODES, Consultation, Disease, Scan, Treatment, User } from '../models/index.js';
 import {
@@ -11,6 +12,8 @@ import {
   openingMessage,
   reminderDue,
 } from '../services/consultation.js';
+import { prepareImage } from '../services/imageQuality.js';
+import { storage } from '../services/storage/index.js';
 import { badRequest, conflict, forbidden, notFound, unprocessable } from '../utils/httpError.js';
 
 const router = Router();
@@ -256,9 +259,10 @@ router.post('/:id/decision', validate({ params: idParams, body: decideBody }), a
   res.json({ consultation: serialise(consultation) });
 });
 
-const messageBody = z.object({ body: z.string().trim().min(1).max(2000) });
+// Multipart, so a message can carry a photo. Text alone is still fine; so is a photo alone.
+const messageBody = z.object({ body: z.string().trim().max(2000).optional() });
 
-router.post('/:id/messages', validate({ params: idParams, body: messageBody }), async (req, res) => {
+router.post('/:id/messages', uploadImage, validate({ params: idParams, body: messageBody }), async (req, res) => {
   const { consultation, mine } = await findVisible(req);
   if (consultation.decision !== 'scheduled') throw badRequest('Book the review before messaging.');
   if (['completed', 'cancelled'].includes(consultation.status)) throw conflict('This review is closed.');
@@ -266,17 +270,44 @@ router.post('/:id/messages', validate({ params: idParams, body: messageBody }), 
     throw forbidden('Another expert is handling this review.');
   }
 
+  const body = req.valid.body.body?.trim() ?? '';
+  if (!body && !req.file) throw badRequest('Write a message or attach a photo.');
+
+  let image;
+  if (req.file) {
+    // Same pipeline as a scan: this is a real photo of someone's field, so it gets the same
+    // EXIF-stripping and resizing rather than being stored as uploaded.
+    const { stored } = await prepareImage(req.file.buffer);
+    const saved = await storage.put(stored.buffer, { extension: 'jpg' });
+    image = {
+      url: saved.url,
+      storageKey: saved.storageKey,
+      width: stored.width,
+      height: stored.height,
+      bytes: stored.bytes,
+      format: stored.format,
+    };
+  }
+
   consultation.messages.push({
     sender: req.auth.userId,
     senderRole: mine ? 'farmer' : req.auth.role,
-    body: req.valid.body.body,
+    body,
+    ...(image && { image }),
   });
   // The first expert to answer takes the case.
   if (!mine && !consultation.expert) {
     consultation.expert = req.auth.userId;
     consultation.status = 'confirmed';
   }
-  await consultation.save();
+
+  try {
+    await consultation.save();
+  } catch (err) {
+    // Do not leave the photo orphaned in storage if the save fails.
+    if (image) await storage.remove(image.storageKey).catch(() => {});
+    throw err;
+  }
   await consultation.populate('expert', 'name expertProfile');
   res.status(201).json({ consultation: serialise(consultation) });
 });

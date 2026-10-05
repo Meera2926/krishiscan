@@ -310,6 +310,9 @@ export default {
     },
   },
   consult: {
+    attachPhoto: 'Attach a photo',
+    captionPlaceholder: 'Add a note (optional)',
+    sentPhoto: 'Photo sent in this conversation',
     messagesTitle: 'Messages',
     liveNow: 'Live now',
     startsAt: 'Starts at {{time}}',

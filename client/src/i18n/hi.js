@@ -311,6 +311,9 @@ export default {
     },
   },
   consult: {
+    attachPhoto: 'फ़ोटो जोड़ें',
+    captionPlaceholder: 'कुछ लिखें (वैकल्पिक)',
+    sentPhoto: 'इस बातचीत में भेजी गई फ़ोटो',
     messagesTitle: 'संदेश',
     liveNow: 'अभी लाइव',
     startsAt: '{{time}} बजे शुरू',
