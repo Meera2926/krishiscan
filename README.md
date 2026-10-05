@@ -3,9 +3,12 @@
 A MERN web app that diagnoses crop disease from a leaf photo, **tracks how the disease progresses**,
 checks whether a treatment worked, and warns farmers before symptoms appear.
 
-Built for six crops grown across India: **rice (paddy), wheat, maize (corn), potato, tomato and
-grape** (27 disease and healthy classes). Crop pickers and the API accept either name, because
-picking the wrong crop does not fail — it routes the photo to another crop's classifier.
+Built for eleven crops grown across India: **rice (paddy), wheat, maize (corn), potato, tomato,
+grape, onion, garlic, cabbage, turnip and broccoli** (43 disease and healthy classes). Crop
+pickers and the API accept the local name too — pyaaz, lahsun, patta gobhi, shalgam — because
+picking the wrong crop used not to fail, it just routed the photo to another crop's classifier
+and got a confident answer back. For the five crops served by the classifier trained here, that
+is now caught and refused outright; see **Telling the crops apart** below.
 
 ---
 
@@ -100,21 +103,98 @@ client/src
 
 ## Models
 
-Both are pinned to exact Hugging Face commits in `server/src/services/inference/catalog.js`, so a
-model can never change under the app:
+The two downloaded models are pinned to exact Hugging Face commits in
+`server/src/services/inference/catalog.js`, so a model can never change under the app. The third
+was trained for this project and ships with it:
 
 | Model | Covers | Size |
 |---|---|---|
 | `onnx-community/mobilenet_v2_1.0_224-plant-disease-identification-ONNX` | tomato, potato, maize, grape (PlantVillage, 38 classes) | 9 MB |
 | `wambugu71/crop_leaf_diseases_vit_onnx` | rice, wheat, maize, potato, plus an `Invalid` class | 22 MB |
+| `weights/newcrops-v1.onnx` (trained here) | onion, garlic, cabbage, turnip, broccoli (16 classes) | 6 MB |
+
+### The model trained here
+
+No public model covers alliums or brassicas, so adding onion and garlic meant training one.
+A MobileNetV3-Small, ImageNet-pretrained, fine-tuned on **3,826 real field photos** from three
+CC BY 4.0 datasets:
+
+- onion — *COLD: chilli and onion leaf dataset*, Mendeley `7nxxn4gj5s` (815 photos)
+- garlic — *Garlic leaf images for Tipburn identification*, Mendeley `wcgx6bbvw7` (1,088 originals)
+- cabbage, turnip, broccoli — *Comprehensive Vegetable Leaf Disease Image Collection*, Mendeley
+  `rh8c5tgg5k` (1,923 photos)
+
+**96.9% on a held-out split, 100% crop accuracy** — the crop confusion matrix is diagonal, which
+matters because three of these are brassicas sharing the same pathogens. 1.3 ms per image on CPU.
+Only the authors' original photographs were used; their pre-augmented copies (6,356 of them for
+garlic alone) were discarded, because augmented siblings of a test photo appearing in training
+turns an accuracy into a measure of memorisation.
+
+Two traps in this data are worth knowing about if you retrain:
+
+- **2,107 of the 3,826 photos are near-duplicates** — burst shots of the same leaf. Splitting at
+  random puts siblings on both sides. `prep.py` groups them by perceptual hash and the split is by
+  group, so some classes have far fewer *independent* photos than their file count suggests:
+  `cabbage_healthy` is 132 files but 11 independent leaves.
+- **The background was the label.** A first model scored 95.4% overall — and 95.1% with the centre
+  of every test photo blanked out, because each class had been photographed in its own session.
+  Harder augmentation made it worse. The fix was to segment the leaf and replace the surround with
+  a per-image random colour, so background carries no class information by construction. The model
+  scores the same on unmasked photos, so nothing is segmented at serving time.
+
+Cauliflower was in the same dataset and is **deliberately excluded**: four of its five classes have
+13–30 independent photos, which is not enough to be trusted on someone's field.
 
 The ViT's `Invalid` class doubles as the not-a-leaf gate for every crop. Measured on this machine:
 **~90 ms per image on CPU, ~165 MB resident**, which fits a 512 MB free instance.
+
+## Telling the crops apart
+
+A farmer picking the wrong crop from the list used to fail silently: the photo was routed to
+another crop's classifier, which answered confidently. A corn leaf declared as rice came back
+"rice leaf blast, 90%".
+
+For the five crops the model trained here serves, that is now caught. Because one model was
+trained on all five at once, how much probability lands on the declared crop's classes is
+evidence about *which plant is in the photo*, not just which disease. Below `CROP_MATCH_FLOOR`
+the scan is refused as `wrong_crop` and **no disease is named at all** - not a guess, not a
+"healthy", nothing.
+
+The floor is 0.85, chosen from a sweep over 192 genuine photos and 175 impostor attempts (a photo
+of one of the six older crops submitted as each of the five new ones):
+
+| floor | keeps genuine photos | refuses impostors |
+|---|---|---|
+| 0.80 | 100.0% | 95.4% |
+| **0.85** | **99.5%** | **97.7%** |
+| 0.90 | 92.2% | 98.9% |
+| 0.95 | 75.0% | 100.0% |
+
+0.95 would turn away every impostor and one real photo in four, which is the wrong way round for
+someone standing in a field with a diseased crop. Re-run the sweep whenever the model or the
+evaluation set changes.
+
+The six older crops keep the softer rule they always had: their models each know only a few crops,
+so a disagreement there means the model is out of its depth, not that the farmer is wrong. Those
+scans are flagged `crop_mismatch` and still answered.
 
 ## Honest limitations
 
 Read these before quoting any accuracy number.
 
+- **The five new crops score far higher than the six old ones, and that gap is partly the data,
+  not the model.** Their photos come from curated research datasets, where a leaf is centred and
+  well lit; the six older crops are measured on Wikimedia field photos with whole plants, hands
+  and sky in frame. Through the full pipeline the new crops score 92.8-100% per class (onion
+  lowest, the brassicas highest), but treat those as an upper bound until they are re-measured on
+  photographs taken by farmers. The one cross-dataset signal available is encouraging rather than
+  conclusive: the model was trained with backgrounds randomised and scores the same on untouched
+  photos.
+- **`cabbage_healthy` rests on 11 independent leaves**, and its test split on two. The number
+  reported for it is not meaningful; it is kept because a crop without a healthy class forces
+  every healthy leaf into a disease.
+- **Garlic tipburn is a disorder, not a diagnosis.** Several things cause it — Stemphylium,
+  potassium or moisture stress, salinity — and the model only sees that the tips are burnt.
 - **Measured accuracy is modest, and this is the honest number.** On `server/eval` — 63 real field
   photos of the six crops plus six non-leaf photos, gathered from Wikimedia Commons and checked by
   eye — the app answers **98% of leaf photos**, is right **50% of the time** when it answers, and
