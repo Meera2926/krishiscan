@@ -1,8 +1,8 @@
-import { CalendarClock, MapPin, MessageSquare, Phone, Send, UserCheck } from 'lucide-react';
+import { Award, BadgeCheck, CalendarClock, Languages, MapPin, MessageSquare, Phone, Send, UserCheck } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
-import { useConsultationDecision, useConsultationMessage, useConsultationSlots } from '../api/hooks.js';
+import { useConsultationDecision, useConsultationMessage, useConsultationSlots, useExperts } from '../api/hooks.js';
 import { shortDate } from '../lib/format.js';
 import { Alert, Field, Spinner } from './ui.jsx';
 
@@ -77,6 +77,99 @@ export function ConsultationOffer({ consultation }) {
   );
 }
 
+/**
+ * What a farmer needs to choose an adviser: what they are qualified in, where they work and how
+ * long they have been doing it. A name alone is not a basis for trusting crop advice.
+ */
+export function ExpertCard({ expert, compact = false }) {
+  const { t } = useTranslation();
+  if (!expert) return null;
+  const place = [expert.district, expert.state].filter(Boolean).join(', ');
+
+  return (
+    <div className={compact ? 'flex gap-3' : 'flex gap-3.5'}>
+      <span className="grid size-11 shrink-0 place-items-center rounded-control bg-gradient-to-br from-brand-500 to-brand-800 text-white ring-1 ring-brand-900/15">
+        <UserCheck className="size-5" aria-hidden="true" />
+      </span>
+      <div className="min-w-0 flex-1">
+        <p className="flex flex-wrap items-center gap-1.5 font-bold leading-tight">
+          {expert.name}
+          {expert.qualification && <BadgeCheck className="size-4 shrink-0 text-brand-600" aria-hidden="true" />}
+        </p>
+        {expert.qualification && <p className="text-sm font-semibold text-brand-700">{expert.qualification}</p>}
+        {(expert.designation || expert.organisation) && (
+          <p className="mt-0.5 text-sm text-ink-muted">{[expert.designation, expert.organisation].filter(Boolean).join(' · ')}</p>
+        )}
+        {!compact && (
+          <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-ink-subtle">
+            {expert.experienceYears != null && (
+              <span className="inline-flex items-center gap-1">
+                <Award className="size-3.5" aria-hidden="true" />
+                {t('consult.yearsExperience', { count: expert.experienceYears })}
+              </span>
+            )}
+            {place && (
+              <span className="inline-flex items-center gap-1">
+                <MapPin className="size-3.5" aria-hidden="true" />
+                {place}
+              </span>
+            )}
+            {expert.languages?.length > 0 && (
+              <span className="inline-flex items-center gap-1">
+                <Languages className="size-3.5" aria-hidden="true" />
+                {expert.languages.map((l) => t(`lang.${l}`, l)).join(', ')}
+              </span>
+            )}
+          </div>
+        )}
+        {!compact && expert.bio && <p className="mt-2 text-sm leading-relaxed text-ink-muted">{expert.bio}</p>}
+      </div>
+    </div>
+  );
+}
+
+/** Choose a named adviser, or leave it to whoever is free. */
+function ExpertPicker({ crop, mode, value, onChange }) {
+  const { t } = useTranslation();
+  const { data: experts = [], isLoading } = useExperts({ ...(crop && { crop }), ...(mode && { mode }) });
+  if (isLoading) return <Spinner />;
+  if (!experts.length) return null;
+
+  const options = [{ id: '', name: t('consult.anyExpert'), any: true }, ...experts];
+  return (
+    <fieldset>
+      <legend className="label">{t('consult.chooseExpert')}</legend>
+      <div className="space-y-2">
+        {options.map((e) => (
+          <label
+            key={e.id || 'any'}
+            className={`flex cursor-pointer gap-3 rounded-card border p-3.5 transition-colors ${
+              value === e.id ? 'border-brand-600 bg-brand-50' : 'border-line hover:border-brand-300'
+            }`}
+          >
+            <input
+              type="radio"
+              name="expert"
+              value={e.id}
+              checked={value === e.id}
+              onChange={() => onChange(e.id)}
+              className="sr-only"
+            />
+            {e.any ? (
+              <span className="min-w-0 flex-1">
+                <span className="block font-bold">{e.name}</span>
+                <span className="mt-0.5 block text-sm text-ink-muted">{t('consult.anyExpertHint')}</span>
+              </span>
+            ) : (
+              <ExpertCard expert={e} />
+            )}
+          </label>
+        ))}
+      </div>
+    </fieldset>
+  );
+}
+
 /** Pick how to meet the expert, and when. */
 export function BookingForm({ consultation, onDone }) {
   const { t, i18n } = useTranslation();
@@ -84,6 +177,7 @@ export function BookingForm({ consultation, onDone }) {
   const decide = useConsultationDecision(consultation.id);
 
   const [mode, setMode] = useState('chat');
+  const [expertId, setExpertId] = useState('');
   const [slot, setSlot] = useState('');
   const [contactPhone, setPhone] = useState('');
   const [visitAddress, setAddress] = useState('');
@@ -101,6 +195,7 @@ export function BookingForm({ consultation, onDone }) {
         scheduledFor: slot,
         ...(mode === 'call' && { contactPhone }),
         ...(mode === 'visit' && { visitAddress }),
+        ...(expertId && { expertId }),
         ...(question.trim() && { question: question.trim() }),
       },
       { onSuccess: () => onDone?.() },
@@ -132,6 +227,8 @@ export function BookingForm({ consultation, onDone }) {
           })}
         </div>
       </fieldset>
+
+      <ExpertPicker crop={consultation.caseSummary?.crop} mode={mode} value={expertId} onChange={setExpertId} />
 
       {mode === 'call' && (
         <Field label={t('consult.phone')} htmlFor="c-phone" error={error?.fields?.contactPhone}>
@@ -200,6 +297,9 @@ export function ScheduledCard({ consultation }) {
             {formatSlot(consultation.scheduledFor, i18n.language)}
             {consultation.expert?.name ? ` · ${consultation.expert.name}` : ` · ${t('consult.awaitingExpert')}`}
           </p>
+          {consultation.expert?.expertProfile?.qualification && (
+            <p className="mt-0.5 text-sm font-semibold text-brand-700">{consultation.expert.expertProfile.qualification}</p>
+          )}
           <Link to={`/consultations/${consultation.id}`} className="btn-secondary mt-3">
             {t('consult.open')}
           </Link>
@@ -267,6 +367,32 @@ export function ChatThread({ consultation, meId }) {
   return (
     <section className="card p-5">
       <h2 className="mb-3 font-semibold">{t('consult.chatTitle')}</h2>
+      {/* The photo and the model's answer are the first things in the thread, so the farmer
+          never has to describe what they already uploaded. */}
+      {consultation.caseSummary?.imageUrl && (
+        <div className="mb-4 flex gap-3 rounded-card border border-line bg-surface-sunken p-3">
+          <img
+            src={consultation.caseSummary.imageUrl}
+            alt={t('consult.caseTitle')}
+            className="size-20 shrink-0 rounded-control border border-line object-cover"
+          />
+          <div className="min-w-0 text-sm">
+            <p className="font-semibold">{consultation.caseSummary.diseaseName || t('common.unknown')}</p>
+            {consultation.caseSummary.confidence != null && (
+              <p className="text-ink-muted">
+                {t('result.confidence')}: {Math.round(consultation.caseSummary.confidence * 100)}%
+              </p>
+            )}
+            {consultation.caseSummary.severityPercent != null && (
+              <p className="text-ink-muted">
+                {t('progression.severity')}: {consultation.caseSummary.severityPercent}%
+              </p>
+            )}
+            <p className="mt-1 text-xs text-ink-subtle">{t('consult.photoForwarded')}</p>
+          </div>
+        </div>
+      )}
+
       <ol className="space-y-3">
         {consultation.messages?.map((m) => {
           const mine = String(m.sender?.id ?? m.sender) === String(meId);

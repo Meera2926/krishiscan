@@ -83,9 +83,61 @@ async function placeholderImage(label, hue) {
 }
 
 export async function seedDemo() {
+  // Demo accounts only. The qualifications below are invented for the demo; a real deployment
+  // fills these in from the actual advisers it has on its panel.
   const demoUsers = [
     { name: 'Demo Farmer', email: 'farmer@demo.in', role: 'farmer', state: 'Maharashtra', district: 'Nashik' },
-    { name: 'Demo Expert', email: 'expert@demo.in', role: 'expert', state: 'Karnataka', district: 'Bengaluru Rural' },
+    {
+      name: 'Demo Expert',
+      email: 'expert@demo.in',
+      role: 'expert',
+      state: 'Karnataka',
+      district: 'Bengaluru Rural',
+      expertProfile: {
+        qualification: 'M.Sc. (Agri.) Plant Pathology',
+        designation: 'Subject Matter Specialist, Plant Protection',
+        organisation: 'Krishi Vigyan Kendra, Bengaluru Rural',
+        experienceYears: 11,
+        crops: ['tomato', 'potato', 'grape'],
+        languages: ['en', 'hi'],
+        modes: ['chat', 'call', 'visit'],
+        bio: 'Works on blight and wilt management in vegetables, and on vineyard disease rounds through the monsoon.',
+      },
+    },
+    {
+      name: 'Dr Anjali Rao',
+      email: 'anjali.expert@demo.in',
+      role: 'expert',
+      state: 'Telangana',
+      district: 'Warangal',
+      expertProfile: {
+        qualification: 'Ph.D. Plant Pathology',
+        designation: 'Principal Scientist',
+        organisation: 'State Agricultural University, Warangal',
+        experienceYears: 18,
+        crops: ['rice', 'maize'],
+        languages: ['en', 'hi'],
+        modes: ['chat', 'call'],
+        bio: 'Rice blast and sheath blight; runs the district paddy advisory during kharif.',
+      },
+    },
+    {
+      name: 'Harpreet Singh',
+      email: 'harpreet.expert@demo.in',
+      role: 'expert',
+      state: 'Punjab',
+      district: 'Ludhiana',
+      expertProfile: {
+        qualification: 'M.Sc. Agronomy',
+        designation: 'Agriculture Development Officer',
+        organisation: 'Department of Agriculture, Punjab',
+        experienceYears: 7,
+        crops: ['wheat', 'maize', 'potato'],
+        languages: ['en', 'hi'],
+        modes: ['chat', 'visit'],
+        bio: 'Wheat rust scouting and field visits across Ludhiana block.',
+      },
+    },
     { name: 'Neighbour Farmer', email: 'neighbour@demo.in', role: 'farmer', state: 'Maharashtra', district: 'Nashik' },
   ];
   const users = {};
@@ -95,8 +147,12 @@ export async function seedDemo() {
       user = new User(u);
       await user.setPassword('demo1234');
       await user.save();
+    } else if (u.expertProfile && !user.expertProfile?.qualification) {
+      user.expertProfile = u.expertProfile;
+      await user.save();
     }
-    users[u.role === 'expert' ? 'expert' : u.email.split('@')[0]] = user;
+    if (u.email === 'expert@demo.in') users.expert = user;
+    else users[u.email.split('@')[0]] = user;
   }
 
   if (await Scan.exists({ modelVersion: 'demo-seed' })) {

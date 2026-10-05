@@ -14,6 +14,24 @@ const userSchema = new mongoose.Schema(
     state: { type: String, trim: true, maxlength: 60 },
     district: { type: String, trim: true, maxlength: 60 },
     location: { type: pointSchema, default: undefined },
+
+    /**
+     * Shown to a farmer choosing who to book. Only meaningful on an expert account; a farmer
+     * picking a stranger to advise on their crop deserves to see what that person is qualified
+     * in, not just a name.
+     */
+    expertProfile: {
+      qualification: { type: String, trim: true, maxlength: 120 },
+      designation: { type: String, trim: true, maxlength: 120 },
+      organisation: { type: String, trim: true, maxlength: 120 },
+      experienceYears: { type: Number, min: 0, max: 60 },
+      // Crop keys this expert works with; empty means all supported crops.
+      crops: { type: [String], default: [] },
+      languages: { type: [String], default: [] },
+      // Which of call / chat / visit they offer.
+      modes: { type: [String], default: [] },
+      bio: { type: String, trim: true, maxlength: 600 },
+    },
     // Bumping this invalidates every refresh token issued to the user (logout everywhere).
     tokenVersion: { type: Number, default: 0, select: false },
   },

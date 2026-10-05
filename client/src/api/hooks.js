@@ -20,6 +20,7 @@ export const keys = {
   consultations: (params) => ['consultations', params],
   consultation: (id) => ['consultation', id],
   consultationSlots: ['consultations', 'slots'],
+  experts: (params) => ['consultations', 'experts', params],
 };
 
 export const useCrops = () => useQuery({ queryKey: keys.crops, queryFn: () => get('/crops').then((d) => d.crops), staleTime: 60 * 60_000 });
@@ -154,6 +155,9 @@ export const useConsultation = (id) =>
     // A live chat should not need a refresh to show the expert's reply.
     refetchInterval: (query) => (query.state.data?.status === 'completed' ? false : 15_000),
   });
+
+export const useExperts = (params = {}) =>
+  useQuery({ queryKey: keys.experts(params), queryFn: () => get('/consultations/experts', params).then((d) => d.experts), staleTime: 10 * 60_000 });
 
 export const useConsultationSlots = () =>
   useQuery({ queryKey: keys.consultationSlots, queryFn: () => get('/consultations/slots').then((d) => d.slots), staleTime: 10 * 60_000 });

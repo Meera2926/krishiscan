@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Link, useNavigate, useParams } from 'react-router';
 import { useDeleteScan, useScan, useUpdateScan } from '../api/hooks.js';
 import { ConsultationOffer } from '../components/consultation.jsx';
+import { FollowUpCard, OrganicRemedies } from '../components/remedies.jsx';
 import { DiseaseAdvice, useCropName } from '../components/domain.jsx';
 import { SeverityMeter } from '../components/progression.jsx';
 import { useSpeech } from '../lib/useSpeech.js';
@@ -64,7 +65,7 @@ export default function ScanResult() {
   if (isLoading) return <FullPageSpinner />;
   if (error) return <ErrorState error={error} onRetry={refetch} />;
 
-  const { scan, disease, alternatives = {} } = data;
+  const { scan, disease, alternatives = {}, remedies = [], followUp = null } = data;
   const lang = i18n.language;
   const review = scan.review ?? {};
   const reviewed = review.status === 'confirmed' || review.status === 'corrected';
@@ -217,6 +218,10 @@ export default function ScanResult() {
               )}
             </div>
           </section>
+
+          {followUp && <FollowUpCard followUp={followUp} plotId={scan.plot?.id} />}
+
+          {!disease?.isHealthy && <OrganicRemedies remedies={remedies} sourceUrl={disease?.sourceUrl} />}
 
           {disease && (scan.status !== 'rejected' || reviewed) && (
             <section className="card p-5">

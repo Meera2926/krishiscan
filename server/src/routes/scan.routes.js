@@ -8,6 +8,8 @@ import { cropKey, idParams, objectId, validate } from '../middleware/validate.js
 import { Consultation, Disease, Plot, SCAN_STATUS, Scan } from '../models/index.js';
 import { offerConsultation } from '../services/consultationOffers.js';
 import { diagnose } from '../services/diagnosis.js';
+import { followUpPlan } from '../services/followUp.js';
+import { organicRemedies } from '../services/remedies.js';
 import { prepareImage } from '../services/imageQuality.js';
 import { estimateSeverity } from '../services/severity.js';
 import { GATE_MODEL_CROPS, SUPPORTED_CROPS } from '../services/inference/catalog.js';
@@ -61,7 +63,15 @@ async function loadAdvisory(scan) {
       return [d.key, { id: String(_id), ...rest }];
     }),
   );
-  return { disease: key ? (byKey[key] ?? null) : null, alternatives: byKey };
+  const disease = key ? (byKey[key] ?? null) : null;
+  return {
+    disease,
+    alternatives: byKey,
+    // The safe treatments the knowledge base already recommends, with somewhere to buy them.
+    remedies: disease ? organicRemedies(disease) : [],
+    // Progression tracking needs a second photo, so the result always names the day to take it.
+    followUp: scan.status === 'rejected' ? null : followUpPlan(disease, scan.severity, scan.createdAt),
+  };
 }
 
 /** Severity change against the plot's previous reliable scan: the per-scan view of progression. */

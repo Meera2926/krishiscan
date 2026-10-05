@@ -1,8 +1,8 @@
 import { Router } from 'express';
 import { z } from 'zod';
 import { requireAuth } from '../middleware/auth.js';
-import { idParams, objectId, validate } from '../middleware/validate.js';
-import { CONSULTATION_MODES, Consultation, Disease, Scan, Treatment } from '../models/index.js';
+import { cropKey, idParams, objectId, validate } from '../middleware/validate.js';
+import { CONSULTATION_MODES, Consultation, Disease, Scan, Treatment, User } from '../models/index.js';
 import {
   availableSlots,
   buildCaseSummary,
@@ -20,7 +20,7 @@ const isExpert = (req) => ['expert', 'admin'].includes(req.auth.role);
 async function findVisible(req) {
   const consultation = await Consultation.findById(req.valid.params.id)
     .populate('farmer', 'name district state preferredLanguage')
-    .populate('expert', 'name')
+    .populate('expert', 'name state district expertProfile')
     .populate('scan', 'image declaredCrop diseaseKey severity status statusReason top createdAt')
     .populate('plot', 'name crop variety sowingDate');
   if (!consultation) throw notFound('Consultation not found');
@@ -39,6 +39,36 @@ router.get('/slots', (_req, res) => {
   res.json({ slots: availableSlots().map((d) => d.toISOString()) });
 });
 
+/**
+ * The panel a farmer chooses from. Credentials are the point: picking a stranger to advise on
+ * your crop is a decision, and it needs more than a name to go on.
+ */
+router.get('/experts', validate({ query: z.object({ crop: cropKey.optional(), mode: z.enum(CONSULTATION_MODES).optional() }) }), async (req, res) => {
+  const { crop, mode } = req.valid.query;
+  const experts = await User.find({ role: { $in: ['expert', 'admin'] } })
+    .select('name state district expertProfile')
+    .sort({ 'expertProfile.experienceYears': -1, name: 1 })
+    .lean();
+
+  const matches = experts.filter((e) => {
+    const p = e.expertProfile ?? {};
+    // An empty list means "all crops" / "all modes", so an unfilled profile is never hidden.
+    const cropOk = !crop || !p.crops?.length || p.crops.includes(crop);
+    const modeOk = !mode || !p.modes?.length || p.modes.includes(mode);
+    return cropOk && modeOk;
+  });
+
+  res.json({
+    experts: matches.map((e) => ({
+      id: String(e._id),
+      name: e.name,
+      state: e.state ?? null,
+      district: e.district ?? null,
+      ...(e.expertProfile ?? {}),
+    })),
+  });
+});
+
 const listQuery = z.object({
   scope: z.enum(['mine', 'queue']).default('mine'),
   status: z.enum(['open', 'confirmed', 'completed', 'cancelled', 'expired']).optional(),
@@ -52,7 +82,12 @@ router.get('/', validate({ query: listQuery }), async (req, res) => {
 
   const filter =
     scope === 'queue'
-      ? { decision: 'scheduled', status: { $in: status ? [status] : ['open', 'confirmed'] } }
+      ? {
+          decision: 'scheduled',
+          status: { $in: status ? [status] : ['open', 'confirmed'] },
+          // Unclaimed cases, plus the ones this farmer asked for by name.
+          $or: [{ expert: null }, { expert: req.auth.userId }],
+        }
       : { farmer: req.auth.userId, ...(status && { status }) };
 
   const [items, total] = await Promise.all([
@@ -62,7 +97,7 @@ router.get('/', validate({ query: listQuery }), async (req, res) => {
       .skip((page - 1) * limit)
       .limit(limit)
       .populate('farmer', 'name district state')
-      .populate('expert', 'name')
+      .populate('expert', 'name expertProfile')
       .populate('scan', 'image declaredCrop diseaseKey severity')
       .populate('plot', 'name crop'),
     Consultation.countDocuments(filter),
@@ -96,6 +131,8 @@ const decideBody = z.discriminatedUnion('decision', [
     contactPhone: z.string().trim().min(6).max(20).optional(),
     visitAddress: z.string().trim().min(5).max(300).optional(),
     question: z.string().trim().max(1000).optional(),
+    // Optional: leaving it empty puts the case in the open queue for any expert to take.
+    expertId: objectId.optional(),
   }),
 ]);
 
@@ -132,6 +169,13 @@ router.post('/:id/decision', validate({ params: idParams, body: decideBody }), a
   consultation.visitAddress = body.visitAddress ?? null;
   consultation.question = body.question ?? null;
   consultation.status = 'open';
+
+  if (body.expertId) {
+    const expert = await User.findOne({ _id: body.expertId, role: { $in: ['expert', 'admin'] } }).select('_id');
+    if (!expert) throw unprocessable('Unknown expert', { expertId: ['That expert is not available.'] });
+    // Requested, not confirmed: the expert still has to accept before it is a commitment.
+    consultation.expert = expert._id;
+  }
   // Booked cases are kept; only unanswered ones are swept away.
   consultation.expiresAt = null;
 
@@ -170,7 +214,7 @@ router.post('/:id/messages', validate({ params: idParams, body: messageBody }), 
     consultation.status = 'confirmed';
   }
   await consultation.save();
-  await consultation.populate('expert', 'name');
+  await consultation.populate('expert', 'name expertProfile');
   res.status(201).json({ consultation: serialise(consultation) });
 });
 

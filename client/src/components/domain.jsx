@@ -72,13 +72,18 @@ export function DiseaseAdvice({ disease, compact = false }) {
       {!compact && hasConditions && (
         <div>
           <SectionTitle icon={Thermometer}>{t('library.favorable')}</SectionTitle>
-          <dl className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <dl className="grid grid-cols-2 gap-2.5 sm:grid-cols-3">
             {(fc.tempMinC != null || fc.tempMaxC != null) && (
               <Condition label={t('library.temp')} value={`${fc.tempMinC ?? '?'}–${fc.tempMaxC ?? '?'} °C`} />
             )}
             {fc.humidityPct != null && <Condition label={t('library.humidity')} value={`≥ ${fc.humidityPct}%`} />}
             {fc.leafWetnessHours != null && <Condition label={t('library.leafWetness')} value={`${fc.leafWetnessHours} h`} />}
-            {fc.rainfall && <Condition label={t('library.rainfall')} value={fc.rainfall} />}
+            {fc.rainfall && (
+              <div className="col-span-full rounded-control bg-canvas px-3.5 py-2.5 ring-1 ring-line">
+                <dt className="text-xs font-medium text-ink-subtle">{t('library.rainfall')}</dt>
+                <dd className="mt-0.5 text-sm leading-relaxed">{fc.rainfall}</dd>
+              </div>
+            )}
           </dl>
         </div>
       )}
@@ -88,9 +93,9 @@ export function DiseaseAdvice({ disease, compact = false }) {
       {disease.chemicalControl?.length > 0 && (
         <div>
           <SectionTitle icon={FlaskConical}>{t('result.chemical')}</SectionTitle>
-          <div className="overflow-x-auto rounded-xl border border-line">
+          <div className="overflow-x-auto rounded-control border border-line">
             <table className="w-full min-w-[480px] text-left text-sm">
-              <thead className="bg-canvas text-xs uppercase tracking-wide text-ink-muted">
+              <thead className="bg-canvas text-xs font-bold uppercase tracking-[0.08em] text-ink-subtle">
                 <tr>
                   <th className="px-3 py-2 font-semibold">{t('result.activeIngredient')}</th>
                   <th className="px-3 py-2 font-semibold">{t('result.dose')}</th>
@@ -141,8 +146,8 @@ function hostname(url) {
 
 function SectionTitle({ icon: Icon, children }) {
   return (
-    <h3 className="mb-2 flex items-center gap-2 font-semibold">
-      <Icon className="size-4 text-brand-700" aria-hidden="true" />
+    <h3 className="mb-2.5 flex items-center gap-2 text-[15px] font-bold">
+      <Icon className="size-4 text-brand-600" aria-hidden="true" />
       {children}
     </h3>
   );
@@ -167,9 +172,9 @@ function AdviceList({ icon, title, items }) {
 
 function Condition({ label, value }) {
   return (
-    <div className="rounded-xl bg-canvas px-3 py-2">
-      <dt className="text-xs text-ink-muted">{label}</dt>
-      <dd className="font-semibold">{value}</dd>
+    <div className="rounded-control bg-canvas px-3.5 py-2.5 ring-1 ring-line">
+      <dt className="text-xs font-medium text-ink-subtle">{label}</dt>
+      <dd className="mt-0.5 font-bold tabular-nums">{value}</dd>
     </div>
   );
 }

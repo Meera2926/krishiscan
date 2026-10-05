@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Link, useNavigate, useParams } from 'react-router';
 import { useConsultation, useConsultationAction } from '../api/hooks.js';
 import { useAuth } from '../auth/AuthProvider.jsx';
-import { BookingForm, CaseSummary, ChatThread, MODE_ICONS } from '../components/consultation.jsx';
+import { BookingForm, CaseSummary, ChatThread, ExpertCard, MODE_ICONS } from '../components/consultation.jsx';
 import { Alert, ErrorState, Field, PageHeader, Spinner } from '../components/ui.jsx';
 import { shortDate } from '../lib/format.js';
 
@@ -135,6 +135,13 @@ export default function ConsultationDetail() {
             <p className="font-normal">{t('consult.retentionNotice', { date: shortDate(consultation.expiresAt, i18n.language) })}</p>
           )}
         </Alert>
+      )}
+
+      {consultation.expert?.expertProfile?.qualification && (
+        <section className="card p-5">
+          <h2 className="mb-3 font-bold">{t('consult.expertCredentials')}</h2>
+          <ExpertCard expert={{ ...consultation.expert.expertProfile, name: consultation.expert.name }} />
+        </section>
       )}
 
       <CaseSummary consultation={consultation} />

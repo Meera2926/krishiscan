@@ -19,7 +19,9 @@ picking the wrong crop does not fail — it routes the photo to another crop's c
 | **Treatment efficacy + safe harvest** | Log a spray, and the app compares severity before and after it to say whether it worked, and computes the safe-to-harvest date from the product's pre-harvest interval. |
 | **Weather risk forecast** | 13 rules from published epidemiology (Hutton Criteria, ICAR-CPRI **JHULSACAST**, TOMCAST, TNAU rice blast and others) run over a 7-day Open-Meteo forecast. |
 | **Outbreak map** | Shared scans are aggregated on a ~5 km grid so no farm can be identified, and farmers are alerted to disease reported within 10 km of their plots. |
-| **Expert consultations** | When the app is unsure, or progression shows a spray did not work, the farmer is *asked* whether they want an expert — phone call, live chat or farm visit — and picks a slot. The chat opens with the case already written out, so nobody retells it. Unanswered offers are reminded for a week, then deleted with their photo. |
+| **Expert consultations** | When the app is unsure, or progression shows a spray did not work, the farmer is *asked* whether they want an expert — phone call, live chat or farm visit — and picks a slot and, if they want, a named adviser whose qualification, employer and experience are shown. The chat opens with the photo, the model's answer and the severity history already in it, so nobody retells the case. Unanswered offers are reminded for a week, then deleted with their photo. |
+| **Organic treatments you can buy** | Each diagnosis lists the organic options already recorded against that disease, names the active behind them, and links a search on retailers that stock farm inputs. |
+| **Follow-up reminder** | Every diagnosis names the day to photograph the same leaf again, so progression tracking has a second scan to compare against. |
 | **Expert review** | Uncertain scans also queue for an agronomist's label check; their corrections never overwrite the model's original answer, so model-vs-expert agreement measures real field accuracy. |
 | **Accessibility** | English and Hindi UI, spoken advice through the browser's speech API, installable PWA, works on a free hosting tier. |
 
@@ -56,7 +58,7 @@ Cloudinary instead of the server's disk, which most free hosts wipe on every dep
 |---|---|
 | `npm run dev` | API on :5000 and Vite on :5173 (Vite proxies `/api`, so dev matches production) |
 | `npm run dev:watch -w server` | Same, with the API restarting on source changes |
-| `npm test` | 89 server tests: diagnosis triage, photo quality, severity, progression, consultations, retention, risk rules, API |
+| `npm test` | 100 server tests: diagnosis triage, photo quality, severity, progression, consultations, retention, remedies, risk rules, API |
 | `npm run build` | Production React build; Express serves it from the same origin |
 | `npm run seed` | Crops and diseases (`-- --demo` adds demo data) |
 | `node server/scripts/evaluate-models.js <dir>` | Accuracy, rejection rate and latency on your own labelled photos |
@@ -73,6 +75,8 @@ server/src
     progression.js trend, AUDPC, treatment efficacy
     consultation.js when to offer an expert, slots, reminder schedule (pure)
     retention.js  reminders and the week-long delete sweep
+    remedies.js   organic advice -> product name -> retailer search links
+    followUp.js   when to photograph the same leaf again
     risk/        weather-risk rules and engine
   seed/data/     disease knowledge base (symptoms, treatments, sources)
 client/src
@@ -143,6 +147,24 @@ hourly from `services/retention.js`; `RETENTION_DAYS` and the reminder days live
 Two things a real deployment would need: reminders go to the dashboard, not to email or SMS, because
 no provider is configured; and the sweep assumes a single instance, which is what the free Render
 tier gives.
+
+## Buying treatments, and what the app will not claim
+
+Each diagnosis shows the organic options **already recorded against that disease** in the
+knowledge base, with the source they came from. `services/remedies.js` adds two things and no
+more: the name of the active behind a line of advice (so "Trichoderma asperellum @ 1 kg/acre"
+becomes a product a shop recognises), and links to retailers.
+
+Those links run a **search**, not a product page. The app has no commercial relationship with
+any retailer, cannot see stock or prices, and does not rank or recommend between them, so
+claiming a particular product is available at a particular price would be an invention. Only
+retailers whose search URL was checked by hand are listed — add Indian agri-input specialists to
+`RETAILERS` once you have confirmed their search path, because a guessed pattern gives farmers a
+dead link. Advice prepared on the farm, such as cow urine sprays, links nowhere by design.
+
+The follow-up date (`services/followUp.js`) is a rule of thumb from how fast the pathogen group
+moves — five days for an oomycete like late blight, a fortnight for a virus, sooner when much of
+the leaf has already gone. It is a reminder to re-photograph, not agronomic advice.
 
 ## Deployment
 

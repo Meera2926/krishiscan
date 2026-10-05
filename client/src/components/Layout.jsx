@@ -1,5 +1,5 @@
 import clsx from 'clsx';
-import { BookOpen, Camera, ClipboardCheck, History, Home, LogOut, Map, Sprout, User, UserCheck } from 'lucide-react';
+import { BookOpen, Camera, ChevronDown, ClipboardCheck, History, Home, LogOut, Map, Sprout, User, UserCheck } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link, NavLink, Outlet, ScrollRestoration } from 'react-router';
 import { useAuth } from '../auth/AuthProvider.jsx';
@@ -9,32 +9,35 @@ function LanguageSwitcher() {
   const { i18n } = useTranslation();
   const { user, updateProfile } = useAuth();
   return (
-    <select
-      aria-label="Language"
-      className="min-h-9 rounded-lg border border-line bg-surface px-2 text-sm"
-      value={i18n.language}
-      onChange={(e) => {
-        i18n.changeLanguage(e.target.value);
-        if (user) updateProfile({ preferredLanguage: e.target.value }).catch(() => {});
-      }}
-    >
-      {LANGUAGES.map((l) => (
-        <option key={l.code} value={l.code}>
-          {l.label}
-        </option>
-      ))}
-    </select>
+    <div className="relative">
+      <select
+        aria-label="Language"
+        className="min-h-9 appearance-none rounded-full border border-line-strong bg-surface/80 py-1 pl-3 pr-8 text-sm font-medium text-ink-muted transition-colors hover:border-brand-300 hover:text-ink"
+        value={i18n.language}
+        onChange={(e) => {
+          i18n.changeLanguage(e.target.value);
+          if (user) updateProfile({ preferredLanguage: e.target.value }).catch(() => {});
+        }}
+      >
+        {LANGUAGES.map((l) => (
+          <option key={l.code} value={l.code}>
+            {l.label}
+          </option>
+        ))}
+      </select>
+      <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 size-3.5 -translate-y-1/2 text-ink-subtle" aria-hidden="true" />
+    </div>
   );
 }
 
 function Brand() {
   const { t } = useTranslation();
   return (
-    <Link to="/" className="flex items-center gap-2 font-bold text-brand-800">
-      <span className="grid size-9 place-items-center rounded-xl bg-brand-700 text-brand-100">
+    <Link to="/" className="group flex items-center gap-2.5">
+      <span className="grid size-9 place-items-center rounded-control bg-gradient-to-br from-brand-500 to-brand-800 text-white shadow-[var(--shadow-brand)] ring-1 ring-brand-900/20 transition-transform duration-300 group-hover:scale-105">
         <Sprout className="size-5" aria-hidden="true" />
       </span>
-      <span className="text-lg tracking-tight">{t('app.name')}</span>
+      <span className="text-lg font-extrabold tracking-tight text-brand-800">{t('app.name')}</span>
     </Link>
   );
 }
@@ -64,21 +67,25 @@ export default function Layout() {
 
   return (
     <div className="flex min-h-dvh flex-col">
-      <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:left-2 focus:top-2 focus:z-50 focus:rounded-lg focus:bg-surface focus:px-3 focus:py-2">
+      <a
+        href="#main"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-50 focus:rounded-control focus:bg-surface focus:px-4 focus:py-2.5 focus:shadow-[var(--shadow-md)]"
+      >
         Skip to content
       </a>
-      <header className="sticky top-0 z-30 border-b border-line bg-canvas/90 backdrop-blur">
+
+      <header className="sticky top-0 z-30 bg-canvas/75 backdrop-blur-xl backdrop-saturate-150">
         <div className="mx-auto flex h-16 max-w-6xl items-center gap-4 px-4">
           <Brand />
-          <nav className="ml-4 hidden items-center gap-1 lg:flex" aria-label="Main">
+          <nav className="ml-3 hidden items-center gap-0.5 lg:flex" aria-label="Main">
             {nav.map((item) => (
               <NavLink
                 key={item.to}
                 to={item.to}
                 className={({ isActive }) =>
                   clsx(
-                    'rounded-lg px-3 py-2 text-sm font-medium transition-colors',
-                    isActive ? 'bg-brand-100 text-brand-800' : 'text-ink-muted hover:bg-black/5 hover:text-ink',
+                    'relative rounded-full px-3.5 py-2 text-sm font-semibold transition-colors duration-200',
+                    isActive ? 'bg-brand-700 text-white shadow-[var(--shadow-brand)]' : 'text-ink-muted hover:bg-ink/5 hover:text-ink',
                   )
                 }
               >
@@ -90,8 +97,14 @@ export default function Layout() {
             <LanguageSwitcher />
             {user ? (
               <>
-                <NavLink to="/profile" className="btn-ghost hidden px-3 sm:inline-flex" aria-label={t('nav.profile')}>
-                  <User className="size-4" aria-hidden="true" />
+                <NavLink
+                  to="/profile"
+                  className="hidden items-center gap-2 rounded-full border border-line-strong bg-surface/80 py-1 pl-1 pr-3 text-sm font-semibold text-ink-muted transition-colors hover:border-brand-300 hover:text-ink sm:inline-flex"
+                  aria-label={t('nav.profile')}
+                >
+                  <span className="grid size-7 place-items-center rounded-full bg-brand-100 text-brand-700" aria-hidden="true">
+                    <User className="size-3.5" />
+                  </span>
                   <span className="max-w-32 truncate">{user.name.split(' ')[0]}</span>
                 </NavLink>
                 <button type="button" className="btn-ghost px-3" onClick={logout} aria-label={t('nav.logout')}>
@@ -112,15 +125,17 @@ export default function Layout() {
             )}
           </div>
         </div>
+        {/* A hairline that fades at both ends reads softer than a full-width rule. */}
+        <div className="rule" aria-hidden="true" />
       </header>
 
-      <main id="main" className={clsx('mx-auto w-full max-w-6xl flex-1 px-4 py-6 sm:py-8', user && 'pb-28 lg:pb-8')}>
+      <main id="main" className={clsx('mx-auto w-full max-w-6xl flex-1 px-4 py-7 sm:py-10', user && 'pb-28 lg:pb-10')}>
         <Outlet />
       </main>
 
       {user && (
         <nav
-          className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-surface/95 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden"
+          className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-surface/85 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl backdrop-saturate-150 lg:hidden"
           aria-label="Main mobile"
         >
           <ul className="mx-auto grid max-w-lg grid-cols-5">
@@ -130,19 +145,31 @@ export default function Layout() {
                   to={item.to}
                   className={({ isActive }) =>
                     clsx(
-                      'flex min-h-16 flex-col items-center justify-center gap-1 text-[11px] font-medium',
-                      isActive ? 'text-brand-700' : 'text-ink-muted',
+                      'flex min-h-16 flex-col items-center justify-center gap-1 text-[11px] font-semibold transition-colors',
+                      isActive ? 'text-brand-700' : 'text-ink-subtle',
                     )
                   }
                 >
-                  {item.primary ? (
-                    <span className="-mt-6 grid size-12 place-items-center rounded-2xl bg-brand-700 text-white shadow-lg shadow-brand-700/30">
-                      <item.icon className="size-6" aria-hidden="true" />
-                    </span>
-                  ) : (
-                    <item.icon className="size-5" aria-hidden="true" />
-                  )}
-                  <span className="max-w-full truncate px-1">{item.label}</span>
+                  {({ isActive }) =>
+                    item.primary ? (
+                      <>
+                        <span className="-mt-7 grid size-14 place-items-center rounded-panel bg-gradient-to-br from-brand-500 to-brand-800 text-white shadow-[var(--shadow-brand)] ring-4 ring-surface transition-transform duration-300 active:scale-95">
+                          <item.icon className="size-6" aria-hidden="true" />
+                        </span>
+                        <span className="max-w-full truncate px-1">{item.label}</span>
+                      </>
+                    ) : (
+                      <>
+                        <span className="relative">
+                          <item.icon className="size-5" aria-hidden="true" />
+                          {isActive && (
+                            <span className="absolute -bottom-1.5 left-1/2 size-1 -translate-x-1/2 rounded-full bg-brand-600" aria-hidden="true" />
+                          )}
+                        </span>
+                        <span className="max-w-full truncate px-1">{item.label}</span>
+                      </>
+                    )
+                  }
                 </NavLink>
               </li>
             ))}

@@ -35,11 +35,11 @@ beforeEach(async () => {
 const bearer = (token) => ({ Authorization: `Bearer ${token}` });
 
 /** Experts cannot self-register, so promote the account and sign in again for a fresh token. */
-async function asExpert(appInstance, name) {
+async function asExpert(appInstance, name, expertProfile) {
   const { user, password } = await registerUser(appInstance, { name });
-  await User.updateOne({ _id: user.id }, { role: 'expert' });
+  await User.updateOne({ _id: user.id }, { role: 'expert', ...(expertProfile && { expertProfile }) });
   const res = await request(appInstance).post('/api/auth/login').send({ email: user.email, password }).expect(200);
-  return res.body.accessToken;
+  return { token: res.body.accessToken, id: user.id };
 }
 
 /** An uncertain diagnosis, which is what makes the app offer a human expert. */
@@ -211,7 +211,7 @@ describe('consultations API', () => {
       .send({ decision: 'scheduled', mode: 'chat', scheduledFor: nextSlot() })
       .expect(200);
 
-    const expertToken = await asExpert(app, 'Agronomist');
+    const { token: expertToken } = await asExpert(app, 'Agronomist');
 
     const queue = await request(app).get('/api/consultations?scope=queue').set(bearer(expertToken)).expect(200);
     expect(queue.body.items.map((c) => c.id)).toContain(consultation.id);
@@ -248,6 +248,58 @@ describe('consultations API', () => {
       .set(bearer(b.token))
       .send({ decision: 'declined' })
       .expect(404);
+  });
+});
+
+describe('choosing an expert', () => {
+  it('shows what each expert is actually qualified in', async () => {
+    const { token } = await registerUser(app);
+    await asExpert(app, 'Dr Qualified', {
+      qualification: 'Ph.D. Plant Pathology',
+      organisation: 'State Agricultural University',
+      experienceYears: 18,
+      crops: ['tomato'],
+      modes: ['chat'],
+    });
+
+    const res = await request(app).get('/api/consultations/experts').set(bearer(token)).expect(200);
+    const found = res.body.experts.find((e) => e.name === 'Dr Qualified');
+    expect(found).toMatchObject({ qualification: 'Ph.D. Plant Pathology', experienceYears: 18 });
+  });
+
+  it('filters the panel by crop and by how the farmer wants to meet', async () => {
+    const { token } = await registerUser(app);
+    await asExpert(app, 'Rice Only', { qualification: 'M.Sc.', crops: ['rice'], modes: ['visit'] });
+
+    const wrongCrop = await request(app).get('/api/consultations/experts?crop=tomato').set(bearer(token)).expect(200);
+    expect(wrongCrop.body.experts.map((e) => e.name)).not.toContain('Rice Only');
+
+    const wrongMode = await request(app).get('/api/consultations/experts?crop=rice&mode=chat').set(bearer(token)).expect(200);
+    expect(wrongMode.body.experts.map((e) => e.name)).not.toContain('Rice Only');
+
+    const match = await request(app).get('/api/consultations/experts?crop=rice&mode=visit').set(bearer(token)).expect(200);
+    expect(match.body.experts.map((e) => e.name)).toContain('Rice Only');
+  });
+
+  it('books the expert the farmer picked, and refuses one who does not exist', async () => {
+    const { token } = await registerUser(app);
+    const { consultation } = await uncertainScan(token, 20);
+    const { id: expertId } = await asExpert(app, 'Chosen One', { qualification: 'M.Sc.' });
+
+    await request(app)
+      .post(`/api/consultations/${consultation.id}/decision`)
+      .set(bearer(token))
+      .send({ decision: 'scheduled', mode: 'chat', scheduledFor: nextSlot(), expertId: '0'.repeat(24) })
+      .expect(422);
+
+    const booked = await request(app)
+      .post(`/api/consultations/${consultation.id}/decision`)
+      .set(bearer(token))
+      .send({ decision: 'scheduled', mode: 'chat', scheduledFor: nextSlot(), expertId })
+      .expect(200);
+    expect(String(booked.body.consultation.expert?.id ?? booked.body.consultation.expert)).toBe(expertId);
+    // Requested is not the same as accepted: the expert still has to take it.
+    expect(booked.body.consultation.status).toBe('open');
   });
 });
 
