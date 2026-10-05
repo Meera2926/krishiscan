@@ -435,6 +435,26 @@ if (import.meta.url === pathToFileURL(process.argv[1]).href) {
     console.error('Refusing to seed demo data into a production database.');
     process.exit(1);
   }
+
+  /**
+   * Without MONGO_URI, connectDatabase() starts a throwaway in-memory MongoDB that
+   * disconnectDatabase() stops again a moment later. Seeding it writes 33 documents into a server
+   * that no longer exists by the time the command prints its success line — the worst kind of
+   * no-op, because it looks like it worked.
+   */
+  if (!config.MONGO_URI) {
+    console.error('Nothing was seeded: MONGO_URI is not set.');
+    console.error('');
+    console.error('Without it this command starts a temporary in-memory MongoDB, writes to it, and');
+    console.error('throws it away on exit. Set MONGO_URI in server/.env to seed a real database:');
+    console.error('');
+    console.error('    cp server/.env.example server/.env   # then fill in MONGO_URI');
+    console.error('');
+    console.error('For local development you do not need this command at all. `npm run dev` starts an');
+    console.error('in-memory database and seeds it, demo accounts included, every time it boots.');
+    process.exit(1);
+  }
+
   await connectDatabase();
   try {
     await seedDatabase({ withDemoData });
