@@ -57,6 +57,28 @@ export async function connectDatabase() {
   const options = { serverSelectionTimeoutMS: 10_000 };
   if (memoryServer) options.writeConcern = { w: 1, j: true };
   await mongoose.connect(uri, options);
+
+  if (memoryServer) {
+    /**
+     * The local database is a mongod this process started. If it goes away while the server is
+     * still running - a second `npm run dev` fighting over the same directory, or a stray mongod
+     * left by a hard-killed run - every request then waits ten seconds and fails with a stack
+     * trace that says nothing about the cause. Say it once, in a sentence, instead.
+     */
+    let warned = false;
+    mongoose.connection.on('disconnected', () => {
+      if (warned) return;
+      warned = true;
+      console.error(
+        `[db] lost the local database at ${DEV_DB_PATH}. This usually means a second server is ` +
+          'using the same directory, or a mongod was left behind by a run that was killed. Stop ' +
+          'any other `npm run dev`, check for a stray mongod, and restart this one.',
+      );
+    });
+    mongoose.connection.on('connected', () => {
+      warned = false;
+    });
+  }
   // Build declared indexes (2dsphere in particular) before any geo query runs.
   await Promise.all(Object.values(mongoose.models).map((m) => m.syncIndexes()));
   return { inMemory: Boolean(memoryServer) };
