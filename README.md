@@ -35,8 +35,9 @@ npm install
 npm run dev
 ```
 
-Open <http://localhost:5173>. With no `MONGO_URI` set, the server starts a throwaway in-memory
-MongoDB and seeds it, including demo accounts:
+Open <http://localhost:5173>. With no `MONGO_URI` set, the server runs a local MongoDB for you
+and keeps its files in `server/.mongo-data`, so the account you register today still logs in
+tomorrow. Delete that folder to start from scratch. It is seeded with demo accounts:
 
 - farmer: `farmer@demo.in` / `demo1234` (plots, a progression series and a logged treatment)
 - experts: `expert@demo.in`, `anjali.expert@demo.in`, `harpreet.expert@demo.in` / `demo1234`
@@ -45,12 +46,18 @@ MongoDB and seeds it, including demo accounts:
 sees the requests waiting to be taken, their own appointments and what they have answered. Book a
 review as the farmer and it appears on the expert's desk without a refresh.
 
-The first start downloads ~32 MB of model weights and, for the in-memory database, a MongoDB binary.
+The first start downloads ~32 MB of model weights and, for the local database, a MongoDB binary.
+
+That local database waits for the journal before it acknowledges a write (`w:1, j:true`). It is
+slower than the default and deliberately so: a document written and acknowledged, with the process
+killed three seconds later, was measurably gone after the restart, and a farmer's account
+disappearing because a terminal was closed is not a trade worth making on one machine.
 
 ### Real database and persistent images
 
-Copy `server/.env.example` to `server/.env` and set `MONGO_URI` (MongoDB Atlas works on its free
-tier). Then seed the knowledge base:
+The local database is for development on one machine. For a shared or deployed database, copy
+`server/.env.example` to `server/.env` and set `MONGO_URI` (MongoDB Atlas works on its free tier);
+its own connection string then decides the write concern. Then seed the knowledge base:
 
 ```bash
 npm run seed
@@ -65,7 +72,7 @@ Cloudinary instead of the server's disk, which most free hosts wipe on every dep
 |---|---|
 | `npm run dev` | API on :5000 and Vite on :5173 (Vite proxies `/api`, so dev matches production) |
 | `npm run dev:watch -w server` | Same, with the API restarting on source changes |
-| `npm test` | 110 server tests: diagnosis triage, photo quality, severity, progression, consultations, retention, remedies, risk rules, API |
+| `npm test` | 111 server tests: diagnosis triage, photo quality, severity, progression, consultations, retention, remedies, risk rules, database persistence, API |
 | `npm run build` | Production React build; Express serves it from the same origin |
 | `npm run seed` | Crops and diseases (`-- --demo` adds demo data) |
 | `node server/scripts/evaluate-models.js <dir>` | Accuracy, rejection rate and latency on your own labelled photos |

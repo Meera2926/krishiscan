@@ -8,7 +8,8 @@ async function main() {
   const { inMemory } = await connectDatabase();
 
   if (inMemory) {
-    // A fresh in-memory database is empty, so seed it or the app has no crops or diseases.
+    // The local development database starts empty, so seed it or the app has no crops or
+    // diseases at all. Seeding upserts, so later boots leave real accounts and scans alone.
     const { seedDatabase } = await import('./seed/seed.js');
     await seedDatabase({ withDemoData: true });
   }

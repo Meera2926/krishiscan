@@ -5,6 +5,7 @@ coverage/
 .env.*
 !.env.example
 server/uploads/
+server/.mongo-data/
 server/models-cache/
 *.onnx
 *.log
