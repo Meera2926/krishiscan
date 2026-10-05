@@ -16,7 +16,8 @@
  */
 
 // Below this share of raw probability on the declared crop, the model disagrees with the farmer
-// about the crop. The best in-crop answer is still shown, but only as uncertain.
+// about the crop. The best in-crop answer is still shown, but only as uncertain, because the
+// older models each know only a few crops and a farmer knows their own field better.
 export const CROP_AGREEMENT = 0.5;
 
 /**
@@ -43,7 +44,10 @@ export const RAW_FLOOR = 0.05;
 
 const INVALID_LABEL = '__invalid__';
 
-export function diagnose(raw, { labelIndex, declaredCrop = null, invalidProbability = 0, gateKnowsCrop = true, high, topK = 3 }) {
+export function diagnose(
+  raw,
+  { labelIndex, declaredCrop = null, invalidProbability = 0, gateKnowsCrop = true, cropFloor = null, high, topK = 3 },
+) {
   if (!raw?.length) throw new Error('diagnose() needs at least one prediction');
 
   const ranked = [...raw]
@@ -91,6 +95,14 @@ export function diagnose(raw, { labelIndex, declaredCrop = null, invalidProbabil
     const conditioned = inCrop.map((p) => ({ ...p, confidence: cropProbability > 0 ? p.confidence / cropProbability : 0 }));
     const top = conditioned[0];
 
+    // A classifier that was trained on every crop it serves is worth believing about which crop
+    // it is looking at: the one here separates its five crops perfectly on held-out photos. When
+    // such a model says the photo is not the declared crop, answering anyway would mean naming a
+    // disease of the wrong plant, so it is refused outright. Models that only know one or two of
+    // the crops they are routed for get the softer CROP_AGREEMENT treatment below instead.
+    if (cropFloor != null && cropProbability < cropFloor) {
+      return outcome(top, conditioned, 'rejected', 'wrong_crop', cropProbability);
+    }
     if (cropProbability < CROP_AGREEMENT) {
       // Farmers know their own crop far better than the model does (wheat rust photos were
       // routinely called maize rust), so show the best answer for the declared crop, flagged.

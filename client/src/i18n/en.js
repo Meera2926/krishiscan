@@ -124,6 +124,8 @@ export default {
       crop_mismatch:
         'The photo looks more like a different crop than the one you selected. Check the crop, or retake the photo.',
       crop_not_supported: 'This crop is not supported by the model yet.',
+      wrong_crop:
+        'This does not look like the crop you selected. The classifier for this crop was trained on every crop it covers, so rather than name a disease of the wrong plant it has stopped here. Check the crop, or retake the photo.',
     },
     healthyTitle: 'Your plant looks healthy',
     healthyBody: 'No disease was detected. Keep scouting regularly, especially after rain or humid weather.',

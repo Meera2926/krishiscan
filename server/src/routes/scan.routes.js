@@ -12,7 +12,12 @@ import { followUpPlan } from '../services/followUp.js';
 import { organicRemedies } from '../services/remedies.js';
 import { prepareImage } from '../services/imageQuality.js';
 import { estimateSeverity } from '../services/severity.js';
-import { GATE_MODEL_CROPS, SUPPORTED_CROPS } from '../services/inference/catalog.js';
+import {
+  CROP_MATCH_FLOOR,
+  GATE_MODEL_CROPS,
+  SINGLE_MODEL_CROPS,
+  SUPPORTED_CROPS,
+} from '../services/inference/catalog.js';
 import { classify } from '../services/inference/index.js';
 import { getLabelIndex } from '../services/labelIndex.js';
 import { storage } from '../services/storage/index.js';
@@ -145,6 +150,8 @@ router.post('/', uploadImage, validate({ body: createBody }), async (req, res) =
     declaredCrop,
     invalidProbability,
     gateKnowsCrop: GATE_MODEL_CROPS.includes(declaredCrop),
+    // Only the crops whose classifier knows every crop it serves get the hard crop gate.
+    cropFloor: SINGLE_MODEL_CROPS.includes(declaredCrop) ? CROP_MATCH_FLOOR : null,
     high: config.CONFIDENCE_HIGH,
   });
 

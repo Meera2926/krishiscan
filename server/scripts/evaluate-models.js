@@ -13,7 +13,13 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { diagnose } from '../src/services/diagnosis.js';
-import { GATE_MODEL_CROPS, MODELS, SUPPORTED_CROPS } from '../src/services/inference/catalog.js';
+import {
+  CROP_MATCH_FLOOR,
+  GATE_MODEL_CROPS,
+  MODELS,
+  SINGLE_MODEL_CROPS,
+  SUPPORTED_CROPS,
+} from '../src/services/inference/catalog.js';
 import { createLocalClassifier } from '../src/services/inference/local.js';
 
 const [dir, ...rest] = process.argv.slice(2);
@@ -68,6 +74,8 @@ for (const s of samples) {
     declaredCrop: s.crop,
     invalidProbability: out.invalidProbability,
     gateKnowsCrop: GATE_MODEL_CROPS.includes(s.crop),
+    // Measure what the app actually does, hard crop gate included.
+    cropFloor: SINGLE_MODEL_CROPS.includes(s.crop) ? CROP_MATCH_FLOOR : null,
     high: HIGH,
   });
   rows.push({ ...s, ms, status: d.status, reason: d.statusReason, predicted: d.diseaseKey, confidence: d.top.confidence, invalidProbability: out.invalidProbability });

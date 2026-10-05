@@ -1,11 +1,37 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import ort from 'onnxruntime-node';
 import sharp from 'sharp';
-import { CROP_ROUTES, INVALID_LABEL, MODELS, OOD_GATE_MODEL, modelVersion, unifiedLabel } from './catalog.js';
+import {
+  CROP_ROUTES,
+  INVALID_LABEL,
+  MODELS,
+  OOD_GATE_MODEL,
+  SINGLE_MODEL_CROPS,
+  cropProbability,
+  modelVersion,
+  unifiedLabel,
+} from './catalog.js';
 
-/** Downloads a pinned model file once, verifying its size, and returns the local path. */
+const INFERENCE_DIR = path.dirname(fileURLToPath(import.meta.url));
+
+/**
+ * Resolves a model to a file on disk: either one shipped with the app, or a pinned Hugging Face
+ * download cached once. Both are verified by size before use.
+ */
 async function ensureModelFile(model, cacheDir) {
+  if (model.localFile) {
+    // Trained for this project and committed alongside it; nothing to download.
+    const shipped = path.join(INFERENCE_DIR, model.localFile);
+    const stat = await fs.stat(shipped).catch(() => null);
+    if (!stat) throw new Error(`${model.name} is missing from the repository at ${shipped}`);
+    if (stat.size !== model.bytes) {
+      throw new Error(`${model.name} is ${stat.size} bytes on disk, expected ${model.bytes}`);
+    }
+    return shipped;
+  }
+
   const target = path.join(cacheDir, model.repo.replace('/', '__'), model.revision, model.file);
   try {
     const stat = await fs.stat(target);
@@ -151,8 +177,19 @@ export async function createLocalClassifier({ cacheDir, threads = 0 }) {
       // Average across models. Labels one model lacks count as 0 for that model, so the result
       // is still a proper probability distribution.
       const used = needsGate ? [...route, OOD_GATE_MODEL] : route;
+      const predictions = average(perModel);
+
+      /**
+       * For crops served by the model that was trained on all of them, how much of the
+       * probability actually lands on the crop the farmer said they photographed. Low means the
+       * photo is of something else, and diagnosis.js refuses rather than naming the least
+       * unlikely disease of the wrong plant.
+       */
+      const cropMatch = SINGLE_MODEL_CROPS.includes(crop) ? cropProbability(predictions, crop) : null;
+
       return {
-        predictions: average(perModel),
+        predictions,
+        cropMatch,
         invalidProbability,
         modelVersion: modelVersion(used),
         perModel: Object.fromEntries(

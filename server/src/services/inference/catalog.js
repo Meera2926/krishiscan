@@ -92,6 +92,45 @@ export const MODELS = {
     },
     invalidLabels: ['Invalid'],
   },
+
+  newcrops: {
+    name: 'KrishiScan Allium & Brassica MobileNetV3',
+    // Trained for this project rather than downloaded: no public model covers onion, garlic or
+    // the brassicas. Ships in the repo because it is 6 MB and there is nowhere to pin it to.
+    localFile: 'weights/newcrops-v1.onnx',
+    revision: 'newcrops-v1',
+    bytes: 6_146_661,
+    sha256: '150761fe922df64d85abb9575d61f405cc7743f52926e52d58baa51ada6a9af6',
+    license: 'trained here; see README for the CC BY 4.0 source datasets',
+    input: 'pixel_values',
+    output: 'logits',
+    // torchvision Resize(280) then CenterCrop(224), ImageNet normalisation - the transform the
+    // model was validated with. Changing these silently degrades it.
+    preprocess: {
+      shortestEdge: 280,
+      crop: 224,
+      mean: [0.485, 0.456, 0.406],
+      std: [0.229, 0.224, 0.225],
+    },
+    labels: [
+      'broccoli_alternaria_leaf_spot', 'broccoli_black_rot', 'broccoli_healthy',
+      'cabbage_alternaria_leaf_spot', 'cabbage_cabbage_butterfly', 'cabbage_grey_mould',
+      'cabbage_healthy', 'cabbage_tip_burn', 'garlic_healthy', 'garlic_tipburn',
+      'onion_healthy', 'onion_iris_yellow_spot_virus', 'onion_stemphylium_leaf_blight',
+      'turnip_alternaria_leaf_spot', 'turnip_black_rot', 'turnip_healthy',
+    ],
+    // The classes were named as disease keys from the start, so the map is the identity.
+    labelToKey: Object.fromEntries(
+      [
+        'broccoli_alternaria_leaf_spot', 'broccoli_black_rot', 'broccoli_healthy',
+        'cabbage_alternaria_leaf_spot', 'cabbage_cabbage_butterfly', 'cabbage_grey_mould',
+        'cabbage_healthy', 'cabbage_tip_burn', 'garlic_healthy', 'garlic_tipburn',
+        'onion_healthy', 'onion_iris_yellow_spot_virus', 'onion_stemphylium_leaf_blight',
+        'turnip_alternaria_leaf_spot', 'turnip_black_rot', 'turnip_healthy',
+      ].map((k) => [k, k]),
+    ),
+    invalidLabels: [],
+  },
 };
 
 /**
@@ -109,9 +148,59 @@ export const CROP_ROUTES = {
   potato: ['plantvillage', 'cropvit'],
   rice: ['cropvit'],
   wheat: ['cropvit'],
+  // The crops only the model trained here knows. Nothing is averaged in from the other two:
+  // neither has ever seen an onion or a cabbage, so their opinion is noise.
+  onion: ['newcrops'],
+  garlic: ['newcrops'],
+  cabbage: ['newcrops'],
+  turnip: ['newcrops'],
+  broccoli: ['newcrops'],
 };
 
 export const SUPPORTED_CROPS = Object.keys(CROP_ROUTES);
+
+/**
+ * Crops served by a single model that was trained on every one of them. For these, the model's
+ * own probability mass is evidence about WHICH crop is in the photo, not just which disease:
+ * onion, garlic and three brassicas were all in its training set, so a cabbage leaf declared as
+ * onion makes the onion classes share out a small share of the probability.
+ *
+ * It cannot say anything useful about a tomato leaf, which it has never seen - but measured on
+ * the project's own 63 evaluation photos of the six older crops, none of them reached the
+ * threshold below, because the mass spreads across several crops instead of concentrating.
+ */
+export const SINGLE_MODEL_CROPS = Object.freeze(
+  Object.entries(CROP_ROUTES)
+    .filter(([, route]) => route.length === 1 && route[0] === 'newcrops')
+    .map(([crop]) => crop),
+);
+
+/**
+ * How much of the probability must sit on the declared crop's own classes before a diagnosis is
+ * trusted. Swept through the real pipeline over 192 genuine new-crop photos and 175 impostor
+ * attempts (a photo of one of the six older crops submitted as each new crop):
+ *
+ *   floor   keeps genuine   refuses impostors
+ *   0.80        100.0%            95.4%
+ *   0.85         99.5%            97.7%   <- chosen
+ *   0.90         92.2%            98.9%
+ *   0.95         75.0%           100.0%
+ *
+ * 0.85 rather than something stricter because this app treats refusing a real leaf as the
+ * expensive mistake: the farmer gets nothing back and nothing to appeal. Buying 1.2 more points
+ * of impostor rejection by turning away one real photo in thirteen is the wrong way round.
+ * Re-run the sweep in scripts/evaluate-models.js whenever the model or the eval set changes.
+ */
+export const CROP_MATCH_FLOOR = 0.85;
+
+/** Share of a distribution that sits on `crop`'s classes. Used to catch a mis-declared crop. */
+export function cropProbability(predictions, crop) {
+  let sum = 0;
+  for (const { label, confidence } of predictions) {
+    if (typeof label === 'string' && label.startsWith(`${crop}_`)) sum += confidence;
+  }
+  return sum;
+}
 
 /**
  * Other names a farmer may type or look for. "Corn" and "maize" are the same crop, and a farmer
@@ -119,7 +208,20 @@ export const SUPPORTED_CROPS = Object.keys(CROP_ROUTES);
  * confidently: a corn leaf declared as rice came back "rice leaf blast, 90%".
  * Keep in step with the `aliases` in seed/data/crops.json (seedLibrary checks this).
  */
-export const CROP_ALIASES = { corn: 'maize', paddy: 'rice' };
+export const CROP_ALIASES = {
+  corn: 'maize',
+  paddy: 'rice',
+  // Names farmers actually type for the new crops.
+  pyaz: 'onion',
+  pyaaz: 'onion',
+  kanda: 'onion',
+  lahsun: 'garlic',
+  lehsun: 'garlic',
+  'patta gobhi': 'cabbage',
+  bandgobhi: 'cabbage',
+  shalgam: 'turnip',
+  'hari gobhi': 'broccoli',
+};
 
 /** Canonical crop key for anything a client sends: trimmed, lowercased and de-aliased. */
 export function resolveCrop(name) {

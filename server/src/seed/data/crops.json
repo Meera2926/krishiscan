@@ -2,56 +2,362 @@
   {
     "key": "rice",
     "name": "Rice (Paddy)",
-    "names": { "hi": "धान" },
+    "names": {
+      "hi": "धान"
+    },
     "scientificName": "Oryza sativa",
-    "seasons": ["Kharif", "Rabi"],
-    "commonVarieties": ["ADT 36", "ADT 39", "ADT 44", "CO 47", "CO 50", "BPT 5204", "IR 64", "Jaya"],
-    "typicalStates": ["West Bengal", "Uttar Pradesh", "Punjab", "Andhra Pradesh", "Telangana", "Odisha", "Tamil Nadu", "Chhattisgarh", "Bihar"]
+    "seasons": [
+      "Kharif",
+      "Rabi"
+    ],
+    "commonVarieties": [
+      "ADT 36",
+      "ADT 39",
+      "ADT 44",
+      "CO 47",
+      "CO 50",
+      "BPT 5204",
+      "IR 64",
+      "Jaya"
+    ],
+    "typicalStates": [
+      "West Bengal",
+      "Uttar Pradesh",
+      "Punjab",
+      "Andhra Pradesh",
+      "Telangana",
+      "Odisha",
+      "Tamil Nadu",
+      "Chhattisgarh",
+      "Bihar"
+    ]
   },
   {
     "key": "wheat",
     "name": "Wheat",
-    "names": { "hi": "गेहूं" },
+    "names": {
+      "hi": "गेहूं"
+    },
     "scientificName": "Triticum aestivum",
-    "seasons": ["Rabi"],
-    "commonVarieties": ["HD 3226", "HD 3059", "DBW 187", "DBW 303", "DBW 327", "DBW 332", "WH 1270", "PBW 752", "HI 1634", "MP 3336"],
-    "typicalStates": ["Uttar Pradesh", "Punjab", "Haryana", "Madhya Pradesh", "Rajasthan", "Bihar", "Gujarat"]
+    "seasons": [
+      "Rabi"
+    ],
+    "commonVarieties": [
+      "HD 3226",
+      "HD 3059",
+      "DBW 187",
+      "DBW 303",
+      "DBW 327",
+      "DBW 332",
+      "WH 1270",
+      "PBW 752",
+      "HI 1634",
+      "MP 3336"
+    ],
+    "typicalStates": [
+      "Uttar Pradesh",
+      "Punjab",
+      "Haryana",
+      "Madhya Pradesh",
+      "Rajasthan",
+      "Bihar",
+      "Gujarat"
+    ]
   },
   {
     "key": "maize",
     "name": "Maize",
-    "aliases": ["Corn"],
-    "names": { "hi": "मक्का" },
+    "aliases": [
+      "Corn"
+    ],
+    "names": {
+      "hi": "मक्का"
+    },
     "scientificName": "Zea mays",
-    "seasons": ["Kharif", "Rabi", "Zaid"],
-    "commonVarieties": ["Vivek 21", "Vivek 23", "PEMH 5", "HQPM 1", "HQPM 5", "Buland", "Pratap Kanchan 2", "CO 6"],
-    "typicalStates": ["Karnataka", "Madhya Pradesh", "Maharashtra", "Rajasthan", "Bihar", "Telangana", "Tamil Nadu", "Uttar Pradesh", "Andhra Pradesh"]
+    "seasons": [
+      "Kharif",
+      "Rabi",
+      "Zaid"
+    ],
+    "commonVarieties": [
+      "Vivek 21",
+      "Vivek 23",
+      "PEMH 5",
+      "HQPM 1",
+      "HQPM 5",
+      "Buland",
+      "Pratap Kanchan 2",
+      "CO 6"
+    ],
+    "typicalStates": [
+      "Karnataka",
+      "Madhya Pradesh",
+      "Maharashtra",
+      "Rajasthan",
+      "Bihar",
+      "Telangana",
+      "Tamil Nadu",
+      "Uttar Pradesh",
+      "Andhra Pradesh"
+    ]
   },
   {
     "key": "potato",
     "name": "Potato",
-    "names": { "hi": "आलू" },
+    "names": {
+      "hi": "आलू"
+    },
     "scientificName": "Solanum tuberosum",
-    "seasons": ["Rabi", "Kharif"],
-    "commonVarieties": ["Kufri Jyoti", "Kufri Badshah", "Kufri Sutlej", "Kufri Sindhuri", "Kufri Naveen"],
-    "typicalStates": ["Uttar Pradesh", "West Bengal", "Bihar", "Gujarat", "Madhya Pradesh", "Punjab", "Himachal Pradesh"]
+    "seasons": [
+      "Rabi",
+      "Kharif"
+    ],
+    "commonVarieties": [
+      "Kufri Jyoti",
+      "Kufri Badshah",
+      "Kufri Sutlej",
+      "Kufri Sindhuri",
+      "Kufri Naveen"
+    ],
+    "typicalStates": [
+      "Uttar Pradesh",
+      "West Bengal",
+      "Bihar",
+      "Gujarat",
+      "Madhya Pradesh",
+      "Punjab",
+      "Himachal Pradesh"
+    ]
   },
   {
     "key": "tomato",
     "name": "Tomato",
-    "names": { "hi": "टमाटर" },
+    "names": {
+      "hi": "टमाटर"
+    },
     "scientificName": "Solanum lycopersicum",
-    "seasons": ["Kharif", "Rabi", "Zaid"],
-    "commonVarieties": ["Pusa Ruby", "Arka Vikas", "Arka Rakshak", "PKM 1", "Kashi Aman"],
-    "typicalStates": ["Andhra Pradesh", "Madhya Pradesh", "Karnataka", "Gujarat", "Odisha", "Maharashtra", "Tamil Nadu", "West Bengal"]
+    "seasons": [
+      "Kharif",
+      "Rabi",
+      "Zaid"
+    ],
+    "commonVarieties": [
+      "Pusa Ruby",
+      "Arka Vikas",
+      "Arka Rakshak",
+      "PKM 1",
+      "Kashi Aman"
+    ],
+    "typicalStates": [
+      "Andhra Pradesh",
+      "Madhya Pradesh",
+      "Karnataka",
+      "Gujarat",
+      "Odisha",
+      "Maharashtra",
+      "Tamil Nadu",
+      "West Bengal"
+    ]
   },
   {
     "key": "grape",
     "name": "Grape",
-    "names": { "hi": "अंगूर" },
+    "names": {
+      "hi": "अंगूर"
+    },
     "scientificName": "Vitis vinifera",
-    "seasons": ["Rabi"],
-    "commonVarieties": ["Thompson Seedless", "Sharad Seedless", "Bangalore Blue", "Anab-e-Shahi", "Beauty Seedless", "Bharat Early", "Pusa Navrang"],
-    "typicalStates": ["Maharashtra", "Karnataka", "Tamil Nadu", "Andhra Pradesh", "Telangana", "Punjab", "Mizoram"]
+    "seasons": [
+      "Rabi"
+    ],
+    "commonVarieties": [
+      "Thompson Seedless",
+      "Sharad Seedless",
+      "Bangalore Blue",
+      "Anab-e-Shahi",
+      "Beauty Seedless",
+      "Bharat Early",
+      "Pusa Navrang"
+    ],
+    "typicalStates": [
+      "Maharashtra",
+      "Karnataka",
+      "Tamil Nadu",
+      "Andhra Pradesh",
+      "Telangana",
+      "Punjab",
+      "Mizoram"
+    ]
+  },
+  {
+    "key": "onion",
+    "name": "Onion",
+    "aliases": [
+      "Pyaaz",
+      "Kanda"
+    ],
+    "names": {
+      "hi": "प्याज़",
+      "ta": "வெங்காயம்",
+      "te": "ఉల్లిపాయ",
+      "ml": "സവാള"
+    },
+    "scientificName": "Allium cepa",
+    "seasons": [
+      "Kharif",
+      "Late Kharif",
+      "Rabi"
+    ],
+    "commonVarieties": [
+      "Bhima Super",
+      "Bhima Red",
+      "Bhima Shakti",
+      "Agrifound Light Red",
+      "N-53",
+      "Pusa Red",
+      "Arka Niketan"
+    ],
+    "typicalStates": [
+      "Maharashtra",
+      "Karnataka",
+      "Madhya Pradesh",
+      "Gujarat",
+      "Rajasthan",
+      "Bihar",
+      "Andhra Pradesh",
+      "Tamil Nadu"
+    ]
+  },
+  {
+    "key": "garlic",
+    "name": "Garlic",
+    "aliases": [
+      "Lahsun"
+    ],
+    "names": {
+      "hi": "लहसुन",
+      "ta": "பூண்டு",
+      "te": "వెల్లుల్లి",
+      "ml": "വെളുത്തുള്ളി"
+    },
+    "scientificName": "Allium sativum",
+    "seasons": [
+      "Rabi"
+    ],
+    "commonVarieties": [
+      "G-282",
+      "G-323",
+      "Bhima Omkar",
+      "Bhima Purple",
+      "Yamuna Safed (G-1)",
+      "Agrifound Parvati"
+    ],
+    "typicalStates": [
+      "Madhya Pradesh",
+      "Rajasthan",
+      "Gujarat",
+      "Uttar Pradesh",
+      "Punjab",
+      "Assam",
+      "Odisha"
+    ]
+  },
+  {
+    "key": "cabbage",
+    "name": "Cabbage",
+    "aliases": [
+      "Patta Gobhi",
+      "Bandgobhi"
+    ],
+    "names": {
+      "hi": "पत्ता गोभी",
+      "ta": "முட்டைக்கோஸ்",
+      "te": "క్యాబేజీ",
+      "ml": "കാബേജ്"
+    },
+    "scientificName": "Brassica oleracea var. capitata",
+    "seasons": [
+      "Rabi"
+    ],
+    "commonVarieties": [
+      "Golden Acre",
+      "Pride of India",
+      "Pusa Mukta",
+      "Pusa Drum Head",
+      "Rare Ball"
+    ],
+    "typicalStates": [
+      "West Bengal",
+      "Odisha",
+      "Bihar",
+      "Assam",
+      "Maharashtra",
+      "Gujarat",
+      "Himachal Pradesh"
+    ]
+  },
+  {
+    "key": "turnip",
+    "name": "Turnip",
+    "aliases": [
+      "Shalgam"
+    ],
+    "names": {
+      "hi": "शलजम",
+      "ta": "டர்னிப்",
+      "te": "టర్నిప్",
+      "ml": "ടേണിപ്പ്"
+    },
+    "scientificName": "Brassica rapa subsp. rapa",
+    "seasons": [
+      "Rabi"
+    ],
+    "commonVarieties": [
+      "Pusa Sweti",
+      "Pusa Chandrima",
+      "Pusa Kanchan",
+      "Purple Top White Globe",
+      "Snowball"
+    ],
+    "typicalStates": [
+      "Punjab",
+      "Haryana",
+      "Uttar Pradesh",
+      "Bihar",
+      "Himachal Pradesh",
+      "West Bengal"
+    ]
+  },
+  {
+    "key": "broccoli",
+    "name": "Broccoli",
+    "aliases": [
+      "Hari Gobhi"
+    ],
+    "names": {
+      "hi": "हरी गोभी",
+      "ta": "ப்ரோக்கோலி",
+      "te": "బ్రోకలీ",
+      "ml": "ബ്രൊക്കോളി"
+    },
+    "scientificName": "Brassica oleracea var. italica",
+    "seasons": [
+      "Rabi"
+    ],
+    "commonVarieties": [
+      "Pusa Broccoli KTS-1",
+      "Palam Samridhi",
+      "Green Head",
+      "Fiesta",
+      "Solan Green Head"
+    ],
+    "typicalStates": [
+      "Himachal Pradesh",
+      "Uttarakhand",
+      "Punjab",
+      "Haryana",
+      "Maharashtra",
+      "Karnataka",
+      "Tamil Nadu"
+    ]
   }
 ]

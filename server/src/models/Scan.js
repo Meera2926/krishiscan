@@ -8,6 +8,9 @@ export const STATUS_REASONS = [
   'not_recognised',
   'crop_mismatch',
   'crop_not_supported',
+  // The classifier for this crop was trained on every crop it serves, and says the photo is a
+  // different one of them. Refused rather than answered: see CROP_MATCH_FLOOR.
+  'wrong_crop',
   // Answered, but the not-a-leaf gate had doubts: shown with a warning, never acted on blindly.
   'maybe_not_leaf',
 ];

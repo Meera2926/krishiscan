@@ -8,6 +8,9 @@ server/uploads/
 server/.mongo-data/
 server/models-cache/
 *.onnx
+# ...except the classifier trained for this project, which ships with it: 6 MB, and there is no
+# upstream repository to pin it to the way the two downloaded models are pinned.
+!server/src/services/inference/weights/*.onnx
 *.log
 .DS_Store
 Thumbs.db
