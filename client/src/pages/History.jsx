@@ -28,8 +28,11 @@ export default function History() {
 
   return (
     <div>
-      <PageHeader title={t('history.title')} />
-      <div className="mb-5 flex flex-wrap gap-3">
+      <PageHeader
+        title={t('history.title')}
+        subtitle={data?.total ? t('history.count', { count: data.total }) : undefined}
+      />
+      <div className="mb-5 flex flex-wrap items-center gap-3">
         <select className="input w-auto" value={params.get('status') ?? ''} onChange={(e) => setFilter('status', e.target.value)} aria-label="Status">
           <option value="">{t('history.filterStatus')}</option>
           {['confident', 'uncertain', 'rejected'].map((s) => (
@@ -59,7 +62,7 @@ export default function History() {
         <EmptyState icon={HistoryIcon} title={t('history.empty')} />
       ) : (
         <>
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
             {data.items.map((scan) => (
               <ScanCard key={scan.id} scan={scan} />
             ))}

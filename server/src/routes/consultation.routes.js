@@ -81,18 +81,42 @@ router.get('/summary', async (req, res) => {
   const upcomingFields = 'mode scheduledFor status decision caseSummary contactPhone visitAddress';
 
   if (isExpert(req)) {
-    const [waiting, mine, completed, upcoming] = await Promise.all([
+    // "Today" is the working day the expert is actually sitting in, not the next 24 hours.
+    const dayStart = new Date(now);
+    dayStart.setHours(0, 0, 0, 0);
+    const dayEnd = new Date(dayStart.getTime() + 86_400_000);
+    const open = { $in: ['open', 'confirmed'] };
+
+    const [waiting, mine, completed, today, upcoming, recent] = await Promise.all([
       // Booked by a farmer and not yet claimed by anyone.
       Consultation.countDocuments({ decision: 'scheduled', status: 'open', expert: null }),
-      Consultation.countDocuments({ expert: me, status: { $in: ['open', 'confirmed'] } }),
+      Consultation.countDocuments({ expert: me, status: open }),
       Consultation.countDocuments({ expert: me, status: 'completed' }),
-      Consultation.find({ expert: me, status: { $in: ['open', 'confirmed'] }, scheduledFor: { $gte: new Date(now - 3600_000) } })
+      Consultation.find({ expert: me, status: open, scheduledFor: { $gte: dayStart, $lt: dayEnd } })
+        .sort({ scheduledFor: 1 })
+        .select(upcomingFields)
+        .populate('farmer', 'name district state'),
+      Consultation.find({ expert: me, status: open, scheduledFor: { $gte: dayEnd } })
         .sort({ scheduledFor: 1 })
         .limit(5)
         .select(upcomingFields)
         .populate('farmer', 'name district state'),
+      Consultation.find({ expert: me, status: 'completed' })
+        .sort({ 'outcome.completedAt': -1 })
+        .limit(4)
+        .select(`${upcomingFields} outcome`)
+        .populate('farmer', 'name district state'),
     ]);
-    return res.json({ role: 'expert', waiting, mine, completed, upcoming: upcoming.map((c) => serialise(c, now)) });
+
+    return res.json({
+      role: 'expert',
+      waiting,
+      mine,
+      completed,
+      today: today.map((c) => serialise(c, now)),
+      upcoming: upcoming.map((c) => serialise(c, now)),
+      recent: recent.map((c) => serialise(c, now)),
+    });
   }
 
   const [awaitingAnswer, booked, answered, upcoming] = await Promise.all([

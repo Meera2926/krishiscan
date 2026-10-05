@@ -69,16 +69,23 @@ const router = createBrowserRouter([
             element: <RequireAuth />,
             children: [
               { path: 'dashboard', element: <DashboardRoute /> },
-              { path: 'scan', element: <NewScan /> },
+              // An expert opens a farmer's scan from a consultation, so this one stays shared.
               { path: 'scans/:id', element: <ScanResult /> },
+              { path: 'consultations', element: <Consultations /> },
+              { path: 'consultations/:id', element: <ConsultationDetail /> },
+              { path: 'profile', element: <Profile /> },
+            ],
+          },
+          {
+            // A farmer's own crop: an expert has no plots and no scan history to look at.
+            element: <RequireAuth roles={['farmer']} />,
+            children: [
+              { path: 'scan', element: <NewScan /> },
               { path: 'history', element: <History /> },
               { path: 'plots', element: <Plots /> },
               { path: 'plots/new', element: <PlotForm /> },
               { path: 'plots/:id', element: <PlotDetail /> },
               { path: 'plots/:id/edit', element: <PlotForm /> },
-              { path: 'consultations', element: <Consultations /> },
-              { path: 'consultations/:id', element: <ConsultationDetail /> },
-              { path: 'profile', element: <Profile /> },
             ],
           },
           {

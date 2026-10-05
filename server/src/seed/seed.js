@@ -11,7 +11,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import sharp from 'sharp';
-import { Crop, Disease, Plot, Scan, Treatment, User } from '../models/index.js';
+import { Consultation, Crop, Disease, Plot, Scan, Treatment, User } from '../models/index.js';
 import { SUPPORTED_CROPS, resolveCrop } from '../services/inference/catalog.js';
 import { invalidateLabelIndex } from '../services/labelIndex.js';
 import { storage } from '../services/storage/index.js';
@@ -304,8 +304,115 @@ export async function seedDemo() {
     });
   }
 
-  await Scan.insertMany(docs, { timestamps: false });
-  return { users: Object.keys(users).length, plots: plots.length, scans: docs.length };
+  const inserted = await Scan.insertMany(docs, { timestamps: false });
+
+  // Expert consultations, so both desks have something on them the moment the demo starts:
+  // one request nobody has taken, one happening today with a conversation already going, and
+  // one already answered.
+  const uncertain = inserted.filter((d) => d.status === 'uncertain').slice(0, 3);
+  const consultations = await seedConsultations({ farmer, expert: users.expert, uncertain, diseases });
+
+  return { users: Object.keys(users).length, plots: plots.length, scans: docs.length, consultations };
+}
+
+/** Times today and tomorrow that line up with the bookable slot grid (see services/consultation.js). */
+function atHour(dayOffset, hour) {
+  const d = new Date();
+  d.setDate(d.getDate() + dayOffset);
+  d.setHours(hour, 0, 0, 0);
+  return d;
+}
+
+async function seedConsultations({ farmer, expert, uncertain, diseases }) {
+  if (!uncertain.length || !expert) return 0;
+  const nameOf = (key) => diseases.find((d) => d.key === key)?.commonName ?? null;
+  const summaryFor = (scan) => ({
+    crop: scan.declaredCrop,
+    diseaseKey: scan.diseaseKey,
+    diseaseName: nameOf(scan.diseaseKey),
+    confidence: scan.top?.confidence ?? null,
+    statusReason: scan.statusReason,
+    severityPercent: scan.severity?.percent ?? null,
+    imageUrl: scan.image.url,
+  });
+
+  const made = [];
+
+  // 1. Waiting for any expert to take it.
+  if (uncertain[0]) {
+    made.push({
+      farmer: farmer._id,
+      scan: uncertain[0]._id,
+      plot: uncertain[0].plot,
+      trigger: 'uncertain_diagnosis',
+      decision: 'scheduled',
+      decidedAt: new Date(),
+      mode: 'call',
+      scheduledFor: atHour(1, 10),
+      contactPhone: '9876543210',
+      status: 'open',
+      caseSummary: summaryFor(uncertain[0]),
+      question: 'Spots are spreading to the upper leaves. Should I spray today?',
+    });
+  }
+
+  // 2. Today, with the expert already on it and the thread started.
+  if (uncertain[1]) {
+    const summary = summaryFor(uncertain[1]);
+    made.push({
+      farmer: farmer._id,
+      expert: expert._id,
+      scan: uncertain[1]._id,
+      plot: uncertain[1].plot,
+      trigger: 'uncertain_diagnosis',
+      decision: 'scheduled',
+      decidedAt: new Date(),
+      mode: 'chat',
+      scheduledFor: atHour(0, new Date().getHours()),
+      status: 'confirmed',
+      caseSummary: summary,
+      messages: [
+        {
+          sender: farmer._id,
+          senderRole: 'farmer',
+          body: `The app flagged this because it was not sure of the diagnosis. Best guess: ${summary.diseaseName ?? 'unknown'}. Crop: ${summary.crop}.\n\nLower leaves are worst. I have not sprayed anything yet.`,
+          sentAt: new Date(Date.now() - 36e5),
+        },
+        {
+          sender: expert._id,
+          senderRole: 'expert',
+          body: 'Thanks. Can you send one more photo of a leaf from the middle of the plant, with the underside visible?',
+          sentAt: new Date(Date.now() - 18e5),
+        },
+      ],
+    });
+  }
+
+  // 3. Already answered, so the farmer has advice to read and the expert a record.
+  if (uncertain[2]) {
+    made.push({
+      farmer: farmer._id,
+      expert: expert._id,
+      scan: uncertain[2]._id,
+      plot: uncertain[2].plot,
+      trigger: 'uncertain_diagnosis',
+      decision: 'scheduled',
+      decidedAt: daysAgo(3),
+      mode: 'chat',
+      scheduledFor: atHour(-2, 11),
+      status: 'completed',
+      caseSummary: summaryFor(uncertain[2]),
+      outcome: {
+        diseaseKey: uncertain[2].diseaseKey,
+        advice:
+          'Confirmed from the photo. Remove and destroy the worst lower leaves, avoid overhead irrigation, and scan again in a week so we can see whether it is still spreading.',
+        completedAt: daysAgo(2),
+      },
+    });
+  }
+
+  await Consultation.insertMany(made);
+  return made.length;
 }
 
 export async function seedDatabase({ withDemoData = false } = {}) {

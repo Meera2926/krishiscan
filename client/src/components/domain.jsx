@@ -1,4 +1,4 @@
-import { Bug, Droplets, FlaskConical, Leaf, ShieldAlert, ShieldCheck, Thermometer, Timer } from 'lucide-react';
+import { Bug, ChevronRight, Droplets, FlaskConical, Leaf, ShieldAlert, ShieldCheck, Thermometer, Timer } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
 import { useCrops } from '../api/hooks.js';
@@ -190,32 +190,41 @@ export function ScanCard({ scan }) {
         : scan.effectiveDiseaseKey ?? t('common.unknown');
 
   return (
-    <Link to={`/scans/${scan.id}`} className="card group flex gap-3 overflow-hidden p-3 transition-shadow hover:shadow-md">
+    <Link to={`/scans/${scan.id}`} className="card-interactive group flex items-center gap-3.5 overflow-hidden p-3">
       <img
         src={scan.image.url}
         alt=""
         loading="lazy"
         width="80"
         height="80"
-        className="size-20 shrink-0 rounded-xl object-cover bg-canvas"
+        className="size-20 shrink-0 rounded-control border border-line bg-canvas object-cover"
       />
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-1.5">
           <StatusBadge status={scan.status} isHealthy={scan.isHealthy} />
           {scan.status !== 'rejected' && !scan.isHealthy && <SeverityBadge severity={scan.disease?.severity} />}
+          {/* The agronomist label check is our own quality control. A farmer only needs to know
+              it is happening, so it is an icon with a tooltip, not a sentence across the card. */}
           {scan.review?.status === 'pending' && (
-            <span className="chip bg-info-bg text-info">
+            <span
+              className="grid size-5 place-items-center rounded-full bg-info-bg text-info"
+              title={t('result.review.pending')}
+              aria-label={t('result.review.pending')}
+            >
               <Timer className="size-3" aria-hidden="true" />
-              {t('result.review.pending')}
             </span>
           )}
         </div>
-        <p className="mt-1 truncate font-semibold group-hover:text-brand-800">{title}</p>
-        <p className="truncate text-xs text-ink-muted">
+        <p className="mt-1.5 truncate font-bold leading-snug group-hover:text-brand-700">{title}</p>
+        <p className="mt-0.5 truncate text-xs text-ink-subtle">
           {cropName(scan.declaredCrop)}
           {scan.plot?.name && ` · ${scan.plot.name}`} · {relativeTime(scan.createdAt, i18n.language)}
         </p>
       </div>
+      <ChevronRight
+        className="size-4 shrink-0 text-ink-subtle transition-transform duration-200 group-hover:translate-x-0.5"
+        aria-hidden="true"
+      />
     </Link>
   );
 }

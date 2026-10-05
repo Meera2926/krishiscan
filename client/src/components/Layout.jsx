@@ -46,24 +46,37 @@ export default function Layout() {
   const { t } = useTranslation();
   const { user, status, logout } = useAuth();
 
-  const nav = user
+  /**
+   * Navigation is per role, not one list with bits hidden. An expert has no plots, takes no
+   * photos and has no scan history of their own, so offering them "Scan leaf" is an invitation
+   * to a page that will never have anything on it.
+   */
+  const isExpert = ['expert', 'admin'].includes(user?.role);
+  const nav = !user
     ? [
-        { to: '/dashboard', label: t('nav.dashboard'), icon: Home },
-        { to: '/scan', label: t('nav.scan'), icon: Camera, primary: true },
-        { to: '/history', label: t('nav.history'), icon: History },
-        { to: '/plots', label: t('nav.plots'), icon: Sprout },
-        { to: '/consultations', label: t('nav.consultations'), icon: UserCheck },
         { to: '/outbreaks', label: t('nav.outbreaks'), icon: Map },
         { to: '/library', label: t('nav.library'), icon: BookOpen },
-        ...(user.role !== 'farmer' ? [{ to: '/reviews', label: t('nav.reviews'), icon: ClipboardCheck }] : []),
       ]
-    : [
-        { to: '/outbreaks', label: t('nav.outbreaks'), icon: Map },
-        { to: '/library', label: t('nav.library'), icon: BookOpen },
-      ];
+    : isExpert
+      ? [
+          { to: '/dashboard', label: t('nav.dashboard'), icon: Home, mobile: true },
+          { to: '/consultations', label: t('nav.consultations'), icon: UserCheck, mobile: true },
+          { to: '/reviews', label: t('nav.reviews'), icon: ClipboardCheck, mobile: true },
+          { to: '/outbreaks', label: t('nav.outbreaks'), icon: Map, mobile: true },
+          { to: '/library', label: t('nav.library'), icon: BookOpen, mobile: true },
+        ]
+      : [
+          { to: '/dashboard', label: t('nav.dashboard'), icon: Home, mobile: true },
+          { to: '/scan', label: t('nav.scan'), icon: Camera, primary: true, mobile: true },
+          { to: '/history', label: t('nav.history'), icon: History, mobile: true },
+          { to: '/plots', label: t('nav.plots'), icon: Sprout, mobile: true },
+          { to: '/consultations', label: t('nav.consultations'), icon: UserCheck },
+          { to: '/outbreaks', label: t('nav.outbreaks'), icon: Map },
+          { to: '/library', label: t('nav.library'), icon: BookOpen, mobile: true },
+        ];
 
-  // The mobile bottom bar holds the five most-used destinations.
-  const mobileNav = user ? nav.filter((n) => ['/dashboard', '/scan', '/history', '/plots', '/library'].includes(n.to)) : [];
+  // The mobile bottom bar holds five destinations; each list marks its own.
+  const mobileNav = nav.filter((n) => n.mobile);
 
   return (
     <div className="flex min-h-dvh flex-col">
