@@ -23,6 +23,9 @@ picking the wrong crop does not fail — it routes the photo to another crop's c
 | **Organic treatments you can buy** | Each diagnosis lists the organic options already recorded against that disease, names the active behind them, and links a search on retailers that stock farm inputs. |
 | **Follow-up reminder** | Every diagnosis names the day to photograph the same leaf again, so progression tracking has a second scan to compare against. |
 | **Expert review** | Uncertain scans also queue for an agronomist's label check; their corrections never overwrite the model's original answer, so model-vs-expert agreement measures real field accuracy. |
+| **Photo quality check** | Before anything is classified, the photo is EXIF-rotated, measured for sharpness and exposure, and refused outright below 128 px on a side. A dark, overexposed or genuinely unusable photo is called out on the result rather than quietly diagnosed. |
+| **Disease library** | The knowledge base is browsable: 21 diseases, plus the six healthy classes on request, searchable by free text across common name, pathogen and symptoms, filterable by crop. Every one of the 27 entries names the extension source it was written from. |
+| **Your data stays yours** | A scan only reaches the outbreak map if its location was shared, that can be withdrawn afterwards, and a scan can be deleted outright — record and photo. Uploaded photos are stripped of metadata, GPS included, before they are stored. |
 | **Accessibility** | English and Hindi UI, spoken advice through the browser's speech API, installable PWA, works on a free hosting tier. |
 
 ## Quick start
@@ -62,7 +65,7 @@ Cloudinary instead of the server's disk, which most free hosts wipe on every dep
 |---|---|
 | `npm run dev` | API on :5000 and Vite on :5173 (Vite proxies `/api`, so dev matches production) |
 | `npm run dev:watch -w server` | Same, with the API restarting on source changes |
-| `npm test` | 106 server tests: diagnosis triage, photo quality, severity, progression, consultations, retention, remedies, risk rules, API |
+| `npm test` | 110 server tests: diagnosis triage, photo quality, severity, progression, consultations, retention, remedies, risk rules, API |
 | `npm run build` | Production React build; Express serves it from the same origin |
 | `npm run seed` | Crops and diseases (`-- --demo` adds demo data) |
 | `node server/scripts/evaluate-models.js <dir>` | Accuracy, rejection rate and latency on your own labelled photos |
@@ -169,6 +172,46 @@ dead link. Advice prepared on the farm, such as cow urine sprays, links nowhere 
 The follow-up date (`services/followUp.js`) is a rule of thumb from how fast the pathogen group
 moves — five days for an oomycete like late blight, a fortnight for a virus, sooner when much of
 the leaf has already gone. It is a reminder to re-photograph, not agronomic advice.
+
+## The two desks
+
+`/dashboard` resolves by role, and the navigation is built from the role too — an expert is never
+shown "Scan leaf", "History" or "My plots", and those routes are closed to them, because a desk
+full of a farmer's tools is a desk nobody can work at.
+
+| | Farmer | Expert |
+|---|---|---|
+| Home | plots, recent scans, outbreak alerts near their fields, reviews they have booked and the deadline on any they have not answered | today's appointments with a live **Join now**, requests nobody has taken yet, the rest of the week, and what they answered recently |
+| Expert reviews | the cases they raised | two tabs: **Waiting for me** (unclaimed, plus anything booked with them by name) and **My own** (their whole caseload, answered ones included) |
+| Review queue | — | scans the model was unsure about, waiting for a label check, with the model's agreement rate |
+
+An expert takes a case from the queue, or accepts one booked with them by name; the first expert
+to answer an unclaimed case takes it. Either side can cancel, only the farmer can move the
+appointment, and closing a case with advice writes that advice onto the farmer's scan — recorded
+as the expert's answer, never over the model's. A closed case refuses new messages, so a thread
+cannot quietly reopen.
+
+`GET /api/reviews/metrics` turns those label checks into the only accuracy figure that comes from
+real fields: how many scans were confirmed, how many corrected, the agreement rate, a per-crop
+breakdown and the model's most common confusions.
+
+## Accounts, security and health
+
+Sign-up asks for a name, email and password, and nothing else is required; state, district,
+preferred language and the location used for weather risk are all editable afterwards from
+**Profile**. Passwords are bcrypt at cost 12. A short-lived access token rides in memory and a
+refresh token in an httpOnly, SameSite=Lax, first-party cookie; each account carries a
+`tokenVersion`, so logging out invalidates every refresh token issued to it, on every device.
+
+Login and registration are rate limited to 20 attempts per 15 minutes per IP. Helmet sets a
+content security policy that allows scripts only from the app's own origin, JSON bodies are capped
+at 100 kB, and uploads at one file of `MAX_UPLOAD_MB`, JPEG/PNG/WebP/HEIC only — with the declared
+type treated as a first filter, not as proof, since the real check is whether sharp can decode it.
+
+`GET /api/health` reports the database state, the classifier (driver, pinned model version, label
+count, load time, and any load error) and the storage driver. It answers `503` when the database is
+down and `degraded` when the models have not finished loading, which is what a free instance looks
+like for the first few seconds after a cold start.
 
 ## Deployment
 
