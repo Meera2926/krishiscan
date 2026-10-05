@@ -112,6 +112,6 @@ const times = rows.map((r) => r.ms).sort((a, b) => a - b);
 console.log(`\nLatency: median ${Math.round(times[Math.floor(times.length / 2)])} ms, p95 ${Math.round(times[Math.floor(times.length * 0.95)])} ms. Peak RSS ${mb()} MB.`);
 
 if (jsonOut) {
-  await fs.writeFile(jsonOut, JSON.stringify({ thresholds: { HIGH, LOW }, rows }, null, 2));
+  await fs.writeFile(jsonOut, JSON.stringify({ thresholds: { high: HIGH }, rows }, null, 2));
   console.log(`Per-image results written to ${jsonOut}`);
 }

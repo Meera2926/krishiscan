@@ -14,7 +14,7 @@
     "dev": "concurrently -n server,client -c green,cyan \"npm:dev -w server\" \"npm:dev -w client\"",
     "build": "npm run build -w client",
     "start": "npm start -w server",
-    "seed": "npm run seed -w server",
+    "seed": "npm run seed -w server --",
     "test": "npm test -w server && npm test -w client"
   },
   "devDependencies": {
