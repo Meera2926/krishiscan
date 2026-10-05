@@ -51,6 +51,10 @@ review as the farmer and it appears on the expert's desk without a refresh.
 
 The first start downloads ~32 MB of model weights and, for the local database, a MongoDB binary.
 
+Only one server can use that directory at a time: a second `npm run dev` refuses to start and
+says so, because two mongod processes on one data directory corrupts it - in testing the first
+server kept serving and then silently lost its database to the second.
+
 That local database waits for the journal before it acknowledges a write (`w:1, j:true`). It is
 slower than the default and deliberately so: a document written and acknowledged, with the process
 killed three seconds later, was measurably gone after the restart, and a farmer's account
@@ -75,7 +79,7 @@ Cloudinary instead of the server's disk, which most free hosts wipe on every dep
 |---|---|
 | `npm run dev` | API on :5000 and Vite on :5173 (Vite proxies `/api`, so dev matches production) |
 | `npm run dev:watch -w server` | Same, with the API restarting on source changes |
-| `npm test` | 117 server tests: diagnosis triage, the crop gate, photo quality, severity, progression, consultations, retention, remedies, risk rules, database persistence, API |
+| `npm test` | 118 server tests: diagnosis triage, the crop gate, photo quality, severity, progression, consultations, retention, remedies, risk rules, database persistence, API |
 | `npm run build` | Production React build; Express serves it from the same origin |
 | `npm run seed` | Crops and diseases (`-- --demo` adds demo data) |
 | `node server/scripts/evaluate-models.js <dir>` | Accuracy, rejection rate and latency on your own labelled photos |

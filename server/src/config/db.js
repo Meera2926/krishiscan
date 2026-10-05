@@ -18,6 +18,55 @@ const DEV_DB_PATH = path.join(config.serverRoot, '.mongo-data');
 /** Tests want an empty database every run; a developer wants yesterday's login to still work. */
 const keepsData = () => config.NODE_ENV !== 'test';
 
+const LOCK_FILE = path.join(DEV_DB_PATH, 'krishiscan-server.lock');
+
+/** True when a process with this id is still running. */
+function alive(pid) {
+  try {
+    process.kill(pid, 0);
+    return true;
+  } catch (err) {
+    // EPERM means it exists but belongs to someone else, which still counts as in use.
+    return err.code === 'EPERM';
+  }
+}
+
+/**
+ * Stops two servers sharing one database directory.
+ *
+ * Two mongod processes on the same dbPath is not a slow path, it is corruption: observed here as
+ * a server that booted, seeded, served a few requests and then lost its database, because the
+ * older instance took it away. Restarting a dev server is something people do every few minutes,
+ * and the second one has to refuse rather than quietly fight the first.
+ */
+function claimDataDirectory() {
+  // A missing, empty or unparseable lock file all mean the same thing: nobody holds it.
+  let held = 0;
+  try {
+    held = Number.parseInt(fs.readFileSync(LOCK_FILE, 'utf8').trim(), 10) || 0;
+  } catch {
+    held = 0;
+  }
+
+  if (held && held !== process.pid && alive(held)) {
+    throw new Error(
+      `Another KrishiScan server (pid ${held}) is already using ${DEV_DB_PATH}. Two servers ` +
+        'cannot share one database directory. Stop that one first, or set MONGO_URI to give ' +
+        'this server its own database.',
+    );
+  }
+  // Either nothing held it, or the holder is gone and left the file behind.
+  fs.writeFileSync(LOCK_FILE, String(process.pid));
+}
+
+function releaseDataDirectory() {
+  try {
+    if (Number(fs.readFileSync(LOCK_FILE, 'utf8').trim()) === process.pid) fs.unlinkSync(LOCK_FILE);
+  } catch {
+    // Nothing to release.
+  }
+}
+
 export async function connectDatabase() {
   let uri = config.MONGO_URI;
 
@@ -25,7 +74,10 @@ export async function connectDatabase() {
     // Imported lazily so production installs never need the dev dependency.
     const { MongoMemoryServer } = await import('mongodb-memory-server');
     const persist = keepsData();
-    if (persist) fs.mkdirSync(DEV_DB_PATH, { recursive: true });
+    if (persist) {
+      fs.mkdirSync(DEV_DB_PATH, { recursive: true });
+      claimDataDirectory();
+    }
     try {
       memoryServer = await MongoMemoryServer.create(
         persist ? { instance: { dbPath: DEV_DB_PATH, storageEngine: 'wiredTiger' } } : undefined,
@@ -89,6 +141,7 @@ export async function disconnectDatabase() {
   if (memoryServer) {
     // doCleanup deletes dbPath. That is right for a test run and wrong for a developer's data.
     await memoryServer.stop({ doCleanup: !keepsData() });
+    if (keepsData()) releaseDataDirectory();
     memoryServer = null;
   }
 }

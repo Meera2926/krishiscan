@@ -123,4 +123,26 @@ describe('the local development database', () => {
 
     await stop(server);
   }, 300_000);
+
+  it('refuses to let a second server share the same database directory', async () => {
+    // Two mongod processes on one dbPath corrupts it: in practice the first server kept serving
+    // and then silently lost its database to the second. A refusal with a readable reason beats
+    // a server that works for a minute and then starts returning 500s.
+    const first = await bootAndWait();
+
+    const second = boot();
+    started.push(second);
+    const until = Date.now() + 40_000;
+    while (Date.now() < until && second.child.exitCode === null) await sleep(300);
+
+    expect(second.child.exitCode).not.toBeNull();
+    expect(second.log()).toContain('Another KrishiScan server');
+    expect(second.log()).toContain('cannot share one database directory');
+
+    // The server that got there first is untouched.
+    const health = await fetch(`${BASE}/health`).then((r) => r.json());
+    expect(health.database.state).toBe('connected');
+
+    await stop(first);
+  }, 180_000);
 });
