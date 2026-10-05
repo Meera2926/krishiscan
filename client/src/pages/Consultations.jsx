@@ -92,7 +92,9 @@ export default function Consultations() {
         <EmptyState
           icon={CalendarClock}
           title={t('consult.emptyTitle')}
-          body={t(scope === 'queue' ? 'consult.emptyQueueBody' : 'consult.emptyBody')}
+          body={t(
+            scope === 'queue' ? 'consult.emptyQueueBody' : isExpert ? 'consult.emptyMineBody' : 'consult.emptyBody',
+          )}
         />
       )}
 
@@ -100,7 +102,7 @@ export default function Consultations() {
         <>
           <ul className="space-y-3">
             {data.items.map((c) => (
-              <ConsultationRow key={c.id} consultation={c} showFarmer={scope === 'queue'} />
+              <ConsultationRow key={c.id} consultation={c} showFarmer={isExpert} />
             ))}
           </ul>
           <Pagination page={data.page} pages={data.pages} onChange={setPage} />

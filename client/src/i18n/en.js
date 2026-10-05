@@ -389,6 +389,7 @@ export default {
     emptyTitle: 'No expert reviews yet',
     emptyBody: 'When the app is unsure, or a treatment is not working, it will offer you a review here.',
     emptyQueueBody: 'No farmer is waiting for a review right now.',
+    emptyMineBody: 'Cases you take from the queue appear here, with the ones you have already answered.',
   },
   remedies: {
     title: 'Organic and safe treatments',

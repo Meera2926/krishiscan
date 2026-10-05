@@ -192,6 +192,50 @@ describe('consultations API', () => {
     await send({ decision: 'scheduled', mode: 'call', scheduledFor: nextSlot(), contactPhone: '9876543210' }).expect(200);
   });
 
+  it('shows an expert their own caseload, not an empty list', async () => {
+    const { token } = await registerUser(app);
+    const { consultation } = await uncertainScan(token, 11);
+    await request(app)
+      .post(`/api/consultations/${consultation.id}/decision`)
+      .set(bearer(token))
+      .send({ decision: 'scheduled', mode: 'chat', scheduledFor: nextSlot() })
+      .expect(200);
+
+    const { token: expertToken } = await asExpert(app, 'Caseload');
+    // Taking the case is what makes it theirs.
+    await request(app)
+      .post(`/api/consultations/${consultation.id}/messages`)
+      .set(bearer(expertToken))
+      .send({ body: 'Taking a look now.' })
+      .expect(201);
+
+    // `scope=mine` once meant `farmer: me` for everyone, so the "My own" tab on the expert desk
+    // was always empty and a completed case could not be opened again from anywhere.
+    const mine = await request(app).get('/api/consultations?scope=mine').set(bearer(expertToken)).expect(200);
+    expect(mine.body.items.map((c) => c.id)).toContain(consultation.id);
+
+    await request(app)
+      .patch(`/api/consultations/${consultation.id}`)
+      .set(bearer(expertToken))
+      .send({ action: 'complete', diseaseKey: 'tomato_early_blight', advice: 'Remove the lower leaves.' })
+      .expect(200);
+
+    const completed = await request(app)
+      .get('/api/consultations?scope=mine&status=completed')
+      .set(bearer(expertToken))
+      .expect(200);
+    expect(completed.body.items.map((c) => c.id)).toContain(consultation.id);
+
+    // A different expert's desk must not show it.
+    const { token: otherExpert } = await asExpert(app, 'Someone else');
+    const theirs = await request(app).get('/api/consultations?scope=mine').set(bearer(otherExpert)).expect(200);
+    expect(theirs.body.items.map((c) => c.id)).not.toContain(consultation.id);
+
+    // And a farmer's own list still means the cases they raised.
+    const farmerList = await request(app).get('/api/consultations?scope=mine').set(bearer(token)).expect(200);
+    expect(farmerList.body.items.map((c) => c.id)).toContain(consultation.id);
+  });
+
   it('refuses a slot that is not on offer', async () => {
     const { token } = await registerUser(app);
     const { consultation } = await uncertainScan(token, 5);

@@ -12,6 +12,7 @@ import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import sharp from 'sharp';
 import { Consultation, Crop, Disease, Plot, Scan, Treatment, User } from '../models/index.js';
+import { openingMessage } from '../services/consultation.js';
 import { SUPPORTED_CROPS, resolveCrop } from '../services/inference/catalog.js';
 import { invalidateLabelIndex } from '../services/labelIndex.js';
 import { storage } from '../services/storage/index.js';
@@ -338,6 +339,18 @@ async function seedConsultations({ farmer, expert, uncertain, diseases }) {
 
   const made = [];
 
+  /**
+   * Booking a review writes the case into the thread (see the decision route), so every demo
+   * case starts the same way a real one does. Calling the app's own builder rather than
+   * repeating its wording here means the demo cannot drift from the real thing.
+   */
+  const opening = (summary, extra, sentAt) => ({
+    sender: farmer._id,
+    senderRole: 'farmer',
+    body: [openingMessage(summary, 'uncertain_diagnosis'), extra].filter(Boolean).join('\n\n'),
+    sentAt,
+  });
+
   // 1. Waiting for any expert to take it.
   if (uncertain[0]) {
     made.push({
@@ -353,6 +366,13 @@ async function seedConsultations({ farmer, expert, uncertain, diseases }) {
       status: 'open',
       caseSummary: summaryFor(uncertain[0]),
       question: 'Spots are spreading to the upper leaves. Should I spray today?',
+      messages: [
+        opening(
+          summaryFor(uncertain[0]),
+          'Spots are spreading to the upper leaves. Should I spray today?',
+          new Date(Date.now() - 72e5),
+        ),
+      ],
     });
   }
 
@@ -372,12 +392,7 @@ async function seedConsultations({ farmer, expert, uncertain, diseases }) {
       status: 'confirmed',
       caseSummary: summary,
       messages: [
-        {
-          sender: farmer._id,
-          senderRole: 'farmer',
-          body: `The app flagged this because it was not sure of the diagnosis. Best guess: ${summary.diseaseName ?? 'unknown'}. Crop: ${summary.crop}.\n\nLower leaves are worst. I have not sprayed anything yet.`,
-          sentAt: new Date(Date.now() - 36e5),
-        },
+        opening(summary, 'Lower leaves are worst. I have not sprayed anything yet.', new Date(Date.now() - 36e5)),
         {
           sender: expert._id,
           senderRole: 'expert',
@@ -402,6 +417,15 @@ async function seedConsultations({ farmer, expert, uncertain, diseases }) {
       scheduledFor: atHour(-2, 11),
       status: 'completed',
       caseSummary: summaryFor(uncertain[2]),
+      messages: [
+        opening(summaryFor(uncertain[2]), 'It started after four days of rain.', daysAgo(3)),
+        {
+          sender: expert._id,
+          senderRole: 'expert',
+          body: 'Confirmed from the photo. Strip the worst lower leaves and keep water off the foliage.',
+          sentAt: daysAgo(2),
+        },
+      ],
       outcome: {
         diseaseKey: uncertain[2].diseaseKey,
         advice:

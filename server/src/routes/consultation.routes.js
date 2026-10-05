@@ -146,6 +146,11 @@ router.get('/', validate({ query: listQuery }), async (req, res) => {
   const { scope, status, page, limit } = req.valid.query;
   if (scope === 'queue' && !isExpert(req)) throw forbidden();
 
+  // "Mine" means the cases that are this person's own work: the ones an expert is handling,
+  // and the ones a farmer raised. Reading it as `farmer` for everyone left an expert's own
+  // caseload — including every case they had already completed — unreachable from the list.
+  const mineFilter = isExpert(req) ? { expert: req.auth.userId } : { farmer: req.auth.userId };
+
   const filter =
     scope === 'queue'
       ? {
@@ -154,12 +159,13 @@ router.get('/', validate({ query: listQuery }), async (req, res) => {
           // Unclaimed cases, plus the ones this farmer asked for by name.
           $or: [{ expert: null }, { expert: req.auth.userId }],
         }
-      : { farmer: req.auth.userId, ...(status && { status }) };
+      : { ...mineFilter, ...(status && { status }) };
 
   const [items, total] = await Promise.all([
     Consultation.find(filter)
-      // The queue is worked earliest-appointment-first; a farmer sees their newest case first.
-      .sort(scope === 'queue' ? { scheduledFor: 1 } : { createdAt: -1 })
+      // The queue and an expert's own caseload are worked by appointment; a farmer sees their
+      // newest case first.
+      .sort(scope === 'queue' || isExpert(req) ? { scheduledFor: 1 } : { createdAt: -1 })
       .skip((page - 1) * limit)
       .limit(limit)
       .populate('farmer', 'name district state')
