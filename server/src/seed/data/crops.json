@@ -3,7 +3,10 @@
     "key": "rice",
     "name": "Rice (Paddy)",
     "names": {
-      "hi": "धान"
+      "hi": "धान",
+      "ta": "நெல்",
+      "te": "వరి",
+      "ml": "നെല്ല്"
     },
     "scientificName": "Oryza sativa",
     "seasons": [
@@ -36,7 +39,10 @@
     "key": "wheat",
     "name": "Wheat",
     "names": {
-      "hi": "गेहूं"
+      "hi": "गेहूं",
+      "ta": "கோதுமை",
+      "te": "గోధుమ",
+      "ml": "ഗോതമ്പ്"
     },
     "scientificName": "Triticum aestivum",
     "seasons": [
@@ -71,7 +77,10 @@
       "Corn"
     ],
     "names": {
-      "hi": "मक्का"
+      "hi": "मक्का",
+      "ta": "மக்காச்சோளம்",
+      "te": "మొక్కజొన్న",
+      "ml": "ചോളം"
     },
     "scientificName": "Zea mays",
     "seasons": [
@@ -105,7 +114,10 @@
     "key": "potato",
     "name": "Potato",
     "names": {
-      "hi": "आलू"
+      "hi": "आलू",
+      "ta": "உருளைக்கிழங்கு",
+      "te": "బంగాళాదుంప",
+      "ml": "ഉരുളക്കിഴങ്ങ്"
     },
     "scientificName": "Solanum tuberosum",
     "seasons": [
@@ -133,7 +145,10 @@
     "key": "tomato",
     "name": "Tomato",
     "names": {
-      "hi": "टमाटर"
+      "hi": "टमाटर",
+      "ta": "தக்காளி",
+      "te": "టమాటా",
+      "ml": "തക്കാളി"
     },
     "scientificName": "Solanum lycopersicum",
     "seasons": [
@@ -163,7 +178,10 @@
     "key": "grape",
     "name": "Grape",
     "names": {
-      "hi": "अंगूर"
+      "hi": "अंगूर",
+      "ta": "திராட்சை",
+      "te": "ద్రాక్ష",
+      "ml": "മുന്തിരി"
     },
     "scientificName": "Vitis vinifera",
     "seasons": [

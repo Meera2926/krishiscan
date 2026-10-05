@@ -29,7 +29,7 @@ is now caught and refused outright; see **Telling the crops apart** below.
 | **Photo quality check** | Before anything is classified, the photo is EXIF-rotated, measured for sharpness and exposure, and refused outright below 128 px on a side. A dark, overexposed or genuinely unusable photo is called out on the result rather than quietly diagnosed. |
 | **Disease library** | The knowledge base is browsable: 21 diseases, plus the six healthy classes on request, searchable by free text across common name, pathogen and symptoms, filterable by crop. Every one of the 27 entries names the extension source it was written from. |
 | **Your data stays yours** | A scan only reaches the outbreak map if its location was shared, that can be withdrawn afterwards, and a scan can be deleted outright — record and photo. Uploaded photos are stripped of metadata, GPS included, before they are stored. |
-| **Accessibility** | English and Hindi UI, spoken advice through the browser's speech API, installable PWA, works on a free hosting tier. |
+| **Accessibility** | UI in English, Hindi, Tamil, Telugu and Malayalam — 430 strings each, and every crop named in all five. Spoken advice through the browser's speech API, installable PWA, works on a free hosting tier. |
 
 ## Quick start
 
@@ -193,6 +193,11 @@ Read these before quoting any accuracy number.
 - **`cabbage_healthy` rests on 11 independent leaves**, and its test split on two. The number
   reported for it is not meaningful; it is kept because a crop without a healthy class forces
   every healthy leaf into a disease.
+- **Disease names are translated into Hindi only.** The interface is fully translated into all
+  five languages and every crop is named in all five, but the 43 disease entries carry a Hindi
+  name and fall back to English elsewhere. A farmer reading the app in Tamil sees Tamil
+  everywhere except the disease name itself. Adding those is a terminology job for someone who
+  works in the language, not a translation one.
 - **Garlic tipburn is a disorder, not a diagnosis.** Several things cause it — Stemphylium,
   potassium or moisture stress, salinity — and the model only sees that the tips are burnt.
 - **Measured accuracy is modest, and this is the honest number.** On `server/eval` — 63 real field
