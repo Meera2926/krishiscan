@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import mongoose from 'mongoose';
 import { z } from 'zod';
 import { requireAuth } from '../middleware/auth.js';
 import { cropKey, idParams, objectId, validate } from '../middleware/validate.js';
@@ -67,6 +68,44 @@ router.get('/experts', validate({ query: z.object({ crop: cropKey.optional(), mo
       ...(e.expertProfile ?? {}),
     })),
   });
+});
+
+/**
+ * What each side needs on their own dashboard. One endpoint, two shapes, because an expert and
+ * a farmer are looking at the same consultations from opposite ends.
+ */
+router.get('/summary', async (req, res) => {
+  const me = new mongoose.Types.ObjectId(req.auth.userId);
+  const now = new Date();
+
+  const upcomingFields = 'mode scheduledFor status decision caseSummary contactPhone visitAddress';
+
+  if (isExpert(req)) {
+    const [waiting, mine, completed, upcoming] = await Promise.all([
+      // Booked by a farmer and not yet claimed by anyone.
+      Consultation.countDocuments({ decision: 'scheduled', status: 'open', expert: null }),
+      Consultation.countDocuments({ expert: me, status: { $in: ['open', 'confirmed'] } }),
+      Consultation.countDocuments({ expert: me, status: 'completed' }),
+      Consultation.find({ expert: me, status: { $in: ['open', 'confirmed'] }, scheduledFor: { $gte: new Date(now - 3600_000) } })
+        .sort({ scheduledFor: 1 })
+        .limit(5)
+        .select(upcomingFields)
+        .populate('farmer', 'name district state'),
+    ]);
+    return res.json({ role: 'expert', waiting, mine, completed, upcoming: upcoming.map((c) => serialise(c, now)) });
+  }
+
+  const [awaitingAnswer, booked, answered, upcoming] = await Promise.all([
+    Consultation.countDocuments({ farmer: me, decision: { $ne: 'scheduled' }, expiresAt: { $gt: now } }),
+    Consultation.countDocuments({ farmer: me, decision: 'scheduled', status: { $in: ['open', 'confirmed'] } }),
+    Consultation.countDocuments({ farmer: me, status: 'completed' }),
+    Consultation.find({ farmer: me, decision: 'scheduled', status: { $in: ['open', 'confirmed'] } })
+      .sort({ scheduledFor: 1 })
+      .limit(5)
+      .select(upcomingFields)
+      .populate('expert', 'name expertProfile'),
+  ]);
+  res.json({ role: 'farmer', awaitingAnswer, booked, answered, upcoming: upcoming.map((c) => serialise(c, now)) });
 });
 
 const listQuery = z.object({

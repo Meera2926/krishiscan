@@ -1,7 +1,8 @@
 import { AlertTriangle, ArrowRight, Camera, CheckCircle2, ClipboardList, Map, Plus, ScanLine, Sprout, UserCheck } from 'lucide-react';
+import { MODE_ICONS } from '../components/consultation.jsx';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
-import { useConsultations, useOutbreakAlerts, usePlots, useScans, useScanSummary } from '../api/hooks.js';
+import { useConsultationSummary, useConsultations, useOutbreakAlerts, usePlots, useScans, useScanSummary } from '../api/hooks.js';
 import { useAuth } from '../auth/AuthProvider.jsx';
 import { ScanCard } from '../components/domain.jsx';
 import { EmptyState, SeverityBadge, Spinner, StatCard } from '../components/ui.jsx';
@@ -59,6 +60,7 @@ export default function Dashboard() {
   const plots = usePlots();
   const alerts = useOutbreakAlerts();
   const consultations = useConsultations({ scope: 'mine', limit: 20 });
+  const consultSummary = useConsultationSummary();
   // Offers the farmer has not answered. These are what the week-long reminders are about, and
   // the app has no email or SMS channel, so this list is where a reminder actually lands.
   const unanswered = (consultations.data?.items ?? []).filter((c) => c.decision !== 'scheduled' && c.expiresAt);
@@ -124,6 +126,36 @@ export default function Dashboard() {
                 </Link>
               </li>
             ))}
+          </ul>
+        </section>
+      )}
+
+      {consultSummary.data?.upcoming?.length > 0 && (
+        <section>
+          <SectionHeading icon={UserCheck}>{t('consult.pageTitle')}</SectionHeading>
+          <ul className="space-y-2.5">
+            {consultSummary.data.upcoming.map((c) => {
+              const Icon = MODE_ICONS[c.mode] ?? UserCheck;
+              return (
+                <li key={c.id}>
+                  <Link to={`/consultations/${c.id}`} className="card-interactive group flex items-center gap-4 p-4">
+                    <span className="grid size-11 shrink-0 place-items-center rounded-control bg-brand-50 text-brand-600 ring-1 ring-brand-200/70">
+                      <Icon className="size-5" aria-hidden="true" />
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate font-bold">{t(`consult.booked.${c.mode}`)}</p>
+                      <p className="truncate text-sm text-ink-muted">
+                        {shortDate(c.scheduledFor, lang)} ·{' '}
+                        {c.expert?.name ?? t('consult.awaitingExpert')}
+                        {c.expert?.expertProfile?.qualification ? ` · ${c.expert.expertProfile.qualification}` : ''}
+                      </p>
+                    </div>
+                    <span className="chip bg-canvas-deep text-ink-muted">{t(`consult.status.${c.status}`)}</span>
+                    <ArrowRight className="size-4 shrink-0 text-ink-subtle transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
+                  </Link>
+                </li>
+              );
+            })}
           </ul>
         </section>
       )}

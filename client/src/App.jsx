@@ -1,7 +1,7 @@
 import { lazy, Suspense } from 'react';
 import { createBrowserRouter, Outlet } from 'react-router';
 import { RouterProvider } from 'react-router/dom';
-import { AuthProvider } from './auth/AuthProvider.jsx';
+import { AuthProvider, useAuth } from './auth/AuthProvider.jsx';
 import { RedirectIfAuthenticated, RequireAuth } from './auth/guards.jsx';
 import Layout from './components/Layout.jsx';
 import { FullPageSpinner } from './components/ui.jsx';
@@ -11,6 +11,7 @@ import { NotFound, RouteError } from './pages/Errors.jsx';
 
 // Map-heavy and rarely-first pages load on demand to keep the first load small on 3G.
 const Dashboard = lazy(() => import('./pages/Dashboard.jsx'));
+const ExpertDashboard = lazy(() => import('./pages/ExpertDashboard.jsx'));
 const NewScan = lazy(() => import('./pages/NewScan.jsx'));
 const ScanResult = lazy(() => import('./pages/ScanResult.jsx'));
 const History = lazy(() => import('./pages/History.jsx'));
@@ -24,6 +25,16 @@ const ReviewQueue = lazy(() => import('./pages/ReviewQueue.jsx'));
 const Consultations = lazy(() => import('./pages/Consultations.jsx'));
 const ConsultationDetail = lazy(() => import('./pages/ConsultationDetail.jsx'));
 const Profile = lazy(() => import('./pages/Profile.jsx'));
+
+/**
+ * A farmer and an expert want opposite things from a home screen — one tracks their own plots,
+ * the other works a queue of other people's — so /dashboard resolves by role rather than
+ * stacking both sets of panels into one page.
+ */
+function DashboardRoute() {
+  const { user } = useAuth();
+  return ['expert', 'admin'].includes(user?.role) ? <ExpertDashboard /> : <Dashboard />;
+}
 
 function Root() {
   return (
@@ -57,7 +68,7 @@ const router = createBrowserRouter([
           {
             element: <RequireAuth />,
             children: [
-              { path: 'dashboard', element: <Dashboard /> },
+              { path: 'dashboard', element: <DashboardRoute /> },
               { path: 'scan', element: <NewScan /> },
               { path: 'scans/:id', element: <ScanResult /> },
               { path: 'history', element: <History /> },

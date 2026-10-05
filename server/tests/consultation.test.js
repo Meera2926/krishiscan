@@ -303,6 +303,68 @@ describe('choosing an expert', () => {
   });
 });
 
+describe('the two dashboards', () => {
+  it('shows a farmer and an expert opposite ends of the same case', async () => {
+    const { token } = await registerUser(app);
+    const { consultation } = await uncertainScan(token, 30);
+    const { token: expertToken } = await asExpert(app, 'Desk Expert', { qualification: 'M.Sc.' });
+
+    // Before booking: nothing is waiting for anyone.
+    const idle = await request(app).get('/api/consultations/summary').set(bearer(expertToken)).expect(200);
+    expect(idle.body).toMatchObject({ role: 'expert', waiting: 0, mine: 0 });
+
+    await request(app)
+      .post(`/api/consultations/${consultation.id}/decision`)
+      .set(bearer(token))
+      .send({ decision: 'scheduled', mode: 'chat', scheduledFor: nextSlot() })
+      .expect(200);
+
+    // The farmer's booking lands on the expert's desk without anyone being told.
+    const booked = await request(app).get('/api/consultations/summary').set(bearer(expertToken)).expect(200);
+    expect(booked.body).toMatchObject({ waiting: 1, mine: 0 });
+    const farmerBooked = await request(app).get('/api/consultations/summary').set(bearer(token)).expect(200);
+    expect(farmerBooked.body).toMatchObject({ role: 'farmer', booked: 1, answered: 0 });
+    expect(farmerBooked.body.upcoming).toHaveLength(1);
+
+    // Taking it moves it off the open queue and onto that expert's own list.
+    await request(app).patch(`/api/consultations/${consultation.id}`).set(bearer(expertToken)).send({ action: 'accept' }).expect(200);
+    const taken = await request(app).get('/api/consultations/summary').set(bearer(expertToken)).expect(200);
+    expect(taken.body).toMatchObject({ waiting: 0, mine: 1, completed: 0 });
+    expect(taken.body.upcoming[0].farmer.name).toBeTruthy();
+
+    // Completing it updates both sides.
+    await request(app)
+      .patch(`/api/consultations/${consultation.id}`)
+      .set(bearer(expertToken))
+      .send({ action: 'complete', advice: 'Remove the lower leaves.' })
+      .expect(200);
+    expect((await request(app).get('/api/consultations/summary').set(bearer(expertToken))).body).toMatchObject({ mine: 0, completed: 1 });
+    expect((await request(app).get('/api/consultations/summary').set(bearer(token))).body).toMatchObject({ booked: 0, answered: 1 });
+  });
+
+  it('does not show one expert another expert claimed case', async () => {
+    const { token } = await registerUser(app);
+    const { consultation } = await uncertainScan(token, 31);
+    const { token: firstToken } = await asExpert(app, 'First Expert', { qualification: 'M.Sc.' });
+    const { token: secondToken } = await asExpert(app, 'Second Expert', { qualification: 'M.Sc.' });
+
+    await request(app)
+      .post(`/api/consultations/${consultation.id}/decision`)
+      .set(bearer(token))
+      .send({ decision: 'scheduled', mode: 'chat', scheduledFor: nextSlot() })
+      .expect(200);
+    await request(app).patch(`/api/consultations/${consultation.id}`).set(bearer(firstToken)).send({ action: 'accept' }).expect(200);
+
+    const queue = await request(app).get('/api/consultations?scope=queue').set(bearer(secondToken)).expect(200);
+    expect(queue.body.items.map((c) => c.id)).not.toContain(consultation.id);
+    await request(app)
+      .post(`/api/consultations/${consultation.id}/messages`)
+      .set(bearer(secondToken))
+      .send({ body: 'Butting in' })
+      .expect(403);
+  });
+});
+
 describe('retention', () => {
   const backdate = (id, days) =>
     Consultation.collection.updateOne(

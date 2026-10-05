@@ -21,6 +21,7 @@ export const keys = {
   consultation: (id) => ['consultation', id],
   consultationSlots: ['consultations', 'slots'],
   experts: (params) => ['consultations', 'experts', params],
+  consultationSummary: ['consultations', 'summary'],
 };
 
 export const useCrops = () => useQuery({ queryKey: keys.crops, queryFn: () => get('/crops').then((d) => d.crops), staleTime: 60 * 60_000 });
@@ -156,6 +157,10 @@ export const useConsultation = (id) =>
     refetchInterval: (query) => (query.state.data?.status === 'completed' ? false : 15_000),
   });
 
+/** Dashboard counts and upcoming appointments; shaped by the caller's role. */
+export const useConsultationSummary = () =>
+  useQuery({ queryKey: keys.consultationSummary, queryFn: () => get('/consultations/summary'), refetchInterval: 30_000 });
+
 export const useExperts = (params = {}) =>
   useQuery({ queryKey: keys.experts(params), queryFn: () => get('/consultations/experts', params).then((d) => d.experts), staleTime: 10 * 60_000 });
 
@@ -171,6 +176,7 @@ function useConsultationMutation(mutationFn, id) {
       const consultation = data?.consultation ?? data;
       if (consultation?.id) qc.setQueryData(keys.consultation(consultation.id), consultation);
       qc.invalidateQueries({ queryKey: ['consultations'] });
+      qc.invalidateQueries({ queryKey: keys.consultationSummary });
       qc.invalidateQueries({ queryKey: ['consultation', id] });
       if (consultation?.scan?.id ?? consultation?.scan) {
         qc.invalidateQueries({ queryKey: keys.scan(consultation.scan?.id ?? consultation.scan) });

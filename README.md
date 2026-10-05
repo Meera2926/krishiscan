@@ -36,7 +36,11 @@ Open <http://localhost:5173>. With no `MONGO_URI` set, the server starts a throw
 MongoDB and seeds it, including demo accounts:
 
 - farmer: `farmer@demo.in` / `demo1234` (plots, a progression series and a logged treatment)
-- expert: `expert@demo.in` / `demo1234` (sees the review queue)
+- experts: `expert@demo.in`, `anjali.expert@demo.in`, `harpreet.expert@demo.in` / `demo1234`
+
+`/dashboard` resolves by role: a farmer sees their plots, scans and booked reviews; an expert
+sees the requests waiting to be taken, their own appointments and what they have answered. Book a
+review as the farmer and it appears on the expert's desk without a refresh.
 
 The first start downloads ~32 MB of model weights and, for the in-memory database, a MongoDB binary.
 
@@ -58,7 +62,7 @@ Cloudinary instead of the server's disk, which most free hosts wipe on every dep
 |---|---|
 | `npm run dev` | API on :5000 and Vite on :5173 (Vite proxies `/api`, so dev matches production) |
 | `npm run dev:watch -w server` | Same, with the API restarting on source changes |
-| `npm test` | 100 server tests: diagnosis triage, photo quality, severity, progression, consultations, retention, remedies, risk rules, API |
+| `npm test` | 102 server tests: diagnosis triage, photo quality, severity, progression, consultations, retention, remedies, risk rules, API |
 | `npm run build` | Production React build; Express serves it from the same origin |
 | `npm run seed` | Crops and diseases (`-- --demo` adds demo data) |
 | `node server/scripts/evaluate-models.js <dir>` | Accuracy, rejection rate and latency on your own labelled photos |

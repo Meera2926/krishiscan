@@ -352,11 +352,16 @@ export function CaseSummary({ consultation }) {
   );
 }
 
-export function ChatThread({ consultation, meId }) {
+/**
+ * The thread both sides write in. Shown for every mode, not only live chat: a call still needs
+ * somewhere to leave the advice afterwards, and a visit needs somewhere to agree directions.
+ */
+export function ChatThread({ consultation, meId, id }) {
   const { t, i18n } = useTranslation();
   const [body, setBody] = useState('');
   const send = useConsultationMessage(consultation.id);
   const closed = ['completed', 'cancelled'].includes(consultation.status);
+  const title = consultation.mode === 'chat' ? t('consult.chatTitle') : t('consult.messagesTitle');
 
   const submit = (e) => {
     e.preventDefault();
@@ -365,8 +370,8 @@ export function ChatThread({ consultation, meId }) {
   };
 
   return (
-    <section className="card p-5">
-      <h2 className="mb-3 font-semibold">{t('consult.chatTitle')}</h2>
+    <section className="card p-5" id={id}>
+      <h2 className="mb-3 font-bold">{title}</h2>
       {/* The photo and the model's answer are the first things in the thread, so the farmer
           never has to describe what they already uploaded. */}
       {consultation.caseSummary?.imageUrl && (
@@ -418,7 +423,7 @@ export function ChatThread({ consultation, meId }) {
             onChange={(e) => setBody(e.target.value)}
             placeholder={t('consult.chatPlaceholder')}
             maxLength={2000}
-            aria-label={t('consult.chatTitle')}
+            aria-label={title}
           />
           <button type="submit" className="btn-primary" disabled={send.isPending || !body.trim()}>
             <Send className="size-4" aria-hidden="true" />

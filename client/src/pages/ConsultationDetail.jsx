@@ -1,4 +1,4 @@
-import { ArrowLeft, CheckCircle2, MapPin, Phone, XCircle } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, MapPin, MessageSquare, Navigation, Phone, XCircle } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate, useParams } from 'react-router';
@@ -7,6 +7,77 @@ import { useAuth } from '../auth/AuthProvider.jsx';
 import { BookingForm, CaseSummary, ChatThread, ExpertCard, MODE_ICONS } from '../components/consultation.jsx';
 import { Alert, ErrorState, Field, PageHeader, Spinner } from '../components/ui.jsx';
 import { shortDate } from '../lib/format.js';
+
+/**
+ * How each side actually joins the appointment. There is no telephony or video in the app, so
+ * this is honest about what it does: it opens the thread, hands the expert a number to dial, or
+ * hands either side directions. "Live" means the booked hour is running.
+ */
+function SessionBar({ consultation, mine, isExpert }) {
+  const { t, i18n } = useTranslation();
+  if (consultation.decision !== 'scheduled' || ['completed', 'cancelled'].includes(consultation.status)) return null;
+
+  const start = new Date(consultation.scheduledFor).getTime();
+  const live = Date.now() >= start - 5 * 60_000 && Date.now() <= start + 60 * 60_000;
+  const joinThread = () => document.getElementById('thread')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  return (
+    <section className={`card flex flex-wrap items-center gap-4 p-5 ${live ? 'border-ok/40 bg-ok-bg/30' : ''}`}>
+      <div className="min-w-0 flex-1">
+        <p className="flex items-center gap-2 font-bold">
+          {live && <span className="size-2 animate-pulse rounded-full bg-ok" aria-hidden="true" />}
+          {live ? t('consult.liveNow') : t('consult.startsAt', { time: new Date(consultation.scheduledFor).toLocaleTimeString(i18n.language === 'hi' ? 'hi-IN' : 'en-IN', { hour: 'numeric', minute: '2-digit' }) })}
+        </p>
+        <p className="mt-0.5 text-sm text-ink-muted">{t(`consult.joinHint.${consultation.mode}`)}</p>
+      </div>
+
+      <div className="flex flex-wrap gap-2">
+        <button type="button" className={consultation.mode === 'chat' ? 'btn-primary' : 'btn-secondary'} onClick={joinThread}>
+          <MessageSquare className="size-4" aria-hidden="true" />
+          {consultation.mode === 'chat' ? t('consult.joinChat') : t('consult.openMessages')}
+        </button>
+
+        {consultation.mode === 'call' && consultation.contactPhone && (
+          <a
+            href={`tel:${consultation.contactPhone.replace(/\s+/g, '')}`}
+            className="btn-primary"
+            // The farmer gave this number so the expert could ring it; only the expert dials.
+            aria-disabled={mine}
+            onClick={(e) => mine && e.preventDefault()}
+          >
+            <Phone className="size-4" aria-hidden="true" />
+            {mine ? consultation.contactPhone : t('consult.callFarmer')}
+          </a>
+        )}
+
+        {consultation.mode === 'visit' && consultation.visitAddress && (
+          <a
+            href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(consultation.visitAddress)}`}
+            target="_blank"
+            rel="noreferrer noopener"
+            className="btn-secondary"
+          >
+            <Navigation className="size-4" aria-hidden="true" />
+            {t('consult.directions')}
+          </a>
+        )}
+
+        {isExpert && !mine && !consultation.expert && <AcceptButton consultation={consultation} />}
+      </div>
+    </section>
+  );
+}
+
+function AcceptButton({ consultation }) {
+  const { t } = useTranslation();
+  const act = useConsultationAction(consultation.id);
+  return (
+    <button type="button" className="btn-primary" disabled={act.isPending} onClick={() => act.mutate({ action: 'accept' })}>
+      <CheckCircle2 className="size-4" aria-hidden="true" />
+      {t('consult.accept')}
+    </button>
+  );
+}
 
 /** What the expert does with a booked case: take it, then close it with an answer. */
 function ExpertActions({ consultation }) {
@@ -137,6 +208,8 @@ export default function ConsultationDetail() {
         </Alert>
       )}
 
+      <SessionBar consultation={consultation} mine={mine} isExpert={isExpert} />
+
       {consultation.expert?.expertProfile?.qualification && (
         <section className="card p-5">
           <h2 className="mb-3 font-bold">{t('consult.expertCredentials')}</h2>
@@ -153,9 +226,7 @@ export default function ConsultationDetail() {
         </Alert>
       )}
 
-      {consultation.decision === 'scheduled' && consultation.mode === 'chat' && (
-        <ChatThread consultation={consultation} meId={user?.id} />
-      )}
+      {consultation.decision === 'scheduled' && <ChatThread consultation={consultation} meId={user?.id} id="thread" />}
 
       {isExpert && !mine && consultation.decision === 'scheduled' && <ExpertActions consultation={consultation} />}
     </div>
