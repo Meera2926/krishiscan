@@ -176,22 +176,30 @@ export const SINGLE_MODEL_CROPS = Object.freeze(
 );
 
 /**
- * How much of the probability must sit on the declared crop's own classes before a diagnosis is
- * trusted. Swept through the real pipeline over 192 genuine new-crop photos and 175 impostor
- * attempts (a photo of one of the six older crops submitted as each new crop):
+ * When is the declared crop believed?
  *
- *   floor   keeps genuine   refuses impostors
- *   0.80        100.0%            95.4%
- *   0.85         99.5%            97.7%   <- chosen
- *   0.90         92.2%            98.9%
- *   0.95         75.0%           100.0%
+ * The first version of this used a single absolute floor of 0.85, swept on held-out photos from
+ * the same datasets the model was trained on. Those sit at 0.97 median, so 0.85 looked
+ * comfortable. Real photographs are not that peaked: a farmer's healthy onion in a pot scored
+ * 72% and a brassica leaf with alternaria scored 78% - both the right crop, both the top crop by
+ * a wide margin, and both refused. An absolute threshold calibrated on one distribution does not
+ * survive contact with another.
  *
- * 0.85 rather than something stricter because this app treats refusing a real leaf as the
- * expensive mistake: the farmer gets nothing back and nothing to appeal. Buying 1.2 more points
- * of impostor rejection by turning away one real photo in thirteen is the wrong way round.
- * Re-run the sweep in scripts/evaluate-models.js whenever the model or the eval set changes.
+ * So the test is now two cheaper questions: does the declared crop lead the field, and does it
+ * hold enough of the mass to mean anything. Swept over 192 genuine photos, 175 impostor attempts
+ * and the photographs that exposed this:
+ *
+ *   rule                              genuine kept   impostors refused
+ *   mass >= 0.85 (the old one)            99.5%            97.7%       but failed real photos
+ *   leads by >= 0.10 only                100.0%            80.0%
+ *   mass >= 0.70 AND leads by >= 0.10    100.0%            94.3%       <- chosen
+ *
+ * Giving up three points of impostor rejection to stop refusing photographs farmers actually
+ * take is the right way round for this app: a refusal costs a farmer their answer and gives them
+ * nothing to appeal.
  */
-export const CROP_MATCH_FLOOR = 0.85;
+export const CROP_MATCH_FLOOR = 0.7;
+export const CROP_MATCH_MARGIN = 0.1;
 
 /** Share of a distribution that sits on `crop`'s classes. Used to catch a mis-declared crop. */
 export function cropProbability(predictions, crop) {

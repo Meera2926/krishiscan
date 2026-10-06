@@ -46,7 +46,16 @@ const INVALID_LABEL = '__invalid__';
 
 export function diagnose(
   raw,
-  { labelIndex, declaredCrop = null, invalidProbability = 0, gateKnowsCrop = true, cropFloor = null, high, topK = 3 },
+  {
+    labelIndex,
+    declaredCrop = null,
+    invalidProbability = 0,
+    gateKnowsCrop = true,
+    cropFloor = null,
+    cropMargin = 0,
+    high,
+    topK = 3,
+  },
 ) {
   if (!raw?.length) throw new Error('diagnose() needs at least one prediction');
 
@@ -95,13 +104,24 @@ export function diagnose(
     const conditioned = inCrop.map((p) => ({ ...p, confidence: cropProbability > 0 ? p.confidence / cropProbability : 0 }));
     const top = conditioned[0];
 
-    // A classifier that was trained on every crop it serves is worth believing about which crop
-    // it is looking at: the one here separates its five crops perfectly on held-out photos. When
-    // such a model says the photo is not the declared crop, answering anyway would mean naming a
-    // disease of the wrong plant, so it is refused outright. Models that only know one or two of
-    // the crops they are routed for get the softer CROP_AGREEMENT treatment below instead.
-    if (cropFloor != null && cropProbability < cropFloor) {
-      return outcome(top, conditioned, 'rejected', 'wrong_crop', cropProbability);
+    // A classifier trained on every crop it serves is worth believing about which crop it is
+    // looking at, so when it says the photo is a different one of them, answering anyway would
+    // mean naming a disease of the wrong plant. Two questions decide it: does the declared crop
+    // lead the other crops this model knows, and does it hold enough of the mass to mean
+    // anything. A lead test alone matters because real photographs are less peaked than the
+    // dataset ones - an absolute floor tuned on the training distribution refused farmers' own
+    // photos of the right crop. Models that know only one or two of the crops they are routed
+    // for get the softer CROP_AGREEMENT treatment below instead.
+    if (cropFloor != null) {
+      const rivals = new Map();
+      for (const p of ranked) {
+        if (!p.crop || p.crop === declaredCrop) continue;
+        rivals.set(p.crop, (rivals.get(p.crop) ?? 0) + p.confidence);
+      }
+      const bestRival = Math.max(0, ...rivals.values());
+      if (cropProbability < cropFloor || cropProbability < bestRival + cropMargin) {
+        return outcome(top, conditioned, 'rejected', 'wrong_crop', cropProbability);
+      }
     }
     if (cropProbability < CROP_AGREEMENT) {
       // Farmers know their own crop far better than the model does (wheat rust photos were

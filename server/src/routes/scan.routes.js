@@ -14,6 +14,7 @@ import { prepareImage } from '../services/imageQuality.js';
 import { estimateSeverity } from '../services/severity.js';
 import {
   CROP_MATCH_FLOOR,
+  CROP_MATCH_MARGIN,
   GATE_MODEL_CROPS,
   SINGLE_MODEL_CROPS,
   SUPPORTED_CROPS,
@@ -152,6 +153,7 @@ router.post('/', uploadImage, validate({ body: createBody }), async (req, res) =
     gateKnowsCrop: GATE_MODEL_CROPS.includes(declaredCrop),
     // Only the crops whose classifier knows every crop it serves get the hard crop gate.
     cropFloor: SINGLE_MODEL_CROPS.includes(declaredCrop) ? CROP_MATCH_FLOOR : null,
+    cropMargin: CROP_MATCH_MARGIN,
     high: config.CONFIDENCE_HIGH,
   });
 

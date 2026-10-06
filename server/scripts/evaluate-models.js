@@ -15,6 +15,7 @@ import path from 'node:path';
 import { diagnose } from '../src/services/diagnosis.js';
 import {
   CROP_MATCH_FLOOR,
+  CROP_MATCH_MARGIN,
   GATE_MODEL_CROPS,
   MODELS,
   SINGLE_MODEL_CROPS,
@@ -76,6 +77,7 @@ for (const s of samples) {
     gateKnowsCrop: GATE_MODEL_CROPS.includes(s.crop),
     // Measure what the app actually does, hard crop gate included.
     cropFloor: SINGLE_MODEL_CROPS.includes(s.crop) ? CROP_MATCH_FLOOR : null,
+    cropMargin: CROP_MATCH_MARGIN,
     high: HIGH,
   });
   rows.push({ ...s, ms, status: d.status, reason: d.statusReason, predicted: d.diseaseKey, confidence: d.top.confidence, invalidProbability: out.invalidProbability });

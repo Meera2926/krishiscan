@@ -79,7 +79,7 @@ Cloudinary instead of the server's disk, which most free hosts wipe on every dep
 |---|---|
 | `npm run dev` | API on :5000 and Vite on :5173 (Vite proxies `/api`, so dev matches production) |
 | `npm run dev:watch -w server` | Same, with the API restarting on source changes |
-| `npm test` | 118 server tests: diagnosis triage, the crop gate, photo quality, severity, progression, consultations, retention, remedies, risk rules, database persistence, API |
+| `npm test` | 121 server tests: diagnosis triage, the crop gate, photo quality, severity, progression, consultations, retention, remedies, risk rules, database persistence, API |
 | `npm run build` | Production React build; Express serves it from the same origin |
 | `npm run seed` | Crops and diseases (`-- --demo` adds demo data) |
 | `node server/scripts/evaluate-models.js <dir>` | Accuracy, rejection rate and latency on your own labelled photos |
@@ -160,23 +160,31 @@ another crop's classifier, which answered confidently. A corn leaf declared as r
 
 For the five crops the model trained here serves, that is now caught. Because one model was
 trained on all five at once, how much probability lands on the declared crop's classes is
-evidence about *which plant is in the photo*, not just which disease. Below `CROP_MATCH_FLOOR`
-the scan is refused as `wrong_crop` and **no disease is named at all** - not a guess, not a
-"healthy", nothing.
+evidence about *which plant is in the photo*, not just which disease. The scan is refused as
+`wrong_crop` — naming **no disease at all**, not a guess and not a "healthy" — unless the
+declared crop both leads the other four and holds at least `CROP_MATCH_FLOOR` of the mass.
 
-The floor is 0.85, chosen from a sweep over 192 genuine photos and 175 impostor attempts (a photo
-of one of the six older crops submitted as each of the five new ones):
+The first version of this test used a single absolute floor of 0.85, swept on held-out photos
+from the same datasets the model was trained on, where genuine photos sit at 0.97 median. It
+failed on contact with real photographs, which are less peaked: a farmer's own photo of a healthy
+onion in a pot put 72% on onion and 21% on cabbage — the right crop, well clear of everything
+else — and was refused. So was a brassica leaf with alternaria at 78%.
 
-| floor | keeps genuine photos | refuses impostors |
-|---|---|---|
-| 0.80 | 100.0% | 95.4% |
-| **0.85** | **99.5%** | **97.7%** |
-| 0.90 | 92.2% | 98.9% |
-| 0.95 | 75.0% | 100.0% |
+Swept over 192 genuine photos, 175 impostor attempts (a photo of one of the six older crops
+submitted as each new crop), and the photographs that exposed the problem:
 
-0.95 would turn away every impostor and one real photo in four, which is the wrong way round for
-someone standing in a field with a diseased crop. Re-run the sweep whenever the model or the
-evaluation set changes.
+| rule | keeps genuine photos | refuses impostors | real photographs |
+|---|---|---|---|
+| mass ≥ 0.85 (the first attempt) | 99.5% | 97.7% | **refused the right crop** |
+| leads the field by ≥ 0.10 only | 100.0% | 80.0% | fine |
+| **mass ≥ 0.70 and leads by ≥ 0.10** | **100.0%** | **94.3%** | **fine** |
+
+Three points of impostor rejection is the price of not refusing photographs farmers actually
+take, which is the right way round here: a refusal costs a farmer their answer and leaves them
+nothing to appeal. The ten that get through are mostly rice and wheat read as onion — all narrow
+blades. Using the ViT as a second opinion was measured and rejected: it is just as confident on
+crops it has never seen (turnip 0.99 median) as on the ones it knows (rice 0.91), so it would
+have refused genuine onion photos just as readily.
 
 The six older crops keep the softer rule they always had: their models each know only a few crops,
 so a disagreement there means the model is out of its depth, not that the farmer is wrong. Those

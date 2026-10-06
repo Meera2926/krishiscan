@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { CROP_AGREEMENT, diagnose } from '../src/services/diagnosis.js';
-import { CROP_MATCH_FLOOR, SINGLE_MODEL_CROPS, cropProbability } from '../src/services/inference/catalog.js';
+import {
+  CROP_MATCH_FLOOR,
+  CROP_MATCH_MARGIN,
+  SINGLE_MODEL_CROPS,
+  cropProbability,
+} from '../src/services/inference/catalog.js';
 
 const labelIndex = new Map([
   ['Tomato___Late_blight', { diseaseKey: 'tomato_late_blight', crop: 'tomato', isHealthy: false }],
@@ -160,7 +165,13 @@ describe('the hard crop gate (crops whose classifier knows every crop it serves)
     ['cabbage_healthy', { diseaseKey: 'cabbage_healthy', crop: 'cabbage', isHealthy: true }],
     ['cabbage_grey_mould', { diseaseKey: 'cabbage_grey_mould', crop: 'cabbage', isHealthy: false }],
   ]);
-  const gated = { labelIndex: alliumIndex, high: 0.7, declaredCrop: 'onion', cropFloor: CROP_MATCH_FLOOR };
+  const gated = {
+    labelIndex: alliumIndex,
+    high: 0.7,
+    declaredCrop: 'onion',
+    cropFloor: CROP_MATCH_FLOOR,
+    cropMargin: CROP_MATCH_MARGIN,
+  };
 
   it('refuses rather than naming a disease of the wrong plant', () => {
     // A garlic leaf submitted as onion: plenty of confidence, almost none of it on onion.
@@ -215,6 +226,39 @@ describe('the hard crop gate (crops whose classifier knows every crop it serves)
     expect(cropProbability(d, 'cabbage')).toBeCloseTo(0.3, 5);
     // "onion" must not swallow "onion_healthy_duplicate_guard" from another crop's namespace.
     expect(cropProbability(d, 'garlic')).toBeCloseTo(0.2, 5);
+  });
+
+  it('answers a real photograph that is the right crop but less than perfectly peaked', () => {
+    // This is the case the first version got wrong. A farmer's own photo of a healthy onion plant
+    // put 72% on onion and 21% on cabbage: the right crop, well clear of everything else, and
+    // refused by an absolute floor of 0.85 that had been tuned on dataset photos sitting at 0.97.
+    const r = diagnose(
+      dist({ onion_healthy: 0.59, onion_stemphylium_leaf_blight: 0.13, cabbage_healthy: 0.21, garlic_tipburn: 0.07 }),
+      gated,
+    );
+    expect(r.status).not.toBe('rejected');
+    expect(r.crop).toBe('onion');
+    expect(r.isHealthy).toBe(true);
+  });
+
+  it('refuses when no crop leads, even if the declared one is not far behind', () => {
+    // Spread across several crops with cabbage ahead of onion: nothing here says "onion".
+    const r = diagnose(
+      dist({ broccoli_healthy: 0.3, cabbage_grey_mould: 0.28, onion_healthy: 0.26, garlic_tipburn: 0.16 }),
+      gated,
+    );
+    expect(r.status).toBe('rejected');
+    expect(r.statusReason).toBe('wrong_crop');
+  });
+
+  it('refuses a declared crop that leads but holds too little of the mass', () => {
+    // Onion leads, but on barely a third of the probability: not enough to name a disease on.
+    const r = diagnose(
+      dist({ onion_healthy: 0.34, cabbage_healthy: 0.24, garlic_tipburn: 0.22, broccoli_healthy: 0.2 }),
+      gated,
+    );
+    expect(r.status).toBe('rejected');
+    expect(r.statusReason).toBe('wrong_crop');
   });
 
   it('gates exactly the crops served only by the jointly trained model', () => {
