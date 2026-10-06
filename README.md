@@ -79,7 +79,7 @@ Cloudinary instead of the server's disk, which most free hosts wipe on every dep
 |---|---|
 | `npm run dev` | API on :5000 and Vite on :5173 (Vite proxies `/api`, so dev matches production) |
 | `npm run dev:watch -w server` | Same, with the API restarting on source changes |
-| `npm test` | 121 server tests: diagnosis triage, the crop gate, photo quality, severity, progression, consultations, retention, remedies, risk rules, database persistence, API |
+| `npm test` | 125 server tests: diagnosis triage, the crop gate, photo quality, severity, progression, consultations, retention, remedies, risk rules, database persistence, API |
 | `npm run build` | Production React build; Express serves it from the same origin |
 | `npm run seed` | Crops and diseases (`-- --demo` adds demo data) |
 | `node server/scripts/evaluate-models.js <dir>` | Accuracy, rejection rate and latency on your own labelled photos |
@@ -248,6 +248,14 @@ or no — they are never silently added to a queue.
 |---|---|
 | **Yes** | They pick a phone call, a live chat or a farm visit, a slot, and an expert — whose qualification, employer and experience are shown. The chat thread opens with the diagnosis, confidence, severity and treatment history already written into the first message, so neither side starts from a blank page, and **either side can send more photos into the thread**. The case is kept until it is answered or cancelled. |
 | **No**, or no answer | Reminders appear on the dashboard on day 2 and day 5. On day 7 the consultation **and the scan it was raised for, including the photo**, are deleted. |
+
+Cancelling is narrower than it looks: only the farmer whose case it is, the expert actually
+handling it, or an admin may cancel, because cancelling an unanswered case starts the deletion
+clock and that clock takes the scan and its photograph with it. Cancelling a review an expert has
+**already answered** does not start any clock — the advice, the scan and the photo stay. Nor is a
+scan deleted once an agronomist has settled it in the label-check queue, even if the consultation
+it was raised for expires: that record of what the model said against what an expert said is the
+only honest accuracy figure this project has.
 
 Photos sent inside the conversation are deleted with it. The deadline is shown on the result page,
 on the dashboard and on the consultation itself, with the exact date, before the farmer answers. Only cases the farmer never booked are ever deleted; booked

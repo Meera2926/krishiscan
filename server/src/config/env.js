@@ -18,7 +18,12 @@ const schema = z.object({
   // Where the local development database keeps its files when MONGO_URI is empty. Configurable
   // so a test can point it somewhere disposable: a test that cleans up after itself must never
   // be able to delete the database a developer is actually using.
-  MONGO_DB_PATH: z.string().default(path.join(serverRoot, '.mongo-data')),
+  // An empty value in a .env file must not quietly resolve to the real directory, so it is
+  // normalised back to the default rather than left as ''.
+  MONGO_DB_PATH: z
+    .string()
+    .transform((v) => (v.trim() ? v : path.join(serverRoot, '.mongo-data')))
+    .default(path.join(serverRoot, '.mongo-data')),
 
   JWT_ACCESS_SECRET: z.string().min(32).optional(),
   JWT_REFRESH_SECRET: z.string().min(32).optional(),

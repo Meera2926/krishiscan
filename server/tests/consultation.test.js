@@ -295,6 +295,105 @@ describe('consultations API', () => {
   });
 });
 
+describe('what cancelling a review may and may not throw away', () => {
+  it('refuses an expert who has nothing to do with the case', async () => {
+    const { token } = await registerUser(app);
+    const { consultation } = await uncertainScan(token, 21);
+    await request(app)
+      .post(`/api/consultations/${consultation.id}/decision`)
+      .set(bearer(token))
+      .send({ decision: 'scheduled', mode: 'chat', scheduledFor: nextSlot() })
+      .expect(200);
+
+    // A passer-by expert, not the one handling it. Cancelling arms a seven-day deletion of the
+    // farmer's scan and photograph, so this must not be open to any expert who can see the case.
+    const { token: stranger } = await asExpert(app, 'Unrelated Expert');
+    await request(app)
+      .patch(`/api/consultations/${consultation.id}`)
+      .set(bearer(stranger))
+      .send({ action: 'cancel' })
+      .expect(403);
+
+    // The farmer whose case it is, of course, may.
+    await request(app)
+      .patch(`/api/consultations/${consultation.id}`)
+      .set(bearer(token))
+      .send({ action: 'cancel' })
+      .expect(200);
+  });
+
+  it('lets the expert actually handling the case cancel it', async () => {
+    const { token } = await registerUser(app);
+    const { consultation } = await uncertainScan(token, 22);
+    await request(app)
+      .post(`/api/consultations/${consultation.id}/decision`)
+      .set(bearer(token))
+      .send({ decision: 'scheduled', mode: 'chat', scheduledFor: nextSlot() })
+      .expect(200);
+    const { token: expertToken } = await asExpert(app, 'Handling Expert');
+    await request(app)
+      .patch(`/api/consultations/${consultation.id}`)
+      .set(bearer(expertToken))
+      .send({ action: 'accept' })
+      .expect(200);
+    await request(app)
+      .patch(`/api/consultations/${consultation.id}`)
+      .set(bearer(expertToken))
+      .send({ action: 'cancel' })
+      .expect(200);
+  });
+
+  it('does not put an answered review on the deletion clock', async () => {
+    const { token } = await registerUser(app);
+    const { consultation, scan } = await uncertainScan(token, 23);
+    await request(app)
+      .post(`/api/consultations/${consultation.id}/decision`)
+      .set(bearer(token))
+      .send({ decision: 'scheduled', mode: 'chat', scheduledFor: nextSlot() })
+      .expect(200);
+    const { token: expertToken } = await asExpert(app, 'Answering Expert');
+    await request(app)
+      .patch(`/api/consultations/${consultation.id}`)
+      .set(bearer(expertToken))
+      .send({ action: 'complete', diseaseKey: 'tomato_early_blight', advice: 'Strip the lower leaves.' })
+      .expect(200);
+
+    // Cancelling after the fact used to set decision back to "declined" and arm expiresAt, so a
+    // week later the sweep took the advice, the scan and the photograph with it.
+    const cancelled = await request(app)
+      .patch(`/api/consultations/${consultation.id}`)
+      .set(bearer(token))
+      .send({ action: 'cancel' })
+      .expect(200);
+    expect(cancelled.body.consultation.expiresAt ?? null).toBeNull();
+
+    await runRetentionSweep(new Date(Date.now() + 30 * DAY));
+    expect(await Scan.findById(scan.id)).not.toBeNull();
+  });
+
+  it('keeps a scan an agronomist has already ruled on, even when its review expires', async () => {
+    const { token } = await registerUser(app);
+    const { consultation, scan } = await uncertainScan(token, 24);
+
+    // The label-check queue settles the scan...
+    const { token: expertToken } = await asExpert(app, 'Queue Reviewer');
+    await request(app)
+      .post(`/api/reviews/${scan.id}`)
+      .set(bearer(expertToken))
+      .send({ action: 'confirm' })
+      .expect(200);
+
+    // ...while the farmer never answers the consultation offer, so it expires.
+    await Consultation.updateOne({ _id: consultation.id }, { $set: { expiresAt: new Date(Date.now() - DAY) } });
+    const result = await runRetentionSweep();
+
+    expect(result.consultationsDeleted).toBeGreaterThan(0);
+    // The consultation goes; the settled model-versus-expert record does not.
+    expect(await Scan.findById(scan.id)).not.toBeNull();
+    expect(result.scansKept).toBeGreaterThan(0);
+  });
+});
+
 describe('choosing an expert', () => {
   it('shows what each expert is actually qualified in', async () => {
     const { token } = await registerUser(app);

@@ -16,6 +16,11 @@ export default defineConfig({
       MONGO_URI: '',
       STORAGE_DRIVER: 'local',
       UPLOAD_DIR: path.join(os.tmpdir(), 'krishiscan-test-uploads'),
+      // Belt as well as braces. NODE_ENV=test already makes the database ephemeral, but that was
+      // one line of defence and a test which span up a server with NODE_ENV=development slipped
+      // past it and deleted the developer's real database. Pinning the path here means a test
+      // has to go out of its way to reach server/.mongo-data at all.
+      MONGO_DB_PATH: path.join(os.tmpdir(), 'krishiscan-test-db'),
     },
   },
 });

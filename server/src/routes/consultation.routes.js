@@ -330,11 +330,24 @@ router.patch('/:id', validate({ params: idParams, body: updateBody }), async (re
   const { action, scheduledFor, diseaseKey, advice } = req.valid.body;
 
   if (action === 'cancel') {
-    if (!mine && !isExpert(req)) throw forbidden();
+    // Any expert could cancel any farmer's case, including one they had nothing to do with, and
+    // cancelling arms a seven-day deletion of that farmer's scan and photo. Only the farmer whose
+    // case it is, the expert actually handling it, or an admin may cancel.
+    const handlingIt = consultation.expert && consultation.expert._id.equals(req.auth.userId);
+    if (!mine && !handlingIt && req.auth.role !== 'admin') {
+      throw forbidden('Only the farmer or the expert handling this review can cancel it.');
+    }
+
+    // An answered review is not rubbish to be swept up. Cancelling one used to set it back to
+    // "declined" and start the deletion clock, which took the expert's advice, the farmer's scan
+    // and its photograph with it a week later.
+    const answered = consultation.status === 'completed' || Boolean(consultation.outcome?.completedAt);
     consultation.status = 'cancelled';
-    // A cancelled case goes back to being unbooked, so the sweep can clear it in due course.
-    consultation.decision = 'declined';
-    consultation.expiresAt ??= new Date(Date.now() + 7 * 86_400_000);
+    if (!answered) {
+      // An unanswered case goes back to being unbooked, so the sweep can clear it in due course.
+      consultation.decision = 'declined';
+      consultation.expiresAt ??= new Date(Date.now() + 7 * 86_400_000);
+    }
   } else if (action === 'reschedule') {
     if (!mine) throw forbidden('Only the farmer can move the appointment.');
     if (!scheduledFor || !isBookableSlot(scheduledFor)) {
