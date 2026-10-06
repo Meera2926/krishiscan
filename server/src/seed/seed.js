@@ -159,7 +159,10 @@ export async function seedDemo() {
   if (await Scan.exists({ modelVersion: 'demo-seed' })) {
     return { skipped: 'demo scans already present' };
   }
-  await Treatment.deleteMany({ notes: /^Demo record/ });
+  // Scoped to the demo farmer, not just to text. A deleteMany matched only on the wording of a
+  // free-text note would take a real farmer's record with it if they happened to start one the
+  // same way, and every other destructive query in this app is scoped by owner.
+  await Treatment.deleteMany({ owner: users.farmer._id, notes: /^Demo record/ });
 
   const farmer = users.farmer;
   const neighbour = users.neighbour;
