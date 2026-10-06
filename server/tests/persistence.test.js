@@ -1,11 +1,21 @@
 import { spawn } from 'node:child_process';
 import fs from 'node:fs/promises';
+import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { afterAll, describe, expect, it } from 'vitest';
 
 const SERVER_ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
-const DB_PATH = path.join(SERVER_ROOT, '.mongo-data');
+
+/**
+ * A directory this file owns and is free to delete.
+ *
+ * It must NOT be server/.mongo-data. An earlier version of this test pointed at exactly that and
+ * removed it in afterAll, so every `npm test` silently deleted the database the developer was
+ * using - every account in it gone, with the app looking like it had never saved anything. A
+ * test that cleans up after itself has to clean up after itself only.
+ */
+const DB_PATH = path.join(os.tmpdir(), 'krishiscan-persistence-test-db');
 const PORT = 5178;
 const BASE = `http://localhost:${PORT}/api`;
 
@@ -24,6 +34,8 @@ function boot() {
       PORT: String(PORT),
       NODE_ENV: 'development',
       MONGO_URI: '',
+      // Keep this suite off the developer's real database.
+      MONGO_DB_PATH: DB_PATH,
       // The classifier is irrelevant here and takes seconds to load.
       INFERENCE_DRIVER: 'mock',
     },

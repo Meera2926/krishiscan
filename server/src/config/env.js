@@ -15,6 +15,10 @@ const schema = z.object({
 
   // Leave empty in development to use an in-memory MongoDB (data is lost on restart).
   MONGO_URI: z.string().optional().default(''),
+  // Where the local development database keeps its files when MONGO_URI is empty. Configurable
+  // so a test can point it somewhere disposable: a test that cleans up after itself must never
+  // be able to delete the database a developer is actually using.
+  MONGO_DB_PATH: z.string().default(path.join(serverRoot, '.mongo-data')),
 
   JWT_ACCESS_SECRET: z.string().min(32).optional(),
   JWT_REFRESH_SECRET: z.string().min(32).optional(),

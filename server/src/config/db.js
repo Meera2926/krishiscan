@@ -8,12 +8,15 @@ let memoryServer = null;
 /**
  * Where the development database keeps its files when no MONGO_URI is set.
  *
+ * Set MONGO_DB_PATH to move it. Tests do, because a suite that tidies up after itself must
+ * never be pointed at a developer's real data.
+ *
  * Without a dbPath, mongodb-memory-server picks a fresh temp directory on every boot and
  * deletes it on shutdown, so every account created in the last session is gone after a
  * restart. From the outside that is indistinguishable from "the database is not saving
  * anything" - the account really was written, the whole database was simply thrown away.
  */
-const DEV_DB_PATH = path.join(config.serverRoot, '.mongo-data');
+const DEV_DB_PATH = config.MONGO_DB_PATH;
 
 /** Tests want an empty database every run; a developer wants yesterday's login to still work. */
 const keepsData = () => config.NODE_ENV !== 'test';
