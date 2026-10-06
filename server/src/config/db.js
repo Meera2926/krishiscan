@@ -4,6 +4,8 @@ import mongoose from 'mongoose';
 import { config } from './env.js';
 
 let memoryServer = null;
+/** Set while we are deliberately closing, so a planned disconnect is not reported as a fault. */
+let shuttingDown = false;
 
 /**
  * Where the development database keeps its files when no MONGO_URI is set.
@@ -122,7 +124,8 @@ export async function connectDatabase() {
      */
     let warned = false;
     mongoose.connection.on('disconnected', () => {
-      if (warned) return;
+      // disconnectDatabase() triggers this event too; only an unplanned one is news.
+      if (shuttingDown || warned) return;
       warned = true;
       console.error(
         `[db] lost the local database at ${DEV_DB_PATH}. This usually means a second server is ` +
@@ -132,6 +135,7 @@ export async function connectDatabase() {
     });
     mongoose.connection.on('connected', () => {
       warned = false;
+      shuttingDown = false;
     });
   }
   // Build declared indexes (2dsphere in particular) before any geo query runs.
@@ -140,6 +144,7 @@ export async function connectDatabase() {
 }
 
 export async function disconnectDatabase() {
+  shuttingDown = true;
   await mongoose.disconnect();
   if (memoryServer) {
     // doCleanup deletes dbPath. That is right for a test run and wrong for a developer's data.

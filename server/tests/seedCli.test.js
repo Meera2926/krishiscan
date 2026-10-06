@@ -83,4 +83,29 @@ describe('seed CLI', () => {
     expect(code).toBe(1);
     expect(stderr).toContain('Refusing to seed demo data');
   }, 120_000);
+
+  it('forwards the email through the root reset-password script', async () => {
+    // The seed script lost its --demo flag to exactly this missing `--`; reset-password takes an
+    // email the same way, and silently dropping it would leave someone locked out with no clue.
+    const { code, stdout, stderr } = await seedCli(
+      { NODE_ENV: 'test', MONGO_URI: '' },
+      ['nobody.at.all@example.test'],
+      { ...npmScript('reset-password', ['nobody.at.all@example.test']), cwd: REPO_ROOT },
+    );
+
+    const output = stdout + stderr;
+    expect(code).toBe(1);
+    // It reached the script with the address, rather than printing the usage banner.
+    expect(output).toContain('nobody.at.all@example.test');
+    expect(output).not.toContain('Usage: npm run reset-password');
+  }, 180_000);
+
+  it('explains itself when run with no email at all', async () => {
+    const { code, stdout, stderr } = await seedCli({ NODE_ENV: 'test', MONGO_URI: '' }, [], {
+      ...npmScript('reset-password', []),
+      cwd: REPO_ROOT,
+    });
+    expect(code).toBe(1);
+    expect(stdout + stderr).toContain('Usage: npm run reset-password');
+  }, 180_000);
 });

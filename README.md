@@ -79,9 +79,10 @@ Cloudinary instead of the server's disk, which most free hosts wipe on every dep
 |---|---|
 | `npm run dev` | API on :5000 and Vite on :5173 (Vite proxies `/api`, so dev matches production) |
 | `npm run dev:watch -w server` | Same, with the API restarting on source changes |
-| `npm test` | 125 server tests: diagnosis triage, the crop gate, photo quality, severity, progression, consultations, retention, remedies, risk rules, database persistence, API |
+| `npm test` | 130 server tests: diagnosis triage, the crop gate, photo quality, severity, progression, consultations, retention, remedies, risk rules, database persistence, API |
 | `npm run build` | Production React build; Express serves it from the same origin |
 | `npm run seed` | Crops and diseases (`-- --demo` adds demo data) |
+| `npm run reset-password -- <email>` | Sets a new password for an account and signs its devices out (prints a generated one if you omit it) |
 | `node server/scripts/evaluate-models.js <dir>` | Accuracy, rejection rate and latency on your own labelled photos |
 
 ## Project layout
@@ -308,6 +309,28 @@ real fields: how many scans were confirmed, how many corrected, the agreement ra
 breakdown and the model's most common confusions.
 
 ## Accounts, security and health
+
+There is no "forgot password" link, because there is nowhere to send one: no mail provider is
+configured, which is why review reminders go to the dashboard rather than to email. A reset link
+that cannot be sent is worse than none, so recovery is a local command instead:
+
+```bash
+npm run reset-password -- someone@example.com
+```
+
+It prints a new password, or takes one as a second argument, and bumps the account's
+`tokenVersion` so any device still signed in is signed out. It is deliberately not an endpoint:
+whoever can run it already has the database files, and an HTTP route that reset passwords would
+be a much larger thing to get wrong.
+
+Sign-in and registration are rate limited separately and for different reasons. Sign-in counts
+**failed** attempts only — twenty per IP per 15 minutes — because guessing a password produces
+failures and a correct password is not evidence of an attack. Registration has its own hourly
+budget and counts only accounts actually created. They were one shared counter once, which meant
+failed sign-ins spent the budget for registering: someone whose account did not exist was told
+their password was wrong, and then told they had tried too many times when they went to create
+one, with no way out but to wait.
+
 
 Sign-up asks for a name, email and password, and nothing else is required; state, district,
 preferred language and the location used for weather risk are all editable afterwards from
