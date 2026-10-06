@@ -2,6 +2,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import sharp from 'sharp';
 import request from 'supertest';
+import { vi } from 'vitest';
 import { connectDatabase, disconnectDatabase } from '../src/config/db.js';
 import { createApp } from '../src/app.js';
 import { Crop, Disease } from '../src/models/index.js';
@@ -27,6 +28,34 @@ export async function setupTestApp() {
   invalidateLabelIndex();
   __setClassifierForTests(createMockClassifier({ labels: TEST_DISEASES.map((d) => d.key) }));
   return createApp();
+}
+
+/**
+ * Builds an app whose auth routes were constructed under different environment values.
+ *
+ * config is read once at import and frozen, so changing process.env after the fact does nothing.
+ * Resetting the module registry and re-importing is the only way to exercise the real routes at
+ * a limit low enough to reach in a test, rather than testing a copy of them.
+ */
+export async function startAppWithEnv(env) {
+  const previous = {};
+  for (const [k, v] of Object.entries(env)) {
+    previous[k] = process.env[k];
+    process.env[k] = v;
+  }
+  vi.resetModules();
+  const { createApp: freshCreateApp } = await import('../src/app.js');
+  const app = freshCreateApp();
+  return {
+    app,
+    async teardown() {
+      for (const [k, v] of Object.entries(previous)) {
+        if (v === undefined) delete process.env[k];
+        else process.env[k] = v;
+      }
+      vi.resetModules();
+    },
+  };
 }
 
 export async function teardownTestApp() {

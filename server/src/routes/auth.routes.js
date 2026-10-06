@@ -18,13 +18,45 @@ import { conflict, notFound, unauthorized } from '../utils/httpError.js';
 
 const router = Router();
 
-// Brute-force protection on credential endpoints only.
-const credentialLimiter = rateLimit({
+/**
+ * Brute-force protection, split by what is actually being abused.
+ *
+ * Both endpoints used to share one counter that counted every request, successful or not. Two
+ * things went wrong with that. A household behind one connection, a demo shown to a room, or a
+ * developer testing the app spent the same budget as an attacker, so the twentieth correct
+ * password in fifteen minutes was refused exactly like a wrong one. Worse, failed sign-ins used
+ * up the budget for REGISTERING: someone whose account did not exist was told their password was
+ * wrong, and then told they had tried too many times when they went to create one. There is no
+ * way out of that except waiting, and nothing on screen says so.
+ *
+ * Guessing a password produces failures, so sign-in counts failures. Abusing registration means
+ * creating accounts, so registration counts the accounts it creates, on its own budget.
+ */
+const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  limit: config.NODE_ENV === 'test' ? 1000 : 20,
+  limit: config.AUTH_RATE_LIMIT,
+  skipSuccessfulRequests: true,
   standardHeaders: 'draft-8',
   legacyHeaders: false,
-  message: { error: { message: 'Too many attempts. Please wait a few minutes and try again.' } },
+  message: {
+    error: {
+      message:
+        'Too many failed sign-in attempts from this network. Please wait a few minutes, or create an account if you do not have one yet.',
+    },
+  },
+});
+
+const registerLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  limit: config.REGISTER_RATE_LIMIT,
+  // Only count accounts actually created. A rejected attempt - a duplicate email, a short
+  // password - is a person getting it wrong, not an attack.
+  skipFailedRequests: true,
+  standardHeaders: 'draft-8',
+  legacyHeaders: false,
+  message: {
+    error: { message: 'Too many accounts created from this network. Please try again later.' },
+  },
 });
 
 const password = z
@@ -68,7 +100,7 @@ async function issueSession(res, user) {
   return { user, accessToken: signAccessToken(user) };
 }
 
-router.post('/register', credentialLimiter, validate({ body: registerBody }), async (req, res) => {
+router.post('/register', registerLimiter, validate({ body: registerBody }), async (req, res) => {
   const { password: plain, email, ...profile } = req.valid.body;
   if (await User.exists({ email: email.toLowerCase() })) {
     throw conflict('An account with that email already exists.');
@@ -79,7 +111,7 @@ router.post('/register', credentialLimiter, validate({ body: registerBody }), as
   res.status(201).json(await issueSession(res, user));
 });
 
-router.post('/login', credentialLimiter, validate({ body: loginBody }), async (req, res) => {
+router.post('/login', loginLimiter, validate({ body: loginBody }), async (req, res) => {
   const { email, password: plain } = req.valid.body;
   const user = await User.findOne({ email: email.toLowerCase() }).select('+passwordHash');
   // Same message either way so the endpoint does not reveal which emails are registered.

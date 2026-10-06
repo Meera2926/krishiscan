@@ -11,6 +11,7 @@ import {
   leafJpeg,
   registerUser,
   setupTestApp,
+  startAppWithEnv,
   teardownTestApp,
 } from './helpers.js';
 
@@ -379,5 +380,71 @@ describe('progression and treatments', () => {
     const res = await uploadScan(token, { crop: 'tomato' });
     expect(res.body.scan.status).toBe('rejected');
     expect(res.body.scan.severity?.percent ?? null).toBeNull();
+  });
+});
+
+describe('the sign-in rate limiter', () => {
+  /**
+   * Reported as "login not working", then "I cannot register either". One shared counter counted
+   * every credential request, so a handful of failed sign-ins locked the same person out of
+   * creating the account that would have fixed it. The suite raises both limits, so these drive
+   * the real routes through a server started with low ones.
+   */
+  const lowLimits = { AUTH_RATE_LIMIT: '3', REGISTER_RATE_LIMIT: '50' };
+
+  it('does not spend the budget on correct passwords', async () => {
+    const { app: strict, teardown } = await startAppWithEnv(lowLimits);
+    try {
+      const email = `limiter.ok.${process.pid}@example.com`;
+      await request(strict)
+        .post('/api/auth/register')
+        .send({ name: 'Limiter Ok', email, password: 'correct-horse' })
+        .expect(201);
+      // Far more than the limit of 3, all correct: none of them should count.
+      for (let i = 0; i < 12; i += 1) {
+        await request(strict).post('/api/auth/login').send({ email, password: 'correct-horse' }).expect(200);
+      }
+    } finally {
+      await teardown();
+    }
+  });
+
+  it('still locks out repeated wrong passwords', async () => {
+    const { app: strict, teardown } = await startAppWithEnv(lowLimits);
+    try {
+      const email = `limiter.bad.${process.pid}@example.com`;
+      await request(strict)
+        .post('/api/auth/register')
+        .send({ name: 'Limiter Bad', email, password: 'correct-horse' })
+        .expect(201);
+      for (let i = 0; i < 3; i += 1) {
+        await request(strict).post('/api/auth/login').send({ email, password: 'wrong-pass' }).expect(401);
+      }
+      await request(strict).post('/api/auth/login').send({ email, password: 'wrong-pass' }).expect(429);
+    } finally {
+      await teardown();
+    }
+  });
+
+  it('lets someone register even after their sign-ins have been locked out', async () => {
+    // This is the trap the user fell into: their account was gone, so every sign-in failed, and
+    // the failures then blocked the registration that would have got them back in.
+    const { app: strict, teardown } = await startAppWithEnv(lowLimits);
+    try {
+      for (let i = 0; i < 6; i += 1) {
+        await request(strict)
+          .post('/api/auth/login')
+          .send({ email: `ghost.${process.pid}@example.com`, password: 'nope-nope' });
+      }
+      await request(strict).post('/api/auth/login').send({ email: 'x@y.z', password: 'nope-nope' }).expect(429);
+
+      // Registration must still be open.
+      await request(strict)
+        .post('/api/auth/register')
+        .send({ name: 'Locked Out', email: `rescued.${process.pid}@example.com`, password: 'correct-horse' })
+        .expect(201);
+    } finally {
+      await teardown();
+    }
   });
 });

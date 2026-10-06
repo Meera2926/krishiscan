@@ -14,6 +14,9 @@ export default defineConfig({
       NODE_ENV: 'test',
       INFERENCE_DRIVER: 'mock',
       MONGO_URI: '',
+      // Generous by default so unrelated tests never trip it; the limiter's own test overrides it.
+      AUTH_RATE_LIMIT: '1000',
+      REGISTER_RATE_LIMIT: '1000',
       STORAGE_DRIVER: 'local',
       UPLOAD_DIR: path.join(os.tmpdir(), 'krishiscan-test-uploads'),
       // Belt as well as braces. NODE_ENV=test already makes the database ephemeral, but that was
