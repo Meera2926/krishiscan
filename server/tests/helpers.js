@@ -35,11 +35,20 @@ export async function teardownTestApp() {
 }
 
 /** Registers a user and returns an agent that carries the refresh cookie, plus the access token. */
+/**
+ * A counter, not a clock. `Math.floor(performance.now() * 1000)` returned the same value for two
+ * consecutive calls 88% of the time on Windows, where the timer resolution is clamped, so two
+ * users registered in quick succession could ask for the same email and the second got a 409
+ * instead of a 201. That surfaced as a test that failed roughly one run in four for no reason
+ * anyone could see.
+ */
+let nextUser = 0;
+
 export async function registerUser(app, overrides = {}) {
   const agent = request.agent(app);
   const body = {
     name: 'Test Farmer',
-    email: `farmer${Math.floor(performance.now() * 1000)}@example.com`,
+    email: `farmer${(nextUser += 1)}.${process.pid}@example.com`,
     password: 'correct-horse',
     ...overrides,
   };
