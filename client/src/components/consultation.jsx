@@ -510,7 +510,7 @@ export function ChatThread({ consultation, meId, id, readOnly = false }) {
             <input
               ref={fileRef}
               type="file"
-              accept="image/jpeg,image/png,image/webp,image/heic,image/heif"
+              accept="image/jpeg,image/png,image/webp"
               capture="environment"
               className="sr-only"
               onChange={(e) => attach(e.target.files?.[0])}

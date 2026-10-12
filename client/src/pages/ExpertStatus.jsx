@@ -106,7 +106,7 @@ export default function ExpertStatus() {
               {application.data?.hasDocument && (
                 <div className="mt-5">
                   <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-ink-subtle">{t('expert.field.certificate')}</p>
-                  <CertificateImage expertId={user.id} />
+                  <CertificateImage expertId={user.id} version={application.data?.expertVerification?.submittedAt} />
                 </div>
               )}
             </>

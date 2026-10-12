@@ -119,7 +119,7 @@ export function RatingDistribution({ distribution = {} }) {
               {n}
               <Star className="size-3.5 text-accent-500" fill="currentColor" strokeWidth={1.5} />
             </span>
-            <span className="sr-only">{t('rating.starRow', { stars: n, value })}</span>
+            <span className="sr-only">{t('rating.starRow', { count: n, value })}</span>
             <span className="h-2.5 flex-1 overflow-hidden rounded-full bg-canvas-deep ring-1 ring-inset ring-ink/5" aria-hidden="true">
               <span
                 className="block h-full rounded-full bg-gradient-to-r from-accent-500 to-accent-700"

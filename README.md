@@ -30,7 +30,7 @@ is now caught and refused outright; see **Telling the crops apart** below.
 | **Photo quality check** | Before anything is classified, the photo is EXIF-rotated, measured for sharpness and exposure, and refused outright below 128 px on a side. A dark, overexposed or genuinely unusable photo is called out on the result rather than quietly diagnosed. |
 | **Disease library** | The knowledge base is browsable: 32 diseases, plus the 11 healthy classes on request, searchable by free text across common name, pathogen and symptoms, filterable by crop. Every one of the 43 entries names the extension source it was written from. |
 | **Your data stays yours** | A scan only reaches the outbreak map if its location was shared, that can be withdrawn afterwards, and a scan can be deleted outright — record and photo. Uploaded photos are stripped of metadata, GPS included, before they are stored. |
-| **Accessibility** | UI in English, Hindi, Tamil, Telugu and Malayalam — 617 strings each, and every crop named in all five. Spoken advice through the browser's speech API, installable PWA, works on a free hosting tier. |
+| **Accessibility** | UI in English, Hindi, Tamil, Telugu and Malayalam — 618 strings each, and every crop named in all five. Spoken advice through the browser's speech API, installable PWA, works on a free hosting tier. |
 
 ## Quick start
 
@@ -83,7 +83,7 @@ Cloudinary instead of the server's disk, which most free hosts wipe on every dep
 |---|---|
 | `npm run dev` | API on :5000 and Vite on :5173 (Vite proxies `/api`, so dev matches production) |
 | `npm run dev:watch -w server` | Same, with the API restarting on source changes |
-| `npm test` | 160 server tests: diagnosis triage, the crop gate, photo quality, severity, progression, consultations, expert verification and ratings, retention, remedies, risk rules, configuration, database persistence, API |
+| `npm test` | 168 server tests: diagnosis triage, the crop gate, photo quality, severity, progression, consultations, expert verification and ratings, retention, remedies, risk rules, configuration, database persistence, API |
 | `npm run build` | Production React build; Express serves it from the same origin |
 | `npm run seed` | Crops and diseases (`-- --demo` adds demo data) |
 | `npm run reset-password -- <email>` | Sets a new password for an account and signs its devices out (prints a generated one if you omit it) |
@@ -385,7 +385,8 @@ refresh token in an httpOnly, SameSite=Lax, first-party cookie; each account car
 `tokenVersion`, so logging out invalidates every refresh token issued to it, on every device.
 
 Helmet sets a content security policy that allows scripts only from the app's own origin, JSON bodies are capped
-at 100 kB, and uploads at one file of `MAX_UPLOAD_MB`, JPEG/PNG/WebP/HEIC only — with the declared
+at 100 kB, and uploads at one file of `MAX_UPLOAD_MB`, JPEG/PNG/WebP only (the image library cannot
+decode HEIC; phone browsers convert it to JPEG when uploading) — with the declared
 type treated as a first filter, not as proof, since the real check is whether sharp can decode it.
 
 `GET /api/health` reports the database state, the classifier (driver, pinned model version, label

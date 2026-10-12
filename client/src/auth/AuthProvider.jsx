@@ -1,7 +1,7 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { api, onSessionExpired, refreshSession, setAccessToken } from '../api/client.js';
+import { api, onForbidden, onSessionExpired, refreshSession, setAccessToken } from '../api/client.js';
 
 const AuthContext = createContext(null);
 
@@ -49,6 +49,20 @@ export function AuthProvider({ children }) {
     setUser(data.user);
     return data.user;
   }, []);
+
+  // An expert suspended while a case page is open starts getting 403s from it. Reloading the account
+  // lets the guards move them to their status page, instead of leaving them on a page that can now
+  // only fail. At most once every ten seconds, since a page may fire several requests at once.
+  const role = user?.role;
+  useEffect(() => {
+    if (role !== 'expert') return undefined;
+    let last = 0;
+    return onForbidden(() => {
+      if (Date.now() - last < 10_000) return;
+      last = Date.now();
+      refreshUser().catch(() => {});
+    });
+  }, [role, refreshUser]);
 
   const value = useMemo(
     () => ({

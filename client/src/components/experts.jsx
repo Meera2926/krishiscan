@@ -94,9 +94,9 @@ function useObjectUrl(blob) {
  * it; "thumb" is a reminder for the applicant of what they sent. Either opens full size in a new
  * tab, through the object URL, since the file itself needs the bearer token.
  */
-export function CertificateImage({ expertId, variant = 'thumb' }) {
+export function CertificateImage({ expertId, version, variant = 'thumb' }) {
   const { t } = useTranslation();
-  const { data: blob, isLoading, error, refetch } = useExpertDocument(expertId);
+  const { data: blob, isLoading, error, refetch } = useExpertDocument(expertId, { version });
   const url = useObjectUrl(blob);
   const large = variant === 'large';
 

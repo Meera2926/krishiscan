@@ -18,6 +18,21 @@ export function onSessionExpired(listener) {
   return () => listeners.delete(listener);
 }
 
+const forbiddenListeners = new Set();
+
+/**
+ * Notified on every 403. The account's standing can change under an open page (an expert suspended
+ * mid-session gets 403s from pages that worked a minute ago), and the UI needs to find out.
+ */
+export function onForbidden(listener) {
+  forbiddenListeners.add(listener);
+  return () => forbiddenListeners.delete(listener);
+}
+
+// Calls that must not trigger a refresh-and-retry: signing in or out, and the refresh itself.
+// /auth/me is not one of them; it is an ordinary signed-in call and expires like any other.
+const NO_REFRESH = /^\/auth\/(login|register|register-expert|refresh|logout)$/;
+
 /** Single-flight: concurrent 401s share one refresh request instead of racing. */
 export function refreshSession() {
   refreshing ??= axios
@@ -41,7 +56,8 @@ api.interceptors.response.use(
   (res) => res,
   async (error) => {
     const { config: original, response } = error;
-    const isAuthCall = original?.url?.startsWith('/auth/');
+    const isAuthCall = NO_REFRESH.test(original?.url ?? '');
+    if (response?.status === 403) forbiddenListeners.forEach((l) => l(error));
     if (response?.status === 401 && original && !original._retried && !isAuthCall && accessToken) {
       original._retried = true;
       try {

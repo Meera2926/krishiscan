@@ -1,11 +1,11 @@
 import clsx from 'clsx';
 import { BadgeCheck, Ban, FileImage, Mail, MapPin, ShieldCheck, X, XCircle } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { describeError } from '../api/client.js';
 import { useExpertApplications, useExpertDecision, useExpertOptions } from '../api/hooks.js';
 import { CertificateImage, ExpertFacts, VerificationBadge } from '../components/experts.jsx';
-import { Alert, EmptyState, ErrorState, Field, PageHeader, Spinner } from '../components/ui.jsx';
+import { Alert, EmptyState, ErrorState, Field, PageHeader, Pagination, Spinner } from '../components/ui.jsx';
 import { shortDate } from '../lib/format.js';
 
 const TABS = ['pending', 'verified', 'rejected', 'suspended'];
@@ -53,7 +53,13 @@ function ApplicationCard({ item, degreeLabel, onDecided }) {
 
   const confirm = () =>
     decide.mutate(
-      { id: item.id, decision: action, ...(note.trim() && { note: note.trim() }) },
+      {
+        id: item.id,
+        decision: action,
+        ...(note.trim() && { note: note.trim() }),
+        // The version of the application on screen; the server refuses if a newer one has arrived.
+        ...(verification.submittedAt && { submittedAt: verification.submittedAt }),
+      },
       { onSuccess: (data) => onDecided({ decision: action, name: item.name, released: data?.released ?? 0 }) },
     );
 
@@ -111,7 +117,7 @@ function ApplicationCard({ item, degreeLabel, onDecided }) {
               </button>
               {showDocument && (
                 <div className="mt-3">
-                  <CertificateImage expertId={item.id} variant="large" />
+                  <CertificateImage expertId={item.id} version={verification.submittedAt} variant="large" />
                 </div>
               )}
             </>
@@ -148,7 +154,7 @@ function ApplicationCard({ item, degreeLabel, onDecided }) {
                 id={noteId}
                 className="input py-2"
                 rows={3}
-                maxLength={1000}
+                maxLength={500}
                 value={note}
                 onChange={(e) => setNote(e.target.value)}
                 required={noteRequired}
@@ -156,7 +162,13 @@ function ApplicationCard({ item, degreeLabel, onDecided }) {
             </Field>
             {error && !error.fields?.note && <Alert tone="danger">{error.message}</Alert>}
             <div className="flex flex-wrap gap-2">
-              <button type="button" className={ACTION_STYLE[action].cls} disabled={!noteOk || decide.isPending} onClick={confirm}>
+              {/* Stays locked after success too: the card leaves the list only when the refetch lands. */}
+              <button
+                type="button"
+                className={ACTION_STYLE[action].cls}
+                disabled={!noteOk || decide.isPending || decide.isSuccess}
+                onClick={confirm}
+              >
                 {decide.isPending && <Spinner className="size-4" />}
                 {t(`admin.confirm.${action}`)}
               </button>
@@ -178,8 +190,21 @@ function ApplicationCard({ item, degreeLabel, onDecided }) {
 export default function AdminExperts() {
   const { t } = useTranslation();
   const [status, setStatus] = useState('pending');
+  const [page, setPage] = useState(1);
   const [notice, setNotice] = useState(null);
-  const { data, isLoading, isPlaceholderData, error, refetch } = useExpertApplications(status);
+  const noticeRef = useRef(null);
+  const { data, isLoading, isPlaceholderData, error, refetch } = useExpertApplications(status, { page });
+
+  // The card that was just decided leaves the list, taking keyboard focus with it; put focus on
+  // the confirmation instead, so it is both seen and read out.
+  useEffect(() => {
+    if (notice) noticeRef.current?.focus();
+  }, [notice]);
+
+  // Deciding the last application on the last page leaves that page empty; step back to one that is not.
+  useEffect(() => {
+    if (data && page > data.pages) setPage(data.pages);
+  }, [data, page]);
   const options = useExpertOptions();
   const counts = data?.counts ?? {};
   const degreeLabel = (key) => options.data?.degrees?.find((d) => d.key === key)?.label ?? key;
@@ -190,7 +215,7 @@ export default function AdminExperts() {
 
       {notice && (
         <Alert tone="ok" className="mb-5">
-          <div className="flex items-start gap-3">
+          <div className="flex items-start gap-3" role="status" tabIndex={-1} ref={noticeRef}>
             <p className="min-w-0 flex-1">
               {t(`admin.done.${notice.decision}`, { name: notice.name })}
               {notice.released > 0 && ` ${t('admin.released', { count: notice.released })}`}
@@ -211,7 +236,10 @@ export default function AdminExperts() {
             id={`tab-${s}`}
             aria-selected={status === s}
             aria-controls="applications-panel"
-            onClick={() => setStatus(s)}
+            onClick={() => {
+              setStatus(s);
+              setPage(1);
+            }}
             className={clsx(
               'flex min-h-10 items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-medium',
               status === s ? 'bg-surface shadow-sm' : 'text-ink-muted',
@@ -246,6 +274,7 @@ export default function AdminExperts() {
             ))}
           </ul>
         )}
+        {data && <Pagination page={data.page} pages={data.pages} onChange={setPage} />}
       </div>
     </div>
   );

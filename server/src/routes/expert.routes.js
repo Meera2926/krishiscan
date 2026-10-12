@@ -142,6 +142,9 @@ router.get('/applications', requireAdmin, validate({ query: applicationsQuery })
 const decisionBody = z.object({
   decision: z.enum(Object.keys(DECISIONS)),
   note: z.string().trim().max(500).optional(),
+  // When the application the admin was looking at was sent. If the applicant has sent a new one
+  // since, the decision is about something the admin has not seen, and is refused.
+  submittedAt: z.coerce.date().optional(),
 });
 
 router.post('/:id/verification', requireAdmin, validate({ params: idParams, body: decisionBody }), async (req, res) => {
@@ -157,6 +160,10 @@ router.post('/:id/verification', requireAdmin, validate({ params: idParams, body
   const from = expert.expertVerification?.status;
   if (!rule.from.includes(from)) {
     throw conflict(`An application that is ${from ?? 'not submitted'} cannot be given "${decision}".`);
+  }
+  const seen = req.valid.body.submittedAt?.getTime();
+  if (seen !== undefined && seen !== expert.expertVerification?.submittedAt?.getTime()) {
+    throw conflict('The applicant has changed the application since you opened it. Reload and check it again.');
   }
 
   expert.expertVerification = {

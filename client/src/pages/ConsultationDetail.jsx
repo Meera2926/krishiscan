@@ -88,12 +88,10 @@ function ExpertActions({ consultation }) {
   const [advice, setAdvice] = useState('');
   const [diseaseKey, setDiseaseKey] = useState(consultation.caseSummary?.diseaseKey ?? '');
 
-  if (consultation.status === 'completed') return null;
-
   return (
     <section className="card space-y-4 p-5">
       <h2 className="font-semibold">{t('consult.expertActions')}</h2>
-      {!consultation.expert && (
+      {consultation.status === 'open' && (
         <button type="button" className="btn-primary" disabled={act.isPending} onClick={() => act.mutate({ action: 'accept' })}>
           {t('consult.accept')}
         </button>
@@ -219,6 +217,7 @@ export default function ConsultationDetail() {
   const mine = String(consultation.farmer?.id ?? consultation.farmer) === String(user?.id);
   const Icon = MODE_ICONS[consultation.mode] ?? CheckCircle2;
   const closed = ['completed', 'cancelled'].includes(consultation.status);
+  const heldBy = consultation.expert ? String(consultation.expert.id ?? consultation.expert) : null;
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
@@ -326,13 +325,32 @@ export default function ConsultationDetail() {
         </Alert>
       )}
 
-      {mine && consultation.status === 'completed' && consultation.expert && <RateExpert consultation={consultation} />}
+      {/* Same rule as the server: the farmer, once the advice was given, even if cancelled after. */}
+      {mine && user?.role === 'farmer' && consultation.outcome?.completedAt && consultation.expert && (
+        <RateExpert consultation={consultation} />
+      )}
 
       {consultation.decision === 'scheduled' && <ChatThread consultation={consultation} meId={user?.id} id="thread" readOnly={user?.role === 'admin'} />}
 
-      {canAdvise && !mine && consultation.decision === 'scheduled' && <ExpertActions consultation={consultation} />}
+      {/* Only on a live case that is unclaimed or already this expert's: the server refuses the rest. */}
+      {canAdvise && !mine && consultation.decision === 'scheduled' && !closed && (!heldBy || heldBy === String(user?.id)) && (
+        <ExpertActions consultation={consultation} />
+      )}
       {user?.role === 'admin' && consultation.decision === 'scheduled' && !closed && (
-        <Alert tone="info">{t('consult.adminReadOnly')}</Alert>
+        <Alert tone="info">
+          <p className="font-normal">{t('consult.adminReadOnly')}</p>
+          <button
+            type="button"
+            className="btn-ghost mt-2 -ml-3 text-danger"
+            disabled={act.isPending}
+            onClick={() => {
+              if (window.confirm(t('consult.cancelConfirm'))) act.mutate({ action: 'cancel' });
+            }}
+          >
+            <XCircle className="size-4" aria-hidden="true" />
+            {t('consult.cancelBooking')}
+          </button>
+        </Alert>
       )}
     </div>
   );

@@ -1,5 +1,5 @@
 import clsx from 'clsx';
-import { ArrowLeft, FileCheck2, Send, ShieldCheck } from 'lucide-react';
+import { ArrowLeft, Send, ShieldCheck } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router';
@@ -14,6 +14,7 @@ import { LANGUAGES, localName } from '../i18n/index.js';
 const MODES = ['chat', 'call', 'visit'];
 // The server refuses a certificate smaller than this; checking here saves a slow upload on 3G.
 const MIN_SIDE = 300;
+const CERTIFICATE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 const ACCOUNT_FIELDS = ['name', 'email', 'password', 'preferredLanguage', 'state', 'district'];
 const CREDENTIAL_FIELDS = [
   'degree',
@@ -107,7 +108,7 @@ function ApplicationForm({ options, application }) {
   // A new applicant almost certainly speaks the language they are reading this in.
   const [languages, setLanguages] = useState(profile.languages ?? [i18n.language]);
   const [modes, setModes] = useState(profile.modes ?? []);
-  const [doc, setDoc] = useState(null); // { file, preview, check: 'checking' | 'ok' | 'tooSmall' | 'noPreview' | 'notImage' }
+  const [doc, setDoc] = useState(null); // { file, preview, check: 'checking' | 'ok' | 'tooSmall' | 'notImage' }
   const [state, setState] = useState({ pending: false, message: null, fields: {} });
   const previewRef = useRef(null);
 
@@ -122,8 +123,9 @@ function ApplicationForm({ options, application }) {
     if (previewRef.current) URL.revokeObjectURL(previewRef.current);
     previewRef.current = null;
     if (!file) return setDoc(null);
-    // HEIC from some phones arrives with no MIME type, so the extension counts too.
-    if (!file.type.startsWith('image/') && !/\.(heic|heif)$/i.test(file.name)) return setDoc({ file, check: 'notImage' });
+    // The three types the server can read. HEIC is not among them, and phone browsers convert it
+    // to JPEG when a photo is picked through a web form anyway.
+    if (!CERTIFICATE_TYPES.includes(file.type)) return setDoc({ file, check: 'notImage' });
 
     const preview = URL.createObjectURL(file);
     previewRef.current = preview;
@@ -131,8 +133,8 @@ function ApplicationForm({ options, application }) {
     const img = new Image();
     const settle = (check) => setDoc((d) => (d?.preview === preview ? { ...d, check } : d));
     img.onload = () => settle(Math.min(img.naturalWidth, img.naturalHeight) < MIN_SIDE ? 'tooSmall' : 'ok');
-    // Most browsers cannot draw HEIC; the server can still read it, so it is sent unseen.
-    img.onerror = () => settle('noPreview');
+    // A file that claims to be an image but will not draw will not decode on the server either.
+    img.onerror = () => settle('notImage');
     img.src = preview;
   };
 
@@ -416,27 +418,21 @@ function ApplicationForm({ options, application }) {
               <input
                 id="document"
                 type="file"
-                accept="image/*"
+                accept={CERTIFICATE_TYPES.join(',')}
                 onChange={(e) => pickDocument(e.target.files?.[0])}
                 className="block w-full min-w-0 text-sm text-ink-muted file:mr-3 file:min-h-11 file:cursor-pointer file:rounded-control file:border file:border-line-strong file:bg-surface file:px-4 file:text-[15px] file:font-semibold file:text-ink hover:file:border-brand-300"
               />
             </Field>
 
-            {doc?.preview && doc.check !== 'noPreview' && (
+            {doc?.preview && doc.check !== 'notImage' && (
               <div className="overflow-hidden rounded-card border border-line bg-canvas-deep">
                 <img src={doc.preview} alt={t('expert.apply.certificatePreview')} className="max-h-80 w-full object-contain" />
               </div>
             )}
-            {doc?.check === 'noPreview' && (
-              <p className="flex items-center gap-2 text-sm text-ink-muted">
-                <FileCheck2 className="size-4 shrink-0" aria-hidden="true" />
-                {t('expert.apply.noPreview', { name: doc.file.name })}
-              </p>
-            )}
             {resubmit && !doc && application.hasDocument && (
               <div>
                 <p className="mb-2 text-sm font-semibold">{t('expert.apply.certificateOnFile')}</p>
-                <CertificateImage expertId={user.id} />
+                <CertificateImage expertId={user.id} version={verification?.submittedAt} />
               </div>
             )}
           </Section>

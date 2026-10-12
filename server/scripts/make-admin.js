@@ -9,6 +9,7 @@
  */
 import { connectDatabase, disconnectDatabase } from '../src/config/db.js';
 import { User } from '../src/models/index.js';
+import { releaseOpenCases } from '../src/services/experts.js';
 
 const [email] = process.argv.slice(2);
 
@@ -35,7 +36,10 @@ try {
     await user.save();
     console.log(`${user.email} (${user.name}) is now an admin (was ${was}).`);
     if (was === 'expert') {
-      console.log('Note: admins oversee experts but do not answer cases, so this account no longer advises farmers.');
+      // An admin cannot answer cases, so anything this expert was still working would wait forever.
+      const released = await releaseOpenCases(user._id);
+      console.log('Admins oversee experts but do not answer cases, so this account no longer advises farmers.');
+      if (released) console.log(`${released} unfinished case(s) went back to the open queue for another expert.`);
     }
     console.log('Sign in again to open Expert applications.');
   }

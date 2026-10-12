@@ -11,6 +11,8 @@ export default function Profile() {
   const { t, i18n } = useTranslation();
   const { user, updateProfile } = useAuth();
   const [state, setState] = useState({ pending: false, saved: false, error: null });
+  // The admin checked this name against the certificate, so a checked expert cannot change it.
+  const nameLocked = user.role === 'expert' && ['verified', 'suspended'].includes(user.expertVerification?.status);
 
   async function onSubmit(e) {
     e.preventDefault();
@@ -31,8 +33,14 @@ export default function Profile() {
       <form onSubmit={onSubmit} className="card space-y-4 p-5 sm:p-6">
         {state.saved && <Alert tone="ok">{t('profile.saved')}</Alert>}
         {state.error && <Alert tone="danger">{state.error.message}</Alert>}
-        <Field label={t('auth.name')} htmlFor="name" error={state.error?.fields?.name}>
-          <input id="name" name="name" className="input" required minLength={2} maxLength={80} defaultValue={user.name} />
+        <Field
+          label={t('auth.name')}
+          htmlFor="name"
+          hint={nameLocked ? t('profile.nameLocked') : undefined}
+          error={state.error?.fields?.name}
+        >
+          {/* Read-only, not disabled: it is still sent, unchanged, which the server accepts. */}
+          <input id="name" name="name" className="input" required minLength={2} maxLength={80} defaultValue={user.name} readOnly={nameLocked} />
         </Field>
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label={t('auth.state')} htmlFor="state">

@@ -239,8 +239,13 @@ const ratingBody = z.object({
 
 router.post('/:id/rating', validate({ params: idParams, body: ratingBody }), async (req, res) => {
   const { consultation, mine } = await findVisible(req);
-  if (!mine) throw forbidden('Only the farmer whose case it was can rate the expert.');
-  if (consultation.status !== 'completed' || !consultation.expert) {
+  // A farmer, on their own case. An expert account can raise a case too (it can upload a scan),
+  // and without the role check it could book itself, answer itself and rate itself, as often as
+  // it liked, which is exactly the number farmers choose experts by.
+  if (!mine || req.auth.role !== 'farmer') throw forbidden('Only the farmer whose case it was can rate the expert.');
+  // Answered is what counts, not the current status: cancelling a case after the advice was given
+  // must not take away the farmer's chance to say how good that advice was.
+  if (!consultation.outcome?.completedAt || !consultation.expert) {
     throw conflict('You can rate the expert once they have answered this review.');
   }
 
@@ -281,6 +286,11 @@ router.post('/:id/decision', validate({ params: idParams, body: decideBody }), a
   if (consultation.decision === 'scheduled' && consultation.status !== 'cancelled') {
     throw conflict('This review is already booked.');
   }
+  // An answered case stays answered. Booking it again would put a second expert's advice, and the
+  // farmer's rating of it, on a case whose record already says who advised.
+  if (consultation.outcome?.completedAt) {
+    throw conflict('This review was already answered. Ask for a new review from the scan instead.');
+  }
   const body = req.valid.body;
 
   if (body.decision === 'declined') {
@@ -309,13 +319,19 @@ router.post('/:id/decision', validate({ params: idParams, body: decideBody }), a
   consultation.question = body.question ?? null;
   consultation.status = 'open';
 
+  // Whoever held the case before a cancellation does not come back with it: a re-booking without a
+  // named expert goes to the open queue, so it cannot land on someone suspended since.
+  consultation.expert = null;
   if (body.expertId) {
     const expert = await User.findOne({
       _id: body.expertId,
       role: 'expert',
       'expertVerification.status': 'verified',
     }).select('_id');
-    if (!expert) throw unprocessable('Unknown expert', { expertId: ['That expert is not available.'] });
+    // Nobody advises on their own case.
+    if (!expert || expert._id.equals(req.auth.userId)) {
+      throw unprocessable('Unknown expert', { expertId: ['That expert is not available.'] });
+    }
     // Requested, not confirmed: the expert still has to accept before it is a commitment.
     consultation.expert = expert._id;
   }
@@ -432,6 +448,7 @@ router.patch('/:id', validate({ params: idParams, body: updateBody }), async (re
     consultation.status = 'open';
   } else {
     if (!canAdvise(req)) throw forbidden('Only a verified expert can do that.');
+    if (mine) throw forbidden('You cannot advise on your own case.');
     if (consultation.decision !== 'scheduled') throw badRequest('This review was never booked.');
     if (!LIVE_STATUSES.includes(consultation.status)) throw conflict('This review is closed.');
     // A case booked with, or taken by, one expert is that expert's to accept and to answer. Without

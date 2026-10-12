@@ -36,7 +36,7 @@ export default function NewScan() {
   useEffect(() => () => preview && URL.revokeObjectURL(preview), [preview]);
 
   const { getRootProps, getInputProps, isDragActive, open } = useDropzone({
-    accept: { 'image/jpeg': [], 'image/png': [], 'image/webp': [], 'image/heic': [], 'image/heif': [] },
+    accept: { 'image/jpeg': [], 'image/png': [], 'image/webp': [] },
     maxFiles: 1,
     maxSize: MAX_MB * 1024 * 1024,
     noClick: Boolean(file),

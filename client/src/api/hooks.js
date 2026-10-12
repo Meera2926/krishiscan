@@ -24,9 +24,10 @@ export const keys = {
   consultationSummary: ['consultations', 'summary'],
   expertOptions: ['experts', 'options'],
   myApplication: ['experts', 'me', 'application'],
-  expertApplications: (status) => ['experts', 'applications', status],
+  expertApplications: (status, page = 1) => ['experts', 'applications', status, page],
   expertProfile: (id) => ['experts', 'profile', id],
-  expertDocument: (id) => ['experts', 'document', id],
+  // The version is when the application was sent: a resubmitted certificate is a different file.
+  expertDocument: (id, version) => ['experts', 'document', id, ...(version ? [version] : [])],
 };
 
 export const useCrops = () => useQuery({ queryKey: keys.crops, queryFn: () => get('/crops').then((d) => d.crops), staleTime: 60 * 60_000 });
@@ -238,10 +239,10 @@ export function useResubmitApplication() {
 }
 
 /** Admin only. `counts` covers every status, so the tabs can show totals while one is open. */
-export const useExpertApplications = (status, options = {}) =>
+export const useExpertApplications = (status, { page = 1, ...options } = {}) =>
   useQuery({
-    queryKey: keys.expertApplications(status),
-    queryFn: () => get('/experts/applications', { status }),
+    queryKey: keys.expertApplications(status, page),
+    queryFn: () => get('/experts/applications', { status, page }),
     placeholderData: keepPreviousData,
     ...options,
   });
@@ -283,9 +284,9 @@ async function readBlobError(error) {
  * The degree certificate, as a Blob. It needs the bearer token, so it is fetched here rather than
  * put in an <img src>; the caller turns it into an object URL and revokes it.
  */
-export const useExpertDocument = (id, { enabled = true } = {}) =>
+export const useExpertDocument = (id, { enabled = true, version } = {}) =>
   useQuery({
-    queryKey: keys.expertDocument(id),
+    queryKey: keys.expertDocument(id, version),
     queryFn: () => api.get(`/experts/${id}/document`, { responseType: 'blob' }).then((r) => r.data, readBlobError),
     enabled: Boolean(id) && enabled,
     staleTime: 10 * 60_000,

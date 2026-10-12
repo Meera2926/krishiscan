@@ -208,6 +208,15 @@ router.get('/me', requireAuth, async (req, res) => {
 
 router.patch('/me', requireAuth, validate({ body: updateMeBody }), async (req, res) => {
   const { lat, lng, ...rest } = req.valid.body;
+  if (rest.name !== undefined && req.auth.role === 'expert') {
+    // The admin checked this name against the certificate. Changing it afterwards would keep the
+    // verified badge on a name nobody checked, so a checked expert's name is fixed.
+    const me = await User.findById(req.auth.userId).select('name expertVerification.status').lean();
+    const checked = ['verified', 'suspended'].includes(me?.expertVerification?.status);
+    if (checked && rest.name !== me.name) {
+      throw conflict('Your name was checked against your certificate, so it cannot be changed here. Ask the KrishiScan team.');
+    }
+  }
   const update = { ...rest };
   if (lat !== undefined) update.location = toPoint(lat, lng);
   const user = await User.findByIdAndUpdate(req.auth.userId, update, {

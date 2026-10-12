@@ -55,7 +55,8 @@ export function createApp() {
       res.set('Access-Control-Allow-Origin', config.CLIENT_ORIGIN);
       res.set('Access-Control-Allow-Credentials', 'true');
       res.set('Access-Control-Allow-Headers', 'Authorization, Content-Type');
-      res.set('Access-Control-Allow-Methods', 'GET, POST, PATCH, DELETE, OPTIONS');
+      // PUT is how an expert resubmits an application (PUT /api/experts/me/application).
+      res.set('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
       res.set('Vary', 'Origin');
       if (req.method === 'OPTIONS') return res.status(204).end();
       next();

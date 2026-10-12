@@ -492,4 +492,120 @@ describe('make-admin', () => {
     // The refresh cookie from before the promotion no longer works, so the next sign-in carries the role.
     await agent.post('/api/auth/refresh').expect(401);
   }, 90_000);
+
+  it('hands a promoted expert’s unfinished cases back to the queue, since admins do not answer', async () => {
+    const admin = await asAdmin();
+    const farmer = await registerUser(app);
+    const expert = await verifiedExpert(admin.token, { name: 'Promoted Away' });
+    const { consultationId } = await bookedCase(farmer.token, 70);
+    await request(app).patch(`/api/consultations/${consultationId}`).set(bearer(expert.token)).send({ action: 'accept' }).expect(200);
+
+    const { host, port, name } = mongoose.connection;
+    const { stdout } = await run(process.execPath, ['scripts/make-admin.js', expert.email], {
+      cwd: SERVER_ROOT,
+      env: { ...process.env, NODE_ENV: 'test', MONGO_URI: `mongodb://${host}:${port}/${name}` },
+      timeout: 60_000,
+    });
+    expect(stdout).toContain('1 unfinished case(s) went back to the open queue');
+    expect(await Consultation.findById(consultationId)).toMatchObject({ expert: null, status: 'open' });
+  }, 90_000);
+});
+
+describe('closing the gaps the first review found', () => {
+  it('does not let an expert book, answer or rate their own case', async () => {
+    const admin = await asAdmin();
+    const expert = await verifiedExpert(admin.token, { name: 'Marks Own Homework' });
+    // Nothing stops an expert account uploading a scan, so it can raise a case of its own.
+    __setClassifierForTests(fixedClassifier({ tomato_late_blight: 0.45, tomato_early_blight: 0.4, tomato_healthy: 0.15 }));
+    const scan = await request(app)
+      .post('/api/scans')
+      .set(bearer(expert.token))
+      .field('crop', 'tomato')
+      .attach('image', await leafJpeg(71), { filename: 'leaf.jpg', contentType: 'image/jpeg' })
+      .expect(201);
+    const id = scan.body.consultation.id;
+    const book = (extra) =>
+      request(app)
+        .post(`/api/consultations/${id}/decision`)
+        .set(bearer(expert.token))
+        .send({ decision: 'scheduled', mode: 'chat', scheduledFor: nextSlot(), ...extra });
+
+    await book({ expertId: expert.id }).expect(422);
+    await book({}).expect(200);
+    await request(app).patch(`/api/consultations/${id}`).set(bearer(expert.token)).send({ action: 'accept' }).expect(403);
+    await request(app).patch(`/api/consultations/${id}`).set(bearer(expert.token)).send({ action: 'complete', advice: 'Looks fine to me.' }).expect(403);
+    await Consultation.updateOne({ _id: id }, { expert: expert.id, status: 'completed', outcome: { advice: 'x', completedAt: new Date() } });
+    await request(app).post(`/api/consultations/${id}/rating`).set(bearer(expert.token)).send({ stars: 5 }).expect(403);
+    expect(await ExpertRating.countDocuments({ expert: expert.id })).toBe(0);
+  });
+
+  it('still lets the farmer rate advice that was given, even if the case was cancelled after', async () => {
+    const admin = await asAdmin();
+    const farmer = await registerUser(app);
+    const expert = await verifiedExpert(admin.token);
+    const { consultationId } = await completedCase(farmer.token, expert.token, 72);
+    await request(app).patch(`/api/consultations/${consultationId}`).set(bearer(expert.token)).send({ action: 'cancel' }).expect(200);
+    await request(app).post(`/api/consultations/${consultationId}/rating`).set(bearer(farmer.token)).send({ stars: 4 }).expect(200);
+    // And an answered case cannot be booked again for someone else to answer.
+    await request(app)
+      .post(`/api/consultations/${consultationId}/decision`)
+      .set(bearer(farmer.token))
+      .send({ decision: 'scheduled', mode: 'chat', scheduledFor: nextSlot() })
+      .expect(409);
+  });
+
+  it('does not hand a re-booked case back to whoever held it before', async () => {
+    const admin = await asAdmin();
+    const farmer = await registerUser(app);
+    const expert = await verifiedExpert(admin.token, { name: 'Held It Once' });
+    const { consultationId } = await bookedCase(farmer.token, 73);
+    await request(app).patch(`/api/consultations/${consultationId}`).set(bearer(expert.token)).send({ action: 'accept' }).expect(200);
+    await request(app).patch(`/api/consultations/${consultationId}`).set(bearer(farmer.token)).send({ action: 'cancel' }).expect(200);
+    await decide(admin.token, expert.id, { decision: 'suspend', note: 'Suspended in the meantime.' }).expect(200);
+
+    const again = await request(app)
+      .post(`/api/consultations/${consultationId}/decision`)
+      .set(bearer(farmer.token))
+      .send({ decision: 'scheduled', mode: 'chat', scheduledFor: nextSlot() })
+      .expect(200);
+    expect(again.body.consultation.expert).toBeNull();
+  });
+
+  it('refuses a decision about an application the admin has not seen', async () => {
+    const admin = await asAdmin();
+    const expert = await pendingExpert();
+    const seen = (await User.findById(expert.id)).expertVerification.submittedAt;
+
+    const req = request(app).put('/api/experts/me/application').set(bearer(expert.token));
+    for (const [k, v] of Object.entries({ ...APPLICATION, degree: 'phd_agriculture' })) if (k !== 'password') req.field(k, v);
+    await req.expect(200);
+
+    await decide(admin.token, expert.id, { decision: 'verify', submittedAt: seen.toISOString() }).expect(409);
+    const now = (await User.findById(expert.id)).expertVerification.submittedAt;
+    await decide(admin.token, expert.id, { decision: 'verify', submittedAt: now.toISOString() }).expect(200);
+  });
+
+  it('keeps the name a certificate was checked against', async () => {
+    const admin = await asAdmin();
+    const expert = await verifiedExpert(admin.token, { name: 'Checked Name' });
+    const rename = (token, name) => request(app).patch('/api/auth/me').set(bearer(token)).send({ name });
+    await rename(expert.token, 'Dr Famous Scientist').expect(409);
+    await rename(expert.token, 'Checked Name').expect(200);
+
+    const pending = await pendingExpert({ name: 'Not Yet Checked' });
+    await rename(pending.token, 'Fixed A Typo').expect(200);
+    const farmer = await registerUser(app);
+    await rename(farmer.token, 'Any Farmer Name').expect(200);
+  });
+
+  it('turns away HEIC before upload rather than failing to read it after', async () => {
+    const { token } = await registerUser(app);
+    const res = await request(app)
+      .post('/api/scans')
+      .set(bearer(token))
+      .field('crop', 'tomato')
+      .attach('image', await leafJpeg(74), { filename: 'leaf.heic', contentType: 'image/heic' })
+      .expect(400);
+    expect(res.body.error.message).toBe('Please upload a JPEG, PNG or WebP photo.');
+  });
 });
