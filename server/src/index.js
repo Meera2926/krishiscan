@@ -1,6 +1,7 @@
 import { createApp } from './app.js';
 import { config } from './config/env.js';
 import { connectDatabase, disconnectDatabase } from './config/db.js';
+import { verifyLegacyExperts } from './services/experts.js';
 import { loadClassifier } from './services/inference/index.js';
 import { startRetentionScheduler } from './services/retention.js';
 
@@ -13,6 +14,11 @@ async function main() {
     const { seedDatabase } = await import('./seed/seed.js');
     await seedDatabase({ withDemoData: true });
   }
+
+  // Experts from before verification existed were all put there by an administrator; see the
+  // function for why they are trusted rather than locked out of the cases they already hold.
+  const grandfathered = await verifyLegacyExperts();
+  if (grandfathered) console.log(`[experts] marked ${grandfathered} pre-existing expert account(s) as verified`);
 
   const app = createApp();
   const server = app.listen(config.PORT, () => {

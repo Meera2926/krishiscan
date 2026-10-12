@@ -1,7 +1,7 @@
 import { lazy, Suspense } from 'react';
 import { createBrowserRouter, Outlet } from 'react-router';
 import { RouterProvider } from 'react-router/dom';
-import { AuthProvider, useAuth } from './auth/AuthProvider.jsx';
+import { AuthProvider, isUnverifiedExpert, useAuth } from './auth/AuthProvider.jsx';
 import { RedirectIfAuthenticated, RequireAuth } from './auth/guards.jsx';
 import Layout from './components/Layout.jsx';
 import { FullPageSpinner } from './components/ui.jsx';
@@ -25,14 +25,20 @@ const ReviewQueue = lazy(() => import('./pages/ReviewQueue.jsx'));
 const Consultations = lazy(() => import('./pages/Consultations.jsx'));
 const ConsultationDetail = lazy(() => import('./pages/ConsultationDetail.jsx'));
 const Profile = lazy(() => import('./pages/Profile.jsx'));
+const ExpertApply = lazy(() => import('./pages/ExpertApply.jsx'));
+const ExpertStatus = lazy(() => import('./pages/ExpertStatus.jsx'));
+const ExpertProfile = lazy(() => import('./pages/ExpertProfile.jsx'));
+const AdminExperts = lazy(() => import('./pages/AdminExperts.jsx'));
 
 /**
  * A farmer and an expert want opposite things from a home screen — one tracks their own plots,
  * the other works a queue of other people's — so /dashboard resolves by role rather than
- * stacking both sets of panels into one page.
+ * stacking both sets of panels into one page. An expert still waiting to be checked has no queue
+ * to work yet, so their home is the state of their application.
  */
 function DashboardRoute() {
   const { user } = useAuth();
+  if (isUnverifiedExpert(user)) return <ExpertStatus />;
   return ['expert', 'admin'].includes(user?.role) ? <ExpertDashboard /> : <Dashboard />;
 }
 
@@ -63,17 +69,25 @@ const router = createBrowserRouter([
             children: [
               { path: 'login', element: <Login /> },
               { path: 'register', element: <Register /> },
+              { path: 'register/expert', element: <ExpertApply /> },
             ],
           },
           {
             element: <RequireAuth />,
             children: [
               { path: 'dashboard', element: <DashboardRoute /> },
+              { path: 'profile', element: <Profile /> },
+            ],
+          },
+          {
+            // Farmers' cases and photos: never shown to an expert nobody has checked yet.
+            element: <RequireAuth verifiedExpert />,
+            children: [
               // An expert opens a farmer's scan from a consultation, so this one stays shared.
               { path: 'scans/:id', element: <ScanResult /> },
               { path: 'consultations', element: <Consultations /> },
               { path: 'consultations/:id', element: <ConsultationDetail /> },
-              { path: 'profile', element: <Profile /> },
+              { path: 'experts/:id', element: <ExpertProfile /> },
             ],
           },
           {
@@ -89,8 +103,17 @@ const router = createBrowserRouter([
             ],
           },
           {
-            element: <RequireAuth roles={['expert', 'admin']} />,
+            element: <RequireAuth roles={['expert', 'admin']} verifiedExpert />,
             children: [{ path: 'reviews', element: <ReviewQueue /> }],
+          },
+          {
+            // Correcting and resending an application that is pending or was turned down.
+            element: <RequireAuth roles={['expert']} />,
+            children: [{ path: 'expert/application', element: <ExpertApply resubmit /> }],
+          },
+          {
+            element: <RequireAuth roles={['admin']} />,
+            children: [{ path: 'admin/experts', element: <AdminExperts /> }],
           },
           { path: '*', element: <NotFound /> },
         ],

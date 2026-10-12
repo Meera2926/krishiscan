@@ -22,6 +22,11 @@ export const keys = {
   consultationSlots: ['consultations', 'slots'],
   experts: (params) => ['consultations', 'experts', params],
   consultationSummary: ['consultations', 'summary'],
+  expertOptions: ['experts', 'options'],
+  myApplication: ['experts', 'me', 'application'],
+  expertApplications: (status) => ['experts', 'applications', status],
+  expertProfile: (id) => ['experts', 'profile', id],
+  expertDocument: (id) => ['experts', 'document', id],
 };
 
 export const useCrops = () => useQuery({ queryKey: keys.crops, queryFn: () => get('/crops').then((d) => d.crops), staleTime: 60 * 60_000 });
@@ -197,3 +202,91 @@ export const useConsultationAction = (id) =>
 
 export const useRequestConsultation = () =>
   useConsultationMutation((body) => api.post('/consultations', body).then((r) => r.data));
+
+export function useRateConsultation(id) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body) => api.post(`/consultations/${id}/rating`, body).then((r) => r.data),
+    onSuccess: ({ rating, expertRating }) => {
+      qc.setQueryData(keys.consultation(id), (old) => (old ? { ...old, rating, expertRating } : old));
+      qc.invalidateQueries({ queryKey: keys.consultation(id) });
+      // The new average shows wherever a farmer chooses an expert: the picker and the profile.
+      qc.invalidateQueries({ queryKey: ['consultations', 'experts'] });
+      qc.invalidateQueries({ queryKey: ['experts', 'profile'] });
+    },
+  });
+}
+
+// --- expert verification ----------------------------------------------------
+
+export const useExpertOptions = () =>
+  useQuery({ queryKey: keys.expertOptions, queryFn: () => get('/experts/options'), staleTime: 60 * 60_000 });
+
+export const useMyApplication = (options = {}) =>
+  useQuery({ queryKey: keys.myApplication, queryFn: () => get('/experts/me/application').then((d) => d.application), ...options });
+
+/** Takes FormData; leaving the certificate out keeps the one already on file. */
+export function useResubmitApplication() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (formData) => api.put('/experts/me/application', formData).then((r) => r.data.user),
+    onSuccess: (user) => {
+      qc.invalidateQueries({ queryKey: keys.myApplication });
+      qc.invalidateQueries({ queryKey: keys.expertDocument(user.id) });
+    },
+  });
+}
+
+/** Admin only. `counts` covers every status, so the tabs can show totals while one is open. */
+export const useExpertApplications = (status, options = {}) =>
+  useQuery({
+    queryKey: keys.expertApplications(status),
+    queryFn: () => get('/experts/applications', { status }),
+    placeholderData: keepPreviousData,
+    ...options,
+  });
+
+export function useExpertDecision() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, ...body }) => api.post(`/experts/${id}/verification`, body).then((r) => r.data),
+    onSuccess: (_data, { id }) => {
+      qc.invalidateQueries({ queryKey: ['experts', 'applications'] });
+      qc.invalidateQueries({ queryKey: keys.expertProfile(id) });
+      // Verifying or suspending changes who farmers can book, and a suspension hands that
+      // expert's open cases back to the queue.
+      qc.invalidateQueries({ queryKey: ['consultations'] });
+    },
+  });
+}
+
+export const useExpertProfile = (id) =>
+  useQuery({ queryKey: keys.expertProfile(id), queryFn: () => get(`/experts/${id}`).then((d) => d.expert), enabled: Boolean(id) });
+
+/**
+ * With responseType 'blob' an error body arrives as a Blob too; turn it back into JSON so
+ * describeError() can still read the server's message.
+ */
+async function readBlobError(error) {
+  const data = error.response?.data;
+  if (data instanceof Blob && data.type.includes('json')) {
+    try {
+      error.response.data = JSON.parse(await data.text());
+    } catch {
+      // Leave it; describeError falls back to a generic message.
+    }
+  }
+  throw error;
+}
+
+/**
+ * The degree certificate, as a Blob. It needs the bearer token, so it is fetched here rather than
+ * put in an <img src>; the caller turns it into an object URL and revokes it.
+ */
+export const useExpertDocument = (id, { enabled = true } = {}) =>
+  useQuery({
+    queryKey: keys.expertDocument(id),
+    queryFn: () => api.get(`/experts/${id}/document`, { responseType: 'blob' }).then((r) => r.data, readBlobError),
+    enabled: Boolean(id) && enabled,
+    staleTime: 10 * 60_000,
+  });

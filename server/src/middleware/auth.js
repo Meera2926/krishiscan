@@ -1,4 +1,5 @@
 import jwt from 'jsonwebtoken';
+import { User } from '../models/index.js';
 import { verifyAccessToken } from '../services/tokens.js';
 import { forbidden, unauthorized } from '../utils/httpError.js';
 
@@ -45,4 +46,47 @@ export function requireRole(...roles) {
     if (!roles.includes(req.auth.role)) return next(forbidden());
     next();
   };
+}
+
+/**
+ * Whether this request comes from an expert whose certificate an admin has checked.
+ *
+ * Asked of the database every time, not read from the token. The token says what kind of account
+ * signed in; it cannot say whether that expert is still trusted, and it stays valid for minutes
+ * after a suspension. Cached on the request, so a route that asks twice pays once.
+ */
+export async function isVerifiedExpert(req) {
+  if (req.auth?.role !== 'expert') return false;
+  if (req.auth.verifiedExpert === undefined) {
+    const user = await User.findById(req.auth.userId).select('role expertVerification.status').lean();
+    req.auth.verifiedExpert = user?.role === 'expert' && user.expertVerification?.status === 'verified';
+  }
+  return req.auth.verifiedExpert;
+}
+
+/**
+ * Admin-only routes that decide who is trusted. The token's role is checked first, then the
+ * database, because a demoted admin's token keeps saying "admin" until it expires.
+ */
+export async function requireAdmin(req, _res, next) {
+  if (!req.auth) return next(unauthorized());
+  if (req.auth.role !== 'admin' || !(await User.exists({ _id: req.auth.userId, role: 'admin' }))) {
+    return next(forbidden());
+  }
+  next();
+}
+
+export const UNVERIFIED_EXPERT_MESSAGE =
+  'Your expert account has not been verified yet. You can see farmers’ cases once an admin has checked your certificate.';
+
+/**
+ * For routes that show or act on farmers' cases. Farmers and admins pass straight through; an
+ * expert passes only once verified, so applying as an expert opens nothing until a person has
+ * looked at the certificate.
+ */
+export async function blockUnverifiedExperts(req, _res, next) {
+  if (req.auth?.role === 'expert' && !(await isVerifiedExpert(req))) {
+    return next(forbidden(UNVERIFIED_EXPERT_MESSAGE));
+  }
+  next();
 }

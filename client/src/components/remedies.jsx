@@ -5,7 +5,9 @@ import { Link } from 'react-router';
 import { shortDate } from '../lib/format.js';
 
 /**
- * The organic options the knowledge base already recommends for this disease, made shoppable.
+ * The organic options the knowledge base already recommends for this disease, made shoppable
+ * where there is something to buy. Field practices (rotation, removing infected leaves, hot-water
+ * seed treatment) are listed as advice only.
  *
  * Nothing here is a new recommendation: each line is the advice recorded against the disease,
  * with its source. The shop links run a search rather than pointing at a product page, because
@@ -28,6 +30,17 @@ export function OrganicRemedies({ remedies, sourceUrl }) {
       <ul className="divide-y divide-line">
         {remedies.map((r, i) => {
           const open = openIndex === i;
+          // Something to do in the field rather than buy: shown as advice, with no shop to send them to.
+          if (r.practice) {
+            return (
+              <li key={r.advice} className="flex items-start gap-3 px-5 py-4">
+                <span className="mt-0.5 grid size-6 shrink-0 place-items-center rounded-full bg-ok-bg text-xs font-bold text-ok tabular-nums">
+                  {i + 1}
+                </span>
+                <span className="min-w-0 flex-1 font-semibold leading-snug">{r.advice}</span>
+              </li>
+            );
+          }
           return (
             <li key={r.advice}>
               <button

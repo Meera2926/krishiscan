@@ -1,3 +1,4 @@
+import { ArrowRight, GraduationCap } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation, useNavigate } from 'react-router';
@@ -137,6 +138,20 @@ export function Register() {
           {t('auth.submitRegister')}
         </button>
       </form>
+      {/* Experts do not sign up here: their account is only useful once a certificate is checked. */}
+      <div className="mt-6 flex gap-3 rounded-card border border-line bg-surface-sunken p-4">
+        <GraduationCap className="mt-0.5 size-5 shrink-0 text-brand-600" aria-hidden="true" />
+        <div className="min-w-0 text-sm">
+          <p className="font-semibold">{t('auth.expertPrompt')}</p>
+          <Link
+            to="/register/expert"
+            className="mt-1 inline-flex min-h-9 items-center gap-1 font-bold text-brand-700 underline-offset-2 hover:underline"
+          >
+            {t('auth.expertApply')}
+            <ArrowRight className="size-3.5" aria-hidden="true" />
+          </Link>
+        </div>
+      </div>
     </AuthCard>
   );
 }

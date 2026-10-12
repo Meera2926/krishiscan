@@ -28,6 +28,24 @@ describe('organic remedies', () => {
     expect(r.buy.length).toBeGreaterThan(0);
   });
 
+  it('sends nobody shopping for something they do rather than buy', () => {
+    // Every one of these used to come back with Amazon and Flipkart search links.
+    const practices = organicRemedies({
+      organicControl: [
+        'Remove and destroy infected lower leaves and all crop residue after harvest',
+        'Three-year rotation away from all cole crops and mustard, and control cruciferous weeds',
+        'Hot water seed treatment at 50°C for 30 minutes before sowing',
+      ],
+    });
+    for (const r of practices) {
+      expect(r).toMatchObject({ practice: true, product: null, buy: [], searchTerm: null, homemade: false });
+    }
+    // A product with a dose is still something to buy, recognised or not.
+    const [fym] = organicRemedies({ organicControl: ['Add well rotten FYM @ 10 t/acre at field preparation'] });
+    expect(fym.practice).toBe(false);
+    expect(fym.buy.length).toBeGreaterThan(0);
+  });
+
   it('invents no advice of its own', () => {
     expect(organicRemedies({ organicControl: [] })).toEqual([]);
     expect(organicRemedies({})).toEqual([]);

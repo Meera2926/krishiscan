@@ -1,13 +1,14 @@
 import { Router } from 'express';
 import { z } from 'zod';
-import { requireAuth, requireRole } from '../middleware/auth.js';
+import { blockUnverifiedExperts, requireAuth, requireRole } from '../middleware/auth.js';
 import { cropKey, idParams, validate } from '../middleware/validate.js';
 import { Disease, Scan } from '../models/index.js';
 import { fromPoint } from '../utils/geo.js';
 import { conflict, notFound, unprocessable } from '../utils/httpError.js';
 
 const router = Router();
-router.use(requireAuth, requireRole('expert', 'admin'));
+// Farmers' photos and the model's answers about them: verified experts and admins only.
+router.use(requireAuth, requireRole('expert', 'admin'), blockUnverifiedExperts);
 
 const queueQuery = z.object({
   status: z.enum(['pending', 'confirmed', 'corrected']).default('pending'),
@@ -51,7 +52,9 @@ const decisionBody = z.discriminatedUnion('action', [
   }),
 ]);
 
-router.post('/:id', validate({ params: idParams, body: decisionBody }), async (req, res) => {
+// Settling a label is an expert's judgement, and it becomes the field-accuracy record, so an
+// admin can watch the queue but only a verified expert can rule on it.
+router.post('/:id', requireRole('expert'), validate({ params: idParams, body: decisionBody }), async (req, res) => {
   const scan = await Scan.findById(req.valid.params.id);
   if (!scan) throw notFound('Scan not found');
   if (scan.review.status === 'confirmed' || scan.review.status === 'corrected') {

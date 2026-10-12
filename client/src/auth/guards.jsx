@@ -1,8 +1,12 @@
 import { Navigate, Outlet, useLocation } from 'react-router';
 import { FullPageSpinner } from '../components/ui.jsx';
-import { useAuth } from './AuthProvider.jsx';
+import { isUnverifiedExpert, useAuth } from './AuthProvider.jsx';
 
-export function RequireAuth({ roles }) {
+/**
+ * `verifiedExpert` guards the pages that show farmers' cases. The server refuses them to an
+ * expert nobody has checked yet; sending them home here saves them a page full of errors.
+ */
+export function RequireAuth({ roles, verifiedExpert = false }) {
   const { status, user } = useAuth();
   const location = useLocation();
 
@@ -11,6 +15,7 @@ export function RequireAuth({ roles }) {
     return <Navigate to="/login" replace state={{ from: location.pathname + location.search }} />;
   }
   if (roles && !roles.includes(user.role)) return <Navigate to="/dashboard" replace />;
+  if (verifiedExpert && isUnverifiedExpert(user)) return <Navigate to="/dashboard" replace />;
   return <Outlet />;
 }
 

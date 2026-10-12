@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router';
 import { describeError } from '../api/client.js';
 import { useAuth } from '../auth/AuthProvider.jsx';
+import { VerificationBadge } from '../components/experts.jsx';
 import { Alert, Field, PageHeader, Spinner } from '../components/ui.jsx';
 import { LANGUAGES } from '../i18n/index.js';
 
@@ -52,6 +54,18 @@ export default function Profile() {
         <p className="text-sm text-ink-muted">
           {t('profile.role')}: <span className="font-medium capitalize text-ink">{user.role}</span>
         </p>
+        {user.role === 'expert' && (
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-sm text-ink-muted">
+            <span>{t('profile.verification')}:</span>
+            <VerificationBadge status={user.expertVerification?.status ?? 'pending'} />
+            {/* The page farmers see, ratings included, so an expert can check what is shown. */}
+            {user.expertVerification?.status === 'verified' && (
+              <Link to={`/experts/${user.id}`} className="font-semibold text-brand-700 underline-offset-2 hover:underline">
+                {t('profile.publicProfile')}
+              </Link>
+            )}
+          </div>
+        )}
         <button type="submit" className="btn-primary" disabled={state.pending}>
           {state.pending && <Spinner className="size-4 text-white" />}
           {t('common.save')}

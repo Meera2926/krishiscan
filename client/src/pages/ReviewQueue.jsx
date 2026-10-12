@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { describeError } from '../api/client.js';
 import { useDiseases, useReviewDecision, useReviewMetrics, useReviewQueue } from '../api/hooks.js';
+import { useAuth } from '../auth/AuthProvider.jsx';
 import { useCropName } from '../components/domain.jsx';
 import { Alert, EmptyState, ErrorState, PageHeader, Pagination, Spinner, StatusBadge } from '../components/ui.jsx';
 import { pct, relativeTime } from '../lib/format.js';
@@ -104,6 +105,9 @@ function ReviewCard({ scan, readOnly }) {
 
 export default function ReviewQueue() {
   const { t } = useTranslation();
+  const { user } = useAuth();
+  // A label check is expert advice that ends up on a farmer's result, so admins watch but do not decide.
+  const canDecide = user?.role === 'expert';
   const [status, setStatus] = useState('pending');
   const [page, setPage] = useState(1);
   const { data, isLoading, error, refetch } = useReviewQueue({ status, page, limit: 10 });
@@ -112,6 +116,11 @@ export default function ReviewQueue() {
   return (
     <div>
       <PageHeader title={t('reviews.title')} subtitle={t('reviews.subtitle')} />
+      {!canDecide && (
+        <Alert tone="info" className="mb-6">
+          {t('reviews.adminReadOnly')}
+        </Alert>
+      )}
 
       {metrics.data && metrics.data.reviewed > 0 && (
         <section className="card mb-6 grid gap-4 p-5 sm:grid-cols-[auto_1fr]">
@@ -166,7 +175,7 @@ export default function ReviewQueue() {
         <>
           <ul className="space-y-4">
             {data.items.map((scan) => (
-              <ReviewCard key={scan.id} scan={scan} readOnly={status !== 'pending'} />
+              <ReviewCard key={scan.id} scan={scan} readOnly={!canDecide || status !== 'pending'} />
             ))}
           </ul>
           <Pagination page={data.page} pages={data.pages} onChange={setPage} />

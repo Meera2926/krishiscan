@@ -1,9 +1,10 @@
-import { Award, BadgeCheck, CalendarClock, ImagePlus, Languages, MapPin, MessageSquare, Phone, Send, UserCheck, X } from 'lucide-react';
+import { Award, BadgeCheck, CalendarClock, ExternalLink, GraduationCap, ImagePlus, Languages, MapPin, MessageSquare, Phone, Send, UserCheck, X } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
 import { useConsultationDecision, useConsultationMessage, useConsultationSlots, useExperts } from '../api/hooks.js';
 import { shortDate } from '../lib/format.js';
+import { RatingLine } from './ratings.jsx';
 import { Alert, Field, Spinner } from './ui.jsx';
 
 export const MODE_ICONS = { call: Phone, chat: MessageSquare, visit: MapPin };
@@ -78,13 +79,22 @@ export function ConsultationOffer({ consultation }) {
 }
 
 /**
- * What a farmer needs to choose an adviser: what they are qualified in, where they work and how
- * long they have been doing it. A name alone is not a basis for trusting crop advice.
+ * What a farmer needs to choose an adviser: what they are qualified in, where they studied and
+ * work, how long they have been doing it and what other farmers thought. A name alone is not a
+ * basis for trusting crop advice.
+ *
+ * The tick means an admin has checked this person's degree certificate, so it shows only when
+ * the server says so. A qualification line on its own is just something the expert typed in.
+ *
+ * `rating` overrides `expert.rating` for callers that get the average separately. `newTab` is for
+ * the booking picker: the farmer is halfway through a form and should not lose it to read a profile.
  */
-export function ExpertCard({ expert, compact = false }) {
+export function ExpertCard({ expert, rating, compact = false, profileLink = true, newTab = false }) {
   const { t } = useTranslation();
   if (!expert) return null;
   const place = [expert.district, expert.state].filter(Boolean).join(', ');
+  const studied = [expert.university, expert.graduationYear].filter(Boolean).join(', ');
+  const score = rating ?? expert.rating;
 
   return (
     <div className={compact ? 'flex gap-3' : 'flex gap-3.5'}>
@@ -94,12 +104,24 @@ export function ExpertCard({ expert, compact = false }) {
       <div className="min-w-0 flex-1">
         <p className="flex flex-wrap items-center gap-1.5 font-bold leading-tight">
           {expert.name}
-          {expert.qualification && <BadgeCheck className="size-4 shrink-0 text-brand-600" aria-hidden="true" />}
+          {expert.verified === true && (
+            <span className="inline-flex text-brand-600" title={t('expert.verified')}>
+              <BadgeCheck className="size-4 shrink-0" aria-hidden="true" />
+              <span className="sr-only">{t('expert.verified')}</span>
+            </span>
+          )}
         </p>
         {expert.qualification && <p className="text-sm font-semibold text-brand-700">{expert.qualification}</p>}
+        {studied && (
+          <p className="flex items-center gap-1 text-xs text-ink-muted">
+            <GraduationCap className="size-3.5 shrink-0" aria-hidden="true" />
+            {studied}
+          </p>
+        )}
         {(expert.designation || expert.organisation) && (
           <p className="mt-0.5 text-sm text-ink-muted">{[expert.designation, expert.organisation].filter(Boolean).join(' · ')}</p>
         )}
+        <RatingLine rating={score} className="mt-1" />
         {!compact && (
           <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-ink-subtle">
             {expert.experienceYears != null && (
@@ -123,6 +145,21 @@ export function ExpertCard({ expert, compact = false }) {
           </div>
         )}
         {!compact && expert.bio && <p className="mt-2 text-sm leading-relaxed text-ink-muted">{expert.bio}</p>}
+        {profileLink && expert.id && (
+          <Link
+            to={`/experts/${expert.id}`}
+            className="mt-2 inline-flex min-h-9 items-center gap-1 text-sm font-bold text-brand-700 underline-offset-2 hover:underline"
+            {...(newTab && { target: '_blank', rel: 'noopener noreferrer' })}
+          >
+            {t('expert.viewProfile')}
+            {newTab && (
+              <>
+                <ExternalLink className="size-3.5" aria-hidden="true" />
+                <span className="sr-only">({t('expert.opensNewTab')})</span>
+              </>
+            )}
+          </Link>
+        )}
       </div>
     </div>
   );
@@ -161,7 +198,7 @@ function ExpertPicker({ crop, mode, value, onChange }) {
                 <span className="mt-0.5 block text-sm text-ink-muted">{t('consult.anyExpertHint')}</span>
               </span>
             ) : (
-              <ExpertCard expert={e} />
+              <ExpertCard expert={e} newTab />
             )}
           </label>
         ))}
@@ -300,6 +337,7 @@ export function ScheduledCard({ consultation }) {
           {consultation.expert?.expertProfile?.qualification && (
             <p className="mt-0.5 text-sm font-semibold text-brand-700">{consultation.expert.expertProfile.qualification}</p>
           )}
+          {consultation.expert && <RatingLine rating={consultation.expertRating} className="mt-1" />}
           <Link to={`/consultations/${consultation.id}`} className="btn-secondary mt-3">
             {t('consult.open')}
           </Link>
@@ -355,8 +393,9 @@ export function CaseSummary({ consultation }) {
 /**
  * The thread both sides write in. Shown for every mode, not only live chat: a call still needs
  * somewhere to leave the advice afterwards, and a visit needs somewhere to agree directions.
+ * `readOnly` is for an admin: they can read the thread but only the farmer and the expert write in it.
  */
-export function ChatThread({ consultation, meId, id }) {
+export function ChatThread({ consultation, meId, id, readOnly = false }) {
   const { t, i18n } = useTranslation();
   const [body, setBody] = useState('');
   const [photo, setPhoto] = useState(null);
@@ -456,7 +495,7 @@ export function ChatThread({ consultation, meId, id }) {
         {!consultation.messages?.length && <li className="text-sm text-ink-muted">{t('consult.chatEmpty')}</li>}
       </ol>
 
-      {!closed && (
+      {!closed && !readOnly && (
         <form className="mt-4" onSubmit={submit}>
           {photo && (
             <div className="mb-2 flex items-center gap-3 rounded-card border border-line bg-surface-sunken p-2">

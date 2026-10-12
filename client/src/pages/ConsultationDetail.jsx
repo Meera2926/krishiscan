@@ -1,10 +1,12 @@
-import { ArrowLeft, CheckCircle2, MapPin, MessageSquare, Navigation, Phone, XCircle } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, MapPin, MessageSquare, Navigation, Pencil, Phone, Send, XCircle } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate, useParams } from 'react-router';
-import { useConsultation, useConsultationAction } from '../api/hooks.js';
+import { describeError } from '../api/client.js';
+import { useConsultation, useConsultationAction, useRateConsultation } from '../api/hooks.js';
 import { useAuth } from '../auth/AuthProvider.jsx';
-import { BookingForm, CaseSummary, ChatThread, ExpertCard, MODE_ICONS } from '../components/consultation.jsx';
+import { BookingForm, CaseSummary, ChatThread, ConsultationOffer, ExpertCard, MODE_ICONS } from '../components/consultation.jsx';
+import { StarInput, Stars } from '../components/ratings.jsx';
 import { Alert, ErrorState, Field, PageHeader, Spinner } from '../components/ui.jsx';
 import { shortDate } from '../lib/format.js';
 
@@ -13,7 +15,7 @@ import { shortDate } from '../lib/format.js';
  * this is honest about what it does: it opens the thread, hands the expert a number to dial, or
  * hands either side directions. "Live" means the booked hour is running.
  */
-function SessionBar({ consultation, mine, isExpert }) {
+function SessionBar({ consultation, mine, canAdvise }) {
   const { t, i18n } = useTranslation();
   if (consultation.decision !== 'scheduled' || ['completed', 'cancelled'].includes(consultation.status)) return null;
 
@@ -37,7 +39,7 @@ function SessionBar({ consultation, mine, isExpert }) {
           {consultation.mode === 'chat' ? t('consult.joinChat') : t('consult.openMessages')}
         </button>
 
-        {consultation.mode === 'call' && consultation.contactPhone && (
+        {consultation.mode === 'call' && consultation.contactPhone && (mine || canAdvise) && (
           <a
             href={`tel:${consultation.contactPhone.replace(/\s+/g, '')}`}
             className="btn-primary"
@@ -62,7 +64,7 @@ function SessionBar({ consultation, mine, isExpert }) {
           </a>
         )}
 
-        {isExpert && !mine && !consultation.expert && <AcceptButton consultation={consultation} />}
+        {canAdvise && !mine && !consultation.expert && <AcceptButton consultation={consultation} />}
       </div>
     </section>
   );
@@ -116,6 +118,88 @@ function ExpertActions({ consultation }) {
   );
 }
 
+/**
+ * The farmer's verdict on the advice. Only the farmer whose case it was can give one, and only once
+ * it is answered, so every rating comes from someone the expert actually advised.
+ */
+function RateExpert({ consultation }) {
+  const { t } = useTranslation();
+  const rate = useRateConsultation(consultation.id);
+  const saved = consultation.rating;
+  const [editing, setEditing] = useState(!saved);
+  const [stars, setStars] = useState(saved?.stars ?? 0);
+  const [comment, setComment] = useState(saved?.comment ?? '');
+  const error = rate.error ? describeError(rate.error) : null;
+
+  if (saved && !editing) {
+    return (
+      <section className="card p-5">
+        <h2 className="font-bold">{t('rating.rateTitle')}</h2>
+        <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1">
+          <Stars value={saved.stars} size="size-5" />
+          <p className="font-semibold">{t('rating.youRated', { stars: saved.stars })}</p>
+        </div>
+        {saved.comment && <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-ink-muted">{saved.comment}</p>}
+        <p className="mt-3 text-xs text-ink-subtle">{t('rating.rateBody')}</p>
+        <button
+          type="button"
+          className="btn-secondary mt-3"
+          onClick={() => {
+            setStars(saved.stars);
+            setComment(saved.comment ?? '');
+            rate.reset();
+            setEditing(true);
+          }}
+        >
+          <Pencil className="size-4" aria-hidden="true" />
+          {t('rating.edit')}
+        </button>
+      </section>
+    );
+  }
+
+  const submit = (e) => {
+    e.preventDefault();
+    if (!stars) return;
+    const text = comment.trim();
+    // An empty comment is sent only to clear one given before; otherwise it is left out.
+    rate.mutate({ stars, ...((text || saved?.comment) && { comment: text }) }, { onSuccess: () => setEditing(false) });
+  };
+
+  return (
+    <form className="card space-y-4 p-5" onSubmit={submit}>
+      <div>
+        <h2 className="font-bold">{t('rating.rateTitle')}</h2>
+        <p className="mt-1 text-sm text-ink-muted">{t('rating.rateBody')}</p>
+      </div>
+      <StarInput value={stars} onChange={setStars} legend={t('rating.starsLabel')} error={error?.fields?.stars} />
+      <Field label={t('rating.comment')} htmlFor="r-comment" optional hint={t('rating.commentHint')} error={error?.fields?.comment}>
+        <textarea
+          id="r-comment"
+          className="input py-2"
+          rows={3}
+          maxLength={500}
+          value={comment}
+          onChange={(e) => setComment(e.target.value)}
+          placeholder={t('rating.commentPlaceholder')}
+        />
+      </Field>
+      {error && !Object.keys(error.fields).length && <Alert tone="danger">{error.message}</Alert>}
+      <div className="flex flex-wrap gap-2">
+        <button type="submit" className="btn-primary" disabled={!stars || rate.isPending}>
+          {rate.isPending ? <Spinner className="size-4 text-white" /> : <Send className="size-4" aria-hidden="true" />}
+          {saved ? t('rating.update') : t('rating.submit')}
+        </button>
+        {saved && (
+          <button type="button" className="btn-ghost" onClick={() => setEditing(false)}>
+            {t('common.cancel')}
+          </button>
+        )}
+      </div>
+    </form>
+  );
+}
+
 export default function ConsultationDetail() {
   const { id } = useParams();
   const { t, i18n } = useTranslation();
@@ -129,7 +213,9 @@ export default function ConsultationDetail() {
   if (error) return <ErrorState error={error} onRetry={refetch} />;
   if (!consultation) return null;
 
-  const isExpert = ['expert', 'admin'].includes(user?.role);
+  // Admins can look and cancel, but advice only comes from a verified expert; an unverified one
+  // never reaches this page.
+  const canAdvise = user?.role === 'expert';
   const mine = String(consultation.farmer?.id ?? consultation.farmer) === String(user?.id);
   const Icon = MODE_ICONS[consultation.mode] ?? CheckCircle2;
   const closed = ['completed', 'cancelled'].includes(consultation.status);
@@ -199,6 +285,10 @@ export default function ConsultationDetail() {
           )}
           {rescheduling && <BookingForm consultation={consultation} onDone={() => setRescheduling(false)} />}
         </section>
+      ) : mine ? (
+        // The dashboard sends the farmer here to answer the offer, so it has to be answerable here,
+        // not only from the scan it was raised on. The offer states the deletion date itself.
+        <ConsultationOffer consultation={consultation} />
       ) : (
         <Alert tone="warn">
           <p className="font-semibold">{t('consult.notBookedTitle')}</p>
@@ -208,12 +298,22 @@ export default function ConsultationDetail() {
         </Alert>
       )}
 
-      <SessionBar consultation={consultation} mine={mine} isExpert={isExpert} />
+      <SessionBar consultation={consultation} mine={mine} canAdvise={canAdvise} />
 
-      {consultation.expert?.expertProfile?.qualification && (
+      {consultation.expert && (
         <section className="card p-5">
           <h2 className="mb-3 font-bold">{t('consult.expertCredentials')}</h2>
-          <ExpertCard expert={{ ...consultation.expert.expertProfile, name: consultation.expert.name }} />
+          <ExpertCard
+            expert={{
+              ...consultation.expert.expertProfile,
+              id: consultation.expert.id,
+              name: consultation.expert.name,
+              state: consultation.expert.state,
+              district: consultation.expert.district,
+              verified: consultation.expert.verified ?? consultation.expert.expertVerification?.status === 'verified',
+            }}
+            rating={consultation.expertRating}
+          />
         </section>
       )}
 
@@ -226,9 +326,14 @@ export default function ConsultationDetail() {
         </Alert>
       )}
 
-      {consultation.decision === 'scheduled' && <ChatThread consultation={consultation} meId={user?.id} id="thread" />}
+      {mine && consultation.status === 'completed' && consultation.expert && <RateExpert consultation={consultation} />}
 
-      {isExpert && !mine && consultation.decision === 'scheduled' && <ExpertActions consultation={consultation} />}
+      {consultation.decision === 'scheduled' && <ChatThread consultation={consultation} meId={user?.id} id="thread" readOnly={user?.role === 'admin'} />}
+
+      {canAdvise && !mine && consultation.decision === 'scheduled' && <ExpertActions consultation={consultation} />}
+      {user?.role === 'admin' && consultation.decision === 'scheduled' && !closed && (
+        <Alert tone="info">{t('consult.adminReadOnly')}</Alert>
+      )}
     </div>
   );
 }

@@ -78,7 +78,9 @@ const scanSchema = new mongoose.Schema(
       status: { type: String, enum: REVIEW_STATUS, default: 'none' },
       reviewer: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
       correctedDiseaseKey: { type: String, default: null },
-      note: { type: String, maxlength: 1000 },
+      // As long as a consultation's advice (2000), which completing a consultation copies here.
+      // At 1000, advice longer than that made the scan refuse to save and the expert's answer failed.
+      note: { type: String, maxlength: 2000 },
       reviewedAt: Date,
     },
   },

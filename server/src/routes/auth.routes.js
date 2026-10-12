@@ -3,9 +3,11 @@ import rateLimit from 'express-rate-limit';
 import { z } from 'zod';
 import { config } from '../config/env.js';
 import { requireAuth } from '../middleware/auth.js';
+import { uploadCertificate } from '../middleware/upload.js';
 import { validate } from '../middleware/validate.js';
 import { LANGUAGES } from '../models/shared.js';
-import { User } from '../models/index.js';
+import { ExpertDocument, User } from '../models/index.js';
+import { buildExpertProfile, credentialsBody, prepareCertificate } from '../services/experts.js';
 import {
   REFRESH_COOKIE,
   refreshCookieOptions,
@@ -14,7 +16,7 @@ import {
   verifyRefreshToken,
 } from '../services/tokens.js';
 import { latitude, longitude, toPoint } from '../utils/geo.js';
-import { conflict, notFound, unauthorized } from '../utils/httpError.js';
+import { badRequest, conflict, notFound, unauthorized } from '../utils/httpError.js';
 
 const router = Router();
 
@@ -108,6 +110,47 @@ router.post('/register', registerLimiter, validate({ body: registerBody }), asyn
   const user = new User({ ...profile, email });
   await user.setPassword(plain);
   await user.save();
+  res.status(201).json(await issueSession(res, user));
+});
+
+/**
+ * Applying as an expert. The account exists from here on, signed in, but as "pending": it can
+ * see its own application and nothing of any farmer's until an admin has checked the
+ * certificate. The degree must come from the agriculture list, and the qualification farmers
+ * read is built from it, so nobody can describe themselves into the role.
+ */
+const registerExpertBody = z.object({ ...registerBody.shape, ...credentialsBody.shape });
+
+router.post('/register-expert', registerLimiter, uploadCertificate, validate({ body: registerExpertBody }), async (req, res) => {
+  if (!req.file) throw badRequest('Attach a photo or scan of your degree certificate in the "document" field.');
+  const { password: plain, email, name, preferredLanguage, state, district, ...credentials } = req.valid.body;
+  if (await User.exists({ email: email.toLowerCase() })) {
+    throw conflict('An account with that email already exists.');
+  }
+
+  // Everything that can be wrong with the application is found before anything is written.
+  const expertProfile = await buildExpertProfile(credentials);
+  const certificate = await prepareCertificate(req.file.buffer);
+
+  const user = new User({
+    name,
+    email,
+    preferredLanguage,
+    state,
+    district,
+    role: 'expert',
+    expertProfile,
+    expertVerification: { status: 'pending', submittedAt: new Date() },
+  });
+  await user.setPassword(plain);
+  await user.save();
+  try {
+    await ExpertDocument.create({ owner: user._id, ...certificate });
+  } catch (err) {
+    // An application without its certificate can never be verified; do not leave one behind.
+    await User.deleteOne({ _id: user._id });
+    throw err;
+  }
   res.status(201).json(await issueSession(res, user));
 });
 

@@ -16,20 +16,21 @@ is now caught and refused outright; see **Telling the crops apart** below.
 
 | Capability | How it works |
 |---|---|
-| **Photo diagnosis** | Two pretrained ONNX classifiers run *inside Node.js* (no Python, no paid API): a PlantVillage MobileNetV2 and a crop-leaf ViT. Each crop is routed to the model(s) that know it; potato uses both and their predictions are averaged. |
+| **Photo diagnosis** | Three ONNX classifiers run *inside Node.js* (no Python, no paid API): a PlantVillage MobileNetV2 and a crop-leaf ViT, both downloaded and pinned, and a MobileNetV3 trained here for onion, garlic and the brassicas. Each crop is routed to the model(s) that know it; maize and potato use both downloaded models and their predictions are averaged. |
 | **Honest answers** | Non-leaf photos are rejected, the top three possibilities are shown with confidence, and predictions are conditioned on the crop the farmer selected. Uncertain scans go to an expert queue instead of guessing. |
 | **Disease progression tracking** | Every scan is scored for lesion severity (% of leaf area affected) by colour segmentation. A plot's scans form a severity timeline with a trend (getting worse / better / stable), AUDPC, and a projection of when it could turn severe. |
 | **Treatment efficacy + safe harvest** | Log a spray, and the app compares severity before and after it to say whether it worked, and computes the safe-to-harvest date from the product's pre-harvest interval. |
 | **Weather risk forecast** | 13 rules from published epidemiology (Hutton Criteria, ICAR-CPRI **JHULSACAST**, TOMCAST, TNAU rice blast and others) run over a 7-day Open-Meteo forecast. |
 | **Outbreak map** | Shared scans are aggregated on a ~5 km grid so no farm can be identified, and farmers are alerted to disease reported within 10 km of their plots. |
-| **Expert consultations** | When the app is unsure, or progression shows a spray did not work, the farmer is *asked* whether they want an expert — phone call, live chat or farm visit — and picks a slot and, if they want, a named adviser whose qualification, employer and experience are shown. The chat opens with the photo, the model's answer and the severity history already in it, so nobody retells the case. Unanswered offers are reminded for a week, then deleted with their photo. |
-| **Organic treatments you can buy** | Each diagnosis lists the organic options already recorded against that disease, names the active behind them, and links a search on retailers that stock farm inputs. |
+| **Expert consultations** | When the app is unsure, or progression shows a spray did not work, the farmer is *asked* whether they want an expert — phone call, live chat or farm visit — and picks a slot and, if they want, a named adviser whose qualification, university, employer, experience and rating from other farmers are shown. The chat opens with the photo, the model's answer and the latest severity already in it, so nobody retells the case. Unanswered offers are reminded for a week, then deleted with their photo. |
+| **Verified experts and ratings** | Anyone can apply to advise farmers, but only with an agriculture degree (B.Sc. Agriculture or higher) and a photo of the certificate, and the account sees nothing of any farmer's until an admin has checked that certificate. After a review is answered, the farmer rates the expert from 1 to 5 stars; the average, the spread and the comments (without farmers' names) are shown wherever an expert is chosen. |
+| **Organic treatments you can buy** | Each diagnosis lists the organic options already recorded against that disease, names the active behind them, and links a search on retailers that stock farm inputs. Field practices such as crop rotation are listed as advice, with no shop link. |
 | **Follow-up reminder** | Every diagnosis names the day to photograph the same leaf again, so progression tracking has a second scan to compare against. |
 | **Expert review** | Uncertain scans also queue for an agronomist's label check; their corrections never overwrite the model's original answer, so model-vs-expert agreement measures real field accuracy. |
 | **Photo quality check** | Before anything is classified, the photo is EXIF-rotated, measured for sharpness and exposure, and refused outright below 128 px on a side. A dark, overexposed or genuinely unusable photo is called out on the result rather than quietly diagnosed. |
-| **Disease library** | The knowledge base is browsable: 21 diseases, plus the six healthy classes on request, searchable by free text across common name, pathogen and symptoms, filterable by crop. Every one of the 27 entries names the extension source it was written from. |
+| **Disease library** | The knowledge base is browsable: 32 diseases, plus the 11 healthy classes on request, searchable by free text across common name, pathogen and symptoms, filterable by crop. Every one of the 43 entries names the extension source it was written from. |
 | **Your data stays yours** | A scan only reaches the outbreak map if its location was shared, that can be withdrawn afterwards, and a scan can be deleted outright — record and photo. Uploaded photos are stripped of metadata, GPS included, before they are stored. |
-| **Accessibility** | UI in English, Hindi, Tamil, Telugu and Malayalam — 430 strings each, and every crop named in all five. Spoken advice through the browser's speech API, installable PWA, works on a free hosting tier. |
+| **Accessibility** | UI in English, Hindi, Tamil, Telugu and Malayalam — 617 strings each, and every crop named in all five. Spoken advice through the browser's speech API, installable PWA, works on a free hosting tier. |
 
 ## Quick start
 
@@ -42,8 +43,11 @@ Open <http://localhost:5173>. With no `MONGO_URI` set, the server runs a local M
 and keeps its files in `server/.mongo-data`, so the account you register today still logs in
 tomorrow. Delete that folder to start from scratch. It is seeded with demo accounts:
 
-- farmer: `farmer@demo.in` / `demo1234` (plots, a progression series and a logged treatment)
-- experts: `expert@demo.in`, `anjali.expert@demo.in`, `harpreet.expert@demo.in` / `demo1234`
+- farmer: `farmer@demo.in` / `demo1234` (plots, a progression series and a logged treatment); a second
+  farmer, `neighbour@demo.in`, owns the outbreak reports
+- experts, already verified: `expert@demo.in`, `anjali.expert@demo.in`, `harpreet.expert@demo.in` / `demo1234`
+- admin, who verifies experts: `admin@demo.in` / `demo1234`
+- an expert applicant waiting for that check: `applicant@demo.in` / `demo1234`
 
 `/dashboard` resolves by role: a farmer sees their plots, scans and booked reviews; an expert
 sees the requests waiting to be taken, their own appointments and what they have answered. Book a
@@ -79,17 +83,18 @@ Cloudinary instead of the server's disk, which most free hosts wipe on every dep
 |---|---|
 | `npm run dev` | API on :5000 and Vite on :5173 (Vite proxies `/api`, so dev matches production) |
 | `npm run dev:watch -w server` | Same, with the API restarting on source changes |
-| `npm test` | 130 server tests: diagnosis triage, the crop gate, photo quality, severity, progression, consultations, retention, remedies, risk rules, database persistence, API |
+| `npm test` | 160 server tests: diagnosis triage, the crop gate, photo quality, severity, progression, consultations, expert verification and ratings, retention, remedies, risk rules, configuration, database persistence, API |
 | `npm run build` | Production React build; Express serves it from the same origin |
 | `npm run seed` | Crops and diseases (`-- --demo` adds demo data) |
 | `npm run reset-password -- <email>` | Sets a new password for an account and signs its devices out (prints a generated one if you omit it) |
+| `npm run make-admin -- <email>` | Makes an existing account an admin, the only way to get one. Stop `npm run dev` first: it opens the same local database |
 | `node server/scripts/evaluate-models.js <dir>` | Accuracy, rejection rate and latency on your own labelled photos |
 
 ## Project layout
 
 ```
 server/src
-  routes/        auth, plots, scans, treatments, library, outbreaks, risk, reviews, consultations
+  routes/        auth, plots, scans, treatments, library, outbreaks, risk, reviews, consultations, experts
   services/
     inference/   catalog.js (pinned models), local.js (ONNX), mock.js (tests)
     diagnosis.js triage: not-a-leaf gate, crop conditioning, confidence bands
@@ -97,12 +102,14 @@ server/src
     progression.js trend, AUDPC, treatment efficacy
     consultation.js when to offer an expert, slots, reminder schedule (pure)
     retention.js  reminders and the week-long delete sweep
+    experts.js    expert applications, the certificate, verification decisions, ratings
     remedies.js   organic advice -> product name -> retailer search links
     followUp.js   when to photograph the same leaf again
     risk/        weather-risk rules and engine
   seed/data/     disease knowledge base (symptoms, treatments, sources)
 client/src
-  pages/         landing, auth, dashboard, scan, result, history, plots, library, outbreaks, reviews
+  pages/         landing, auth, dashboard, scan, result, history, plots, library, outbreaks, reviews,
+                 expert application and status, expert profile, admin's expert applications
   components/    progression charts, maps, disease advice, shared UI
 ```
 
@@ -206,9 +213,10 @@ Read these before quoting any accuracy number.
 - **`cabbage_healthy` rests on 11 independent leaves**, and its test split on two. The number
   reported for it is not meaningful; it is kept because a crop without a healthy class forces
   every healthy leaf into a disease.
-- **Disease names are translated into Hindi only.** The interface is fully translated into all
-  five languages and every crop is named in all five, but the 43 disease entries carry a Hindi
-  name and fall back to English elsewhere. A farmer reading the app in Tamil sees Tamil
+- **Disease names are translated into Hindi only, and not all of them.** The interface is fully
+  translated into all five languages and every crop is named in all five, but only 35 of the 43
+  disease entries carry a Hindi name (three grape, two maize and three tomato diseases do not),
+  and every disease name falls back to English in Tamil, Telugu and Malayalam. A farmer reading the app in Tamil sees Tamil
   everywhere except the disease name itself. Adding those is a terminology job for someone who
   works in the language, not a translation one.
 - **Garlic tipburn is a disorder, not a diagnosis.** Several things cause it — Stemphylium,
@@ -230,8 +238,9 @@ Read these before quoting any accuracy number.
 - **Weather risk is an early warning, not a diagnosis.** Several rules are extension-service
   "favourable conditions" rather than validated forecasting models; each rule names its source.
 - **Pesticide doses come from Indian extension sources** (TNAU, PAU, ICAR institutes) and each disease
-  shows its source. Of 53 chemical entries, 35 doses were confirmed word-for-word against a fetched
-  source; the other 18 say "consult your local KVK" rather than guess. Every active ingredient was
+  shows its source. For the six original crops, of 53 chemical entries, 35 doses were confirmed word-for-word against
+  a fetched source; the other 18 say "consult your local KVK" rather than guess. The five crops
+  added later bring 24 more, written from the source each entry cites; 3 of those also say "consult". Every active ingredient was
   checked against the CIB&RC banned and restricted list of 31.03.2024, and none is banned for these
   crops. Streptocycline is deliberately absent: it has been prohibited in Indian agriculture since
   1 January 2024, though older advisories still recommend it.
@@ -247,7 +256,7 @@ or no — they are never silently added to a queue.
 
 | Answer | What happens |
 |---|---|
-| **Yes** | They pick a phone call, a live chat or a farm visit, a slot, and an expert — whose qualification, employer and experience are shown. The chat thread opens with the diagnosis, confidence, severity and treatment history already written into the first message, so neither side starts from a blank page, and **either side can send more photos into the thread**. The case is kept until it is answered or cancelled. |
+| **Yes** | They pick a phone call, a live chat or a farm visit, a slot, and an expert — only verified experts are listed, with their qualification, university, employer, experience and rating. The chat thread opens with what the app already knows written into the first message: for a photo, the diagnosis, confidence, crop and latest severity; for a spray that did not work, the product, the date and the severity before and after. Neither side starts from a blank page, and **either side can send more photos into the thread**. The case is kept until it is answered or cancelled. |
 | **No**, or no answer | Reminders appear on the dashboard on day 2 and day 5. On day 7 the consultation **and the scan it was raised for, including the photo**, are deleted. |
 
 Cancelling is narrower than it looks: only the farmer whose case it is, the expert actually
@@ -273,7 +282,9 @@ tier gives.
 Each diagnosis shows the organic options **already recorded against that disease** in the
 knowledge base, with the source they came from. `services/remedies.js` adds two things and no
 more: the name of the active behind a line of advice (so "Trichoderma asperellum @ 1 kg/acre"
-becomes a product a shop recognises), and links to retailers.
+is searched as a Trichoderma biofungicide, which is how shops list it), and links to retailers.
+Only a recognised product or a line with a dose gets links: "remove and destroy infected leaves"
+or a three-year rotation is something to do, not something to buy, and is shown as advice alone.
 
 Those links run a **search**, not a product page. The app has no commercial relationship with
 any retailer, cannot see stock or prices, and does not rank or recommend between them, so
@@ -283,8 +294,8 @@ retailers whose search URL was checked by hand are listed — add Indian agri-in
 dead link. Advice prepared on the farm, such as cow urine sprays, links nowhere by design.
 
 The follow-up date (`services/followUp.js`) is a rule of thumb from how fast the pathogen group
-moves — five days for an oomycete like late blight, a fortnight for a virus, sooner when much of
-the leaf has already gone. It is a reminder to re-photograph, not agronomic advice.
+moves — five days for an oomycete, brought forward to three for late blight because it is rated
+severe, a fortnight for a virus, sooner when much of the leaf has already gone. It is a reminder to re-photograph, not agronomic advice.
 
 ## The two desks
 
@@ -299,14 +310,49 @@ full of a farmer's tools is a desk nobody can work at.
 | Review queue | — | scans the model was unsure about, waiting for a label check, with the model's agreement rate |
 
 An expert takes a case from the queue, or accepts one booked with them by name; the first expert
-to answer an unclaimed case takes it. Either side can cancel, only the farmer can move the
-appointment, and closing a case with advice writes that advice onto the farmer's scan — recorded
-as the expert's answer, never over the model's. A closed case refuses new messages, so a thread
-cannot quietly reopen.
+to answer an unclaimed case takes it, and from then on only that expert can accept or close it.
+Either side can cancel, only the farmer can move the appointment, and closing a case with advice
+writes that advice onto the farmer's scan — recorded as the expert's answer, never over the
+model's. A closed case refuses new messages and can be neither accepted nor moved again, so a
+thread cannot quietly reopen.
 
 `GET /api/reviews/metrics` turns those label checks into the only accuracy figure that comes from
 real fields: how many scans were confirmed, how many corrected, the agreement rate, a per-crop
 breakdown and the model's most common confusions.
+
+## Who counts as an expert, and what farmers say about them
+
+Farmers act on what an expert tells them, so being one is not something you can type into a
+profile. Anyone can apply at `/register/expert`, but only with a degree from a fixed list of
+agriculture degrees, bachelor's and above (`models/expertOptions.js`), the university and year,
+where they work, and a photo of the degree certificate. The qualification farmers read is built
+from the degree chosen, never typed in.
+
+| Status | What the account can do |
+|---|---|
+| **pending** | See its own application and correct it. No farmer's case, scan, photo or review queue, and it is not in the expert list. |
+| **verified** | Everything an expert could do before: take and answer cases, check labels in the review queue. |
+| **rejected** | See the admin's reason, fix the application and send it again. |
+| **suspended** | Nothing. Their unfinished cases go back to the open queue at once; cases they already answered keep their name. |
+
+Whether an expert is verified is read from the database on every request, not from the sign-in
+token, so verifying or suspending someone takes effect on their very next click. The certificate
+is kept in the database, not in public storage, and only the applicant and an admin can open it.
+
+Admins check the certificate at `/admin/experts` and verify, reject (with a reason the applicant
+sees) or suspend. An admin oversees: sees the cases and the review queue, and can cancel a case,
+but does not give advice, because being able to verify experts is not a qualification in
+agriculture. There is no way to become an admin from the app; `npm run make-admin -- <email>`
+promotes an existing account from the machine the database lives on. Expert accounts that existed
+before verification were all created by an administrator (registration has never been able to
+create one), so they are marked verified once, when the server starts.
+
+After an expert has **answered** a case, the farmer who raised it can rate them from 1 to 5 stars,
+with a comment if they like: once per case, which they may change later. A rating can only come
+from someone that expert actually advised. Farmers see the average and the number of ratings in
+the expert picker and on each expert's profile, with the spread of stars and the latest comments.
+Comments carry no farmer's name or place, and the expert is not shown the rating on their own case,
+because a farmer who knows the expert will read it is less likely to say what really happened.
 
 ## Accounts, security and health
 
@@ -338,8 +384,7 @@ preferred language and the location used for weather risk are all editable after
 refresh token in an httpOnly, SameSite=Lax, first-party cookie; each account carries a
 `tokenVersion`, so logging out invalidates every refresh token issued to it, on every device.
 
-Login and registration are rate limited to 20 attempts per 15 minutes per IP. Helmet sets a
-content security policy that allows scripts only from the app's own origin, JSON bodies are capped
+Helmet sets a content security policy that allows scripts only from the app's own origin, JSON bodies are capped
 at 100 kB, and uploads at one file of `MAX_UPLOAD_MB`, JPEG/PNG/WebP/HEIC only — with the declared
 type treated as a first filter, not as proof, since the real check is whether sharp can decode it.
 
@@ -363,5 +408,5 @@ does not pull ~236 MB of unused CUDA libraries.
 4. D. Singh et al., "PlantDoc: A dataset for visual plant disease detection," *CoDS-COMAD*, 2020.
 5. S. J. Pethybridge, S. C. Nelson, "Leaf Doctor: A new portable application for quantifying plant disease severity," *Plant Dis.* 99(10):1310–1316, 2015.
 6. G. Shaner, R. E. Finney, "The effect of nitrogen fertilization on the expression of slow-mildewing resistance in Knox wheat," *Phytopathology* 67:1051–1056, 1977. (AUDPC)
-7. B. P. Singh et al., "JHULSACAST: A computerized forecast of potato late blight in western Uttar Pradesh," *J. Indian Potato Assoc.* 27:25–34, 2000.
+7. B. P. Singh et al., "JHULSACAST: A computerized forecast of potato late blight in western Uttar Pradesh," *J. Indian Potato Assoc.* 27:25–34, 2000. The thresholds implemented are its later West Bengal plains calibration (Chakraborty, Singh, Ahmad & Sharma, *Potato Journal*, ICAR), as listed in S. Sharma (ICAR-CPRI), "Status of Late Blight Management in India".
 8. S. R. Dancey, P. Skelsey, D. E. L. Cooke, "The Hutton Criteria," *16th EuroBlight Workshop*, 2017, pp. 53–58.

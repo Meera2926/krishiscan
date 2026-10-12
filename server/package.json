@@ -13,7 +13,8 @@
     "seed": "node --env-file-if-exists=.env src/seed/seed.js",
     "test": "vitest run",
     "dev:watch": "cross-env PORT=5000 node --watch-path=src --env-file-if-exists=.env src/index.js",
-    "reset-password": "node --env-file-if-exists=.env scripts/reset-password.js"
+    "reset-password": "node --env-file-if-exists=.env scripts/reset-password.js",
+    "make-admin": "node --env-file-if-exists=.env scripts/make-admin.js"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",

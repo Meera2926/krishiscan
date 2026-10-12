@@ -1,10 +1,10 @@
 import { Router } from 'express';
 import mongoose from 'mongoose';
 import { z } from 'zod';
-import { requireAuth } from '../middleware/auth.js';
+import { blockUnverifiedExperts, requireAuth } from '../middleware/auth.js';
 import { uploadImage } from '../middleware/upload.js';
 import { cropKey, idParams, objectId, validate } from '../middleware/validate.js';
-import { CONSULTATION_MODES, Consultation, Disease, Scan, Treatment, User } from '../models/index.js';
+import { CONSULTATION_MODES, Consultation, Disease, ExpertRating, Scan, Treatment, User } from '../models/index.js';
 import {
   availableSlots,
   buildCaseSummary,
@@ -12,19 +12,30 @@ import {
   openingMessage,
   reminderDue,
 } from '../services/consultation.js';
+import { NO_RATINGS, publicExpertProfile, ratingSummaries, ratingSummary } from '../services/experts.js';
 import { prepareImage } from '../services/imageQuality.js';
 import { storage } from '../services/storage/index.js';
 import { badRequest, conflict, forbidden, notFound, unprocessable } from '../utils/httpError.js';
 
 const router = Router();
-router.use(requireAuth);
+// An expert account nobody has verified yet sees no farmer's case at all.
+router.use(requireAuth, blockUnverifiedExperts);
 
+/** May look at other farmers' cases: verified experts, and admins who oversee them. */
 const isExpert = (req) => ['expert', 'admin'].includes(req.auth.role);
+/**
+ * May give advice: verified experts only. An admin runs the platform; being able to verify
+ * experts is not a qualification in agriculture, so an admin does not answer cases either.
+ */
+const canAdvise = (req) => req.auth.role === 'expert';
+
+/** A case that is still being worked: anything else has been answered or called off. */
+const LIVE_STATUSES = ['open', 'confirmed'];
 
 async function findVisible(req) {
   const consultation = await Consultation.findById(req.valid.params.id)
     .populate('farmer', 'name district state preferredLanguage')
-    .populate('expert', 'name state district expertProfile')
+    .populate('expert', 'name state district expertProfile expertVerification.status')
     .populate('scan', 'image declaredCrop diseaseKey severity status statusReason top createdAt')
     .populate('plot', 'name crop variety sowingDate');
   if (!consultation) throw notFound('Consultation not found');
@@ -49,7 +60,8 @@ router.get('/slots', (_req, res) => {
  */
 router.get('/experts', validate({ query: z.object({ crop: cropKey.optional(), mode: z.enum(CONSULTATION_MODES).optional() }) }), async (req, res) => {
   const { crop, mode } = req.valid.query;
-  const experts = await User.find({ role: { $in: ['expert', 'admin'] } })
+  // Only experts whose certificate has been checked. Anyone else is a name and a claim.
+  const experts = await User.find({ role: 'expert', 'expertVerification.status': 'verified' })
     .select('name state district expertProfile')
     .sort({ 'expertProfile.experienceYears': -1, name: 1 })
     .lean();
@@ -61,6 +73,7 @@ router.get('/experts', validate({ query: z.object({ crop: cropKey.optional(), mo
     const modeOk = !mode || !p.modes?.length || p.modes.includes(mode);
     return cropOk && modeOk;
   });
+  const ratings = await ratingSummaries(matches.map((e) => e._id));
 
   res.json({
     experts: matches.map((e) => ({
@@ -68,7 +81,9 @@ router.get('/experts', validate({ query: z.object({ crop: cropKey.optional(), mo
       name: e.name,
       state: e.state ?? null,
       district: e.district ?? null,
-      ...(e.expertProfile ?? {}),
+      ...publicExpertProfile(e.expertProfile),
+      verified: true,
+      rating: ratings.get(String(e._id)) ?? { ...NO_RATINGS },
     })),
   });
 });
@@ -186,8 +201,60 @@ router.get('/', validate({ query: listQuery }), async (req, res) => {
 });
 
 router.get('/:id', validate({ params: idParams }), async (req, res) => {
-  const { consultation } = await findVisible(req);
-  res.json({ consultation: serialise(consultation) });
+  const { consultation, mine } = await findVisible(req);
+  const json = serialise(consultation);
+  const expertId = consultation.expert?._id;
+
+  const [rating, expertRating] = await Promise.all([
+    // The farmer's own rating of this case. Not shown to the expert it rates: a farmer who knows
+    // the expert will read it is less likely to say what really happened.
+    mine || req.auth.role === 'admin'
+      ? ExpertRating.findOne({ consultation: consultation._id }).select('stars comment createdAt updatedAt').lean()
+      : null,
+    expertId ? ratingSummary(expertId) : null,
+  ]);
+  if (json.expert) {
+    json.expert.verified = json.expert.expertVerification?.status === 'verified';
+    delete json.expert.expertVerification;
+  }
+
+  res.json({
+    consultation: {
+      ...json,
+      rating: rating && { stars: rating.stars, comment: rating.comment ?? null, createdAt: rating.createdAt, updatedAt: rating.updatedAt },
+      expertRating,
+    },
+  });
+});
+
+/**
+ * The farmer rates the expert who answered their case: one rating per case, which they may
+ * change. Only a case that was actually answered can be rated, so every rating comes from
+ * someone the expert advised.
+ */
+const ratingBody = z.object({
+  stars: z.number().int().min(1).max(5),
+  comment: z.string().trim().max(500).optional(),
+});
+
+router.post('/:id/rating', validate({ params: idParams, body: ratingBody }), async (req, res) => {
+  const { consultation, mine } = await findVisible(req);
+  if (!mine) throw forbidden('Only the farmer whose case it was can rate the expert.');
+  if (consultation.status !== 'completed' || !consultation.expert) {
+    throw conflict('You can rate the expert once they have answered this review.');
+  }
+
+  const { stars, comment } = req.valid.body;
+  const rating = await ExpertRating.findOneAndUpdate(
+    { consultation: consultation._id },
+    { $set: { stars, comment: comment || null, expert: consultation.expert._id, farmer: req.auth.userId } },
+    { upsert: true, returnDocument: 'after', runValidators: true, setDefaultsOnInsert: true },
+  ).lean();
+
+  res.json({
+    rating: { stars: rating.stars, comment: rating.comment ?? null, createdAt: rating.createdAt, updatedAt: rating.updatedAt },
+    expertRating: await ratingSummary(consultation.expert._id),
+  });
 });
 
 /**
@@ -243,7 +310,11 @@ router.post('/:id/decision', validate({ params: idParams, body: decideBody }), a
   consultation.status = 'open';
 
   if (body.expertId) {
-    const expert = await User.findOne({ _id: body.expertId, role: { $in: ['expert', 'admin'] } }).select('_id');
+    const expert = await User.findOne({
+      _id: body.expertId,
+      role: 'expert',
+      'expertVerification.status': 'verified',
+    }).select('_id');
     if (!expert) throw unprocessable('Unknown expert', { expertId: ['That expert is not available.'] });
     // Requested, not confirmed: the expert still has to accept before it is a commitment.
     consultation.expert = expert._id;
@@ -272,6 +343,7 @@ router.post('/:id/messages', uploadImage, validate({ params: idParams, body: mes
   const { consultation, mine } = await findVisible(req);
   if (consultation.decision !== 'scheduled') throw badRequest('Book the review before messaging.');
   if (['completed', 'cancelled'].includes(consultation.status)) throw conflict('This review is closed.');
+  if (!mine && !canAdvise(req)) throw forbidden('Only a verified expert can answer a review.');
   if (!mine && consultation.expert && !consultation.expert._id.equals(req.auth.userId)) {
     throw forbidden('Another expert is handling this review.');
   }
@@ -350,18 +422,25 @@ router.patch('/:id', validate({ params: idParams, body: updateBody }), async (re
     }
   } else if (action === 'reschedule') {
     if (!mine) throw forbidden('Only the farmer can move the appointment.');
+    // Moving the time is for a case still in progress. Rescheduling a closed one used to set it
+    // back to "open", which quietly reopened a thread that had been answered or called off.
+    if (!LIVE_STATUSES.includes(consultation.status)) throw conflict('This review is closed.');
     if (!scheduledFor || !isBookableSlot(scheduledFor)) {
       throw unprocessable('Pick an available time', { scheduledFor: ['That time is not available.'] });
     }
     consultation.scheduledFor = scheduledFor;
     consultation.status = 'open';
   } else {
-    if (!isExpert(req)) throw forbidden('Only an expert can do that.');
+    if (!canAdvise(req)) throw forbidden('Only a verified expert can do that.');
     if (consultation.decision !== 'scheduled') throw badRequest('This review was never booked.');
+    if (!LIVE_STATUSES.includes(consultation.status)) throw conflict('This review is closed.');
+    // A case booked with, or taken by, one expert is that expert's to accept and to answer. Without
+    // this a second expert could close someone else's case, and the farmer's rating would then go
+    // to the expert named on it for advice they never gave.
+    if (consultation.expert && !consultation.expert._id.equals(req.auth.userId)) {
+      throw conflict('Another expert has taken this review.');
+    }
     if (action === 'accept') {
-      if (consultation.expert && !consultation.expert._id.equals(req.auth.userId)) {
-        throw conflict('Another expert has taken this review.');
-      }
       consultation.expert = req.auth.userId;
       consultation.status = 'confirmed';
     } else {

@@ -42,6 +42,14 @@ export const RETAILERS = [
   { id: 'flipkart', name: 'Flipkart', url: (q) => `https://www.flipkart.com/search?q=${encodeURIComponent(q)}` },
 ];
 
+/**
+ * A dose is what separates something to buy from something to do. "Seaweed extract @ 2 ml per
+ * litre" is a product a shop might stock; "remove and destroy infected lower leaves" or a
+ * three-year rotation is not, and sending a farmer to search a shop for it is nonsense. A
+ * temperature ("hot water at 50°C") is not a dose.
+ */
+const DOSE = /@|\b\d+(\.\d+)?\s*(kg|g|ml|l|litre|liters?|t|%|ppm)\b/i;
+
 /** Strips doses and application notes, leaving something worth typing into a shop's search box. */
 function fallbackSearch(advice) {
   return advice
@@ -66,15 +74,18 @@ export function organicRemedies(disease) {
   return lines.map((advice) => {
     const agent = ORGANIC_AGENTS.find((a) => a.match.test(advice));
     const homemade = HOMEMADE.test(advice);
-    const query = agent?.search ?? fallbackSearch(advice);
+    // Neither a known product nor anything with a dose: advice about what to do in the field.
+    const practice = !agent && !homemade && !DOSE.test(advice);
+    const query = practice ? null : (agent?.search ?? fallbackSearch(advice));
 
     return {
       advice,
       product: agent ? { name: agent.name, kind: agent.kind } : null,
-      // Nothing to link to for something mixed up on the farm.
+      // Nothing to link to for something mixed up on the farm, or for something you do rather than buy.
       buy: homemade || !query ? [] : RETAILERS.map((r) => ({ id: r.id, name: r.name, url: r.url(query) })),
       searchTerm: homemade ? null : query,
       homemade,
+      practice,
     };
   });
 }

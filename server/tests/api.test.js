@@ -232,7 +232,7 @@ describe('scans', () => {
 describe('expert review', () => {
   async function makeExpert() {
     const expert = await registerUser(app);
-    await User.updateOne({ _id: expert.user.id }, { role: 'expert' });
+    await User.updateOne({ _id: expert.user.id }, { role: 'expert', expertVerification: { status: 'verified' } });
     // Role lives in the access token, so log in again to get one with the new role.
     const login = await request(app).post('/api/auth/login').send({ email: expert.user.email, password: expert.password });
     return login.body.accessToken;

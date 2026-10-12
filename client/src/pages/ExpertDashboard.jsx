@@ -8,12 +8,20 @@ import {
   Inbox,
   MapPin,
   MessageSquare,
+  ShieldCheck,
   Sprout,
   UserCheck,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
-import { useConsultationAction, useConsultationSummary, useConsultations, useReviewMetrics, useReviewQueue } from '../api/hooks.js';
+import {
+  useConsultationAction,
+  useConsultationSummary,
+  useConsultations,
+  useExpertApplications,
+  useReviewMetrics,
+  useReviewQueue,
+} from '../api/hooks.js';
 import { useAuth } from '../auth/AuthProvider.jsx';
 import { MODE_ICONS } from '../components/consultation.jsx';
 import { useCropName } from '../components/domain.jsx';
@@ -22,6 +30,29 @@ import { relativeTime, shortDate } from '../lib/format.js';
 
 const clock = (iso, lang) =>
   new Date(iso).toLocaleTimeString(lang === 'hi' ? 'hi-IN' : 'en-IN', { hour: 'numeric', minute: '2-digit' });
+
+/**
+ * Applications are the admin's first job: until someone checks a certificate, that expert cannot
+ * help anyone. Counts come with any status list, so the smallest one is asked for.
+ */
+function PendingApplicationsBanner() {
+  const { t } = useTranslation();
+  const { data } = useExpertApplications('pending');
+  const pending = data?.counts?.pending ?? 0;
+  if (!pending) return null;
+  return (
+    <Link
+      to="/admin/experts"
+      className="card-interactive group flex items-center gap-3.5 border-warn/30 bg-warn-bg/50 p-4"
+    >
+      <span className="grid size-11 shrink-0 place-items-center rounded-control bg-warn-bg text-warn ring-1 ring-warn/20">
+        <ShieldCheck className="size-5" aria-hidden="true" />
+      </span>
+      <p className="min-w-0 flex-1 font-bold">{t('admin.pendingBanner', { count: pending })}</p>
+      <ArrowRight className="size-4 shrink-0 text-ink-subtle transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
+    </Link>
+  );
+}
 
 /** True while the booked hour is running, so the expert knows to join now rather than later. */
 const isLive = (iso) => {
@@ -94,8 +125,8 @@ function Appointment({ consultation, lang, t, cropName }) {
   );
 }
 
-/** An unclaimed request, with the one action that matters on it. */
-function OpenRequest({ consultation, lang, t, cropName }) {
+/** An unclaimed request, with the one action that matters on it (for an expert; an admin only looks). */
+function OpenRequest({ consultation, lang, t, cropName, canAdvise }) {
   const Icon = MODE_ICONS[consultation.mode] ?? UserCheck;
   const take = useConsultationAction(consultation.id);
   const summary = consultation.caseSummary ?? {};
@@ -129,15 +160,17 @@ function OpenRequest({ consultation, lang, t, cropName }) {
           <span>{t('expert.raised', { when: relativeTime(consultation.createdAt, lang) })}</span>
         </p>
       </div>
-      <button
-        type="button"
-        className="btn-primary shrink-0"
-        disabled={take.isPending}
-        onClick={() => take.mutate({ action: 'accept' })}
-      >
-        {take.isPending ? <Spinner className="size-4" /> : <CheckCircle2 className="size-4" aria-hidden="true" />}
-        {t('consult.accept')}
-      </button>
+      {canAdvise && (
+        <button
+          type="button"
+          className="btn-primary shrink-0"
+          disabled={take.isPending}
+          onClick={() => take.mutate({ action: 'accept' })}
+        >
+          {take.isPending ? <Spinner className="size-4" /> : <CheckCircle2 className="size-4" aria-hidden="true" />}
+          {t('consult.accept')}
+        </button>
+      )}
     </li>
   );
 }
@@ -153,6 +186,7 @@ export default function ExpertDashboard() {
   const metrics = useReviewMetrics();
   const labelQueue = useReviewQueue({ status: 'pending', limit: 3 });
 
+  const isAdmin = user.role === 'admin';
   const s = summary.data;
   const unclaimed = (queue.data?.items ?? []).filter((c) => !c.expert);
   const profile = user.expertProfile ?? {};
@@ -160,6 +194,7 @@ export default function ExpertDashboard() {
 
   return (
     <div className="space-y-9">
+      {isAdmin && <PendingApplicationsBanner />}
       <header className="animate-rise relative overflow-hidden rounded-panel bg-gradient-to-br from-brand-800 via-brand-700 to-brand-600 px-6 py-7 text-white shadow-[var(--shadow-lg)] sm:px-8 sm:py-9">
         <div className="pointer-events-none absolute -right-16 -top-24 size-72 rounded-full bg-brand-300/20 blur-3xl" aria-hidden="true" />
         <div className="relative flex flex-wrap items-end justify-between gap-5">
@@ -230,7 +265,7 @@ export default function ExpertDashboard() {
             ) : unclaimed.length ? (
               <ul className="space-y-2.5">
                 {unclaimed.map((c) => (
-                  <OpenRequest key={c.id} consultation={c} lang={lang} t={t} cropName={cropName} />
+                  <OpenRequest key={c.id} consultation={c} lang={lang} t={t} cropName={cropName} canAdvise={!isAdmin} />
                 ))}
               </ul>
             ) : (

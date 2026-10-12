@@ -11,7 +11,8 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import sharp from 'sharp';
-import { Consultation, Crop, Disease, Plot, Scan, Treatment, User } from '../models/index.js';
+import { composeQualification } from '../models/expertOptions.js';
+import { Consultation, Crop, Disease, ExpertDocument, Plot, Scan, Treatment, User } from '../models/index.js';
 import { openingMessage } from '../services/consultation.js';
 import { SUPPORTED_CROPS, resolveCrop } from '../services/inference/catalog.js';
 import { invalidateLabelIndex } from '../services/labelIndex.js';
@@ -83,6 +84,22 @@ async function placeholderImage(label, hue) {
   return sharp(Buffer.from(svg)).jpeg({ quality: 70 }).toBuffer();
 }
 
+/** Stands in for a scanned degree certificate, and says plainly that it is not one. */
+async function placeholderCertificate(name, qualification, university) {
+  const clean = (t) => String(t ?? '').replace(/[<&>]/g, '');
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="850">
+    <rect width="100%" height="100%" fill="#fbf7ec"/>
+    <rect x="30" y="30" width="1140" height="790" fill="none" stroke="#8a6d2f" stroke-width="6"/>
+    <text x="50%" y="150" font-family="serif" font-size="44" fill="#4a3b18" text-anchor="middle">${clean(university)}</text>
+    <text x="50%" y="300" font-family="serif" font-size="30" fill="#4a3b18" text-anchor="middle">This is to certify that</text>
+    <text x="50%" y="380" font-family="serif" font-size="52" fill="#1d1608" text-anchor="middle">${clean(name)}</text>
+    <text x="50%" y="460" font-family="serif" font-size="30" fill="#4a3b18" text-anchor="middle">has been awarded the degree of</text>
+    <text x="50%" y="540" font-family="serif" font-size="44" fill="#1d1608" text-anchor="middle">${clean(qualification)}</text>
+    <text x="50%" y="740" font-family="sans-serif" font-size="34" fill="#b42318" text-anchor="middle">DEMO DATA - NOT A REAL CERTIFICATE</text>
+  </svg>`;
+  return sharp(Buffer.from(svg)).jpeg({ quality: 80 }).toBuffer();
+}
+
 export async function seedDemo() {
   // Demo accounts only. The qualifications below are invented for the demo; a real deployment
   // fills these in from the actual advisers it has on its panel.
@@ -95,7 +112,12 @@ export async function seedDemo() {
       state: 'Karnataka',
       district: 'Bengaluru Rural',
       expertProfile: {
-        qualification: 'M.Sc. (Agri.) Plant Pathology',
+        qualification: composeQualification('msc_agriculture', 'Plant Pathology'),
+        degree: 'msc_agriculture',
+        specialisation: 'Plant Pathology',
+        university: 'University of Agricultural Sciences, Bengaluru',
+        graduationYear: 2013,
+        organisationType: 'kvk',
         designation: 'Subject Matter Specialist, Plant Protection',
         organisation: 'Krishi Vigyan Kendra, Bengaluru Rural',
         experienceYears: 11,
@@ -112,7 +134,12 @@ export async function seedDemo() {
       state: 'Telangana',
       district: 'Warangal',
       expertProfile: {
-        qualification: 'Ph.D. Plant Pathology',
+        qualification: composeQualification('phd_agriculture', 'Plant Pathology'),
+        degree: 'phd_agriculture',
+        specialisation: 'Plant Pathology',
+        university: 'Professor Jayashankar Telangana State Agricultural University',
+        graduationYear: 2006,
+        organisationType: 'sau',
         designation: 'Principal Scientist',
         organisation: 'State Agricultural University, Warangal',
         experienceYears: 18,
@@ -129,7 +156,12 @@ export async function seedDemo() {
       state: 'Punjab',
       district: 'Ludhiana',
       expertProfile: {
-        qualification: 'M.Sc. Agronomy',
+        qualification: composeQualification('msc_agriculture', 'Agronomy'),
+        degree: 'msc_agriculture',
+        specialisation: 'Agronomy',
+        university: 'Punjab Agricultural University, Ludhiana',
+        graduationYear: 2017,
+        organisationType: 'state_dept',
         designation: 'Agriculture Development Officer',
         organisation: 'Department of Agriculture, Punjab',
         experienceYears: 7,
@@ -140,17 +172,61 @@ export async function seedDemo() {
       },
     },
     { name: 'Neighbour Farmer', email: 'neighbour@demo.in', role: 'farmer', state: 'Maharashtra', district: 'Nashik' },
+    // Verifies experts. Admins oversee; they do not give advice themselves.
+    { name: 'Demo Admin', email: 'admin@demo.in', role: 'admin', state: 'Tamil Nadu', district: 'Chennai' },
+    // Someone who has applied and is waiting, so the admin's desk has a real decision on it.
+    {
+      name: 'Ravi Kumar',
+      email: 'applicant@demo.in',
+      role: 'expert',
+      state: 'Tamil Nadu',
+      district: 'Coimbatore',
+      certificate: true,
+      expertProfile: {
+        qualification: composeQualification('bsc_agriculture'),
+        degree: 'bsc_agriculture',
+        university: 'Tamil Nadu Agricultural University, Coimbatore',
+        graduationYear: 2019,
+        organisationType: 'private',
+        organisation: 'Kovai Farm Inputs',
+        designation: 'Field Agronomist',
+        experienceYears: 5,
+        crops: ['rice', 'tomato', 'onion'],
+        languages: ['ta', 'en'],
+        modes: ['call', 'visit'],
+        bio: 'Advises paddy and vegetable growers around Coimbatore on crop protection.',
+      },
+      expertVerification: { status: 'pending' },
+    },
   ];
-  const users = {};
+  // The three advisers were checked when the demo was put together; their profiles say so.
   for (const u of demoUsers) {
+    if (u.role === 'expert' && !u.expertVerification) u.expertVerification = { status: 'verified' };
+  }
+  const users = {};
+  for (const { certificate, ...u } of demoUsers) {
+    const now = new Date();
+    if (u.expertVerification) {
+      u.expertVerification = {
+        ...u.expertVerification,
+        submittedAt: now,
+        ...(u.expertVerification.status !== 'pending' && { decidedAt: now }),
+      };
+    }
     let user = await User.findOne({ email: u.email });
     if (!user) {
       user = new User(u);
       await user.setPassword('demo1234');
       await user.save();
-    } else if (u.expertProfile && !user.expertProfile?.qualification) {
-      user.expertProfile = u.expertProfile;
+    } else if (u.expertProfile && !user.expertProfile?.degree) {
+      // Demo experts made before verification existed get the structured qualification too.
+      user.expertProfile = { ...user.toObject().expertProfile, ...u.expertProfile };
+      if (!user.expertVerification?.status) user.expertVerification = u.expertVerification;
       await user.save();
+    }
+    if (certificate && !(await ExpertDocument.exists({ owner: user._id }))) {
+      const data = await placeholderCertificate(u.name, u.expertProfile.qualification, u.expertProfile.university);
+      await ExpertDocument.create({ owner: user._id, contentType: 'image/jpeg', data, bytes: data.length, width: 1200, height: 850 });
     }
     if (u.email === 'expert@demo.in') users.expert = user;
     else users[u.email.split('@')[0]] = user;

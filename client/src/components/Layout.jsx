@@ -1,8 +1,8 @@
 import clsx from 'clsx';
-import { BookOpen, Camera, ChevronDown, ClipboardCheck, History, Home, LogOut, Map, Sprout, User, UserCheck } from 'lucide-react';
+import { BookOpen, Camera, ChevronDown, ClipboardCheck, History, Home, LogOut, Map, ShieldCheck, Sprout, User, UserCheck } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link, NavLink, Outlet, ScrollRestoration } from 'react-router';
-import { useAuth } from '../auth/AuthProvider.jsx';
+import { isUnverifiedExpert, useAuth } from '../auth/AuthProvider.jsx';
 import { LANGUAGES } from '../i18n/index.js';
 
 function LanguageSwitcher() {
@@ -49,33 +49,44 @@ export default function Layout() {
   /**
    * Navigation is per role, not one list with bits hidden. An expert has no plots, takes no
    * photos and has no scan history of their own, so offering them "Scan leaf" is an invitation
-   * to a page that will never have anything on it.
+   * to a page that will never have anything on it. An expert still waiting to be checked gets
+   * only the public pages: every case page would turn them away.
    */
-  const isExpert = ['expert', 'admin'].includes(user?.role);
+  const home = { to: '/dashboard', label: t('nav.dashboard'), icon: Home, mobile: true };
+  const outbreaks = { to: '/outbreaks', label: t('nav.outbreaks'), icon: Map };
+  const library = { to: '/library', label: t('nav.library'), icon: BookOpen };
   const nav = !user
-    ? [
-        { to: '/outbreaks', label: t('nav.outbreaks'), icon: Map },
-        { to: '/library', label: t('nav.library'), icon: BookOpen },
-      ]
-    : isExpert
-      ? [
-          { to: '/dashboard', label: t('nav.dashboard'), icon: Home, mobile: true },
-          { to: '/consultations', label: t('nav.consultations'), icon: UserCheck, mobile: true },
-          { to: '/reviews', label: t('nav.reviews'), icon: ClipboardCheck, mobile: true },
-          { to: '/outbreaks', label: t('nav.outbreaks'), icon: Map, mobile: true },
-          { to: '/library', label: t('nav.library'), icon: BookOpen, mobile: true },
-        ]
-      : [
-          { to: '/dashboard', label: t('nav.dashboard'), icon: Home, mobile: true },
-          { to: '/scan', label: t('nav.scan'), icon: Camera, primary: true, mobile: true },
-          { to: '/history', label: t('nav.history'), icon: History, mobile: true },
-          { to: '/plots', label: t('nav.plots'), icon: Sprout, mobile: true },
-          { to: '/consultations', label: t('nav.consultations'), icon: UserCheck },
-          { to: '/outbreaks', label: t('nav.outbreaks'), icon: Map },
-          { to: '/library', label: t('nav.library'), icon: BookOpen, mobile: true },
-        ];
+    ? [outbreaks, library]
+    : isUnverifiedExpert(user)
+      ? [home, { ...outbreaks, mobile: true }, { ...library, mobile: true }]
+      : user.role === 'admin'
+        ? [
+            home,
+            { to: '/admin/experts', label: t('nav.adminExperts'), icon: ShieldCheck, mobile: true },
+            { to: '/consultations', label: t('nav.consultations'), icon: UserCheck, mobile: true },
+            { to: '/reviews', label: t('nav.reviews'), icon: ClipboardCheck, mobile: true },
+            { ...outbreaks, mobile: true },
+            library,
+          ]
+        : user.role === 'expert'
+          ? [
+              home,
+              { to: '/consultations', label: t('nav.consultations'), icon: UserCheck, mobile: true },
+              { to: '/reviews', label: t('nav.reviews'), icon: ClipboardCheck, mobile: true },
+              { ...outbreaks, mobile: true },
+              { ...library, mobile: true },
+            ]
+          : [
+              home,
+              { to: '/scan', label: t('nav.scan'), icon: Camera, primary: true, mobile: true },
+              { to: '/history', label: t('nav.history'), icon: History, mobile: true },
+              { to: '/plots', label: t('nav.plots'), icon: Sprout, mobile: true },
+              { to: '/consultations', label: t('nav.consultations'), icon: UserCheck },
+              outbreaks,
+              { ...library, mobile: true },
+            ];
 
-  // The mobile bottom bar holds five destinations; each list marks its own.
+  // The mobile bottom bar holds up to five destinations; each list marks its own.
   const mobileNav = nav.filter((n) => n.mobile);
 
   return (
@@ -151,7 +162,8 @@ export default function Layout() {
           className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-surface/85 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl backdrop-saturate-150 lg:hidden"
           aria-label="Main mobile"
         >
-          <ul className="mx-auto grid max-w-lg grid-cols-5">
+          {/* Columns follow the list, so three items spread out rather than bunching to the left. */}
+          <ul className="mx-auto grid max-w-lg" style={{ gridTemplateColumns: `repeat(${mobileNav.length}, minmax(0, 1fr))` }}>
             {mobileNav.map((item) => (
               <li key={item.to}>
                 <NavLink

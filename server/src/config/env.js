@@ -32,7 +32,11 @@ const schema = z.object({
 
   // Only needed when the React app is served from a different origin than the API.
   CLIENT_ORIGIN: z.string().optional().default(''),
-  TRUST_PROXY: bool.default('false'),
+  // The default is the parsed value, not the string: Zod returns a default as it is, without the
+  // transform, and the string 'false' is truthy. As 'false' it switched proxy trust on for every
+  // server that left this unset, so a client could set X-Forwarded-For to any address it liked and
+  // walk straight past the sign-in rate limit.
+  TRUST_PROXY: bool.default(false),
   // Failed sign-in attempts allowed from one IP per 15 minutes. Configurable so a test can drive
   // the real route rather than a copy of it.
   AUTH_RATE_LIMIT: z.coerce.number().int().min(1).max(10_000).default(20),

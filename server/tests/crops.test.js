@@ -35,3 +35,19 @@ describe('crop names', () => {
     }
   });
 });
+
+describe('the knowledge base', () => {
+  it('passes the Disease schema it is seeded into', async () => {
+    // The seed upserts with bulkWrite, which casts but does not validate, so an entry the schema
+    // would refuse still lands in the database. Two tipburn entries did, with a cause of
+    // "abiotic" the schema did not list.
+    const { Disease } = await import('../src/models/index.js');
+    const DISEASES_JSON = path.join(path.dirname(CROPS_JSON), 'diseases.json');
+    const entries = JSON.parse(await fs.readFile(DISEASES_JSON, 'utf8'));
+    const invalid = [];
+    for (const d of entries) {
+      await new Disease(d).validate().catch((err) => invalid.push(`${d.key}: ${err.message}`));
+    }
+    expect(invalid).toEqual([]);
+  });
+});

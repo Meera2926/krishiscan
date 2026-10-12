@@ -43,6 +43,13 @@ export function AuthProvider({ children }) {
 
   useEffect(() => onSessionExpired(clearSession), [clearSession]);
 
+  // Stable, so a page can call it from an effect without re-running on every user change.
+  const refreshUser = useCallback(async () => {
+    const { data } = await api.get('/auth/me');
+    setUser(data.user);
+    return data.user;
+  }, []);
+
   const value = useMemo(
     () => ({
       user,
@@ -57,6 +64,13 @@ export function AuthProvider({ children }) {
         applySession(data);
         return data.user;
       },
+      /** Takes FormData: the application carries a photo of the degree certificate. */
+      async registerExpert(formData) {
+        const { data } = await api.post('/auth/register-expert', formData);
+        applySession(data);
+        return data.user;
+      },
+      refreshUser,
       async logout() {
         try {
           await api.post('/auth/logout');
@@ -71,11 +85,17 @@ export function AuthProvider({ children }) {
       },
       hasRole: (...roles) => Boolean(user && roles.includes(user.role)),
     }),
-    [user, status, applySession, clearSession],
+    [user, status, applySession, clearSession, refreshUser],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
+
+/**
+ * An expert account exists from the moment someone applies, but it must not reach a farmer's case
+ * until an admin has checked the certificate. Anything other than 'verified' counts as not yet.
+ */
+export const isUnverifiedExpert = (user) => user?.role === 'expert' && user.expertVerification?.status !== 'verified';
 
 export function useAuth() {
   const ctx = useContext(AuthContext);

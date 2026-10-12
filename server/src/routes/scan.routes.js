@@ -2,7 +2,7 @@ import { Router } from 'express';
 import mongoose from 'mongoose';
 import { z } from 'zod';
 import { config } from '../config/env.js';
-import { requireAuth } from '../middleware/auth.js';
+import { isVerifiedExpert, requireAuth } from '../middleware/auth.js';
 import { uploadImage } from '../middleware/upload.js';
 import { cropKey, idParams, objectId, validate } from '../middleware/validate.js';
 import { Consultation, Disease, Plot, SCAN_STATUS, Scan } from '../models/index.js';
@@ -115,7 +115,10 @@ async function findVisibleScan(req) {
   const scan = await Scan.findById(req.valid.params.id).populate('plot', 'name crop');
   if (!scan) throw notFound('Scan not found');
   const isOwner = scan.owner.equals(req.auth.userId);
-  if (!isOwner && !['expert', 'admin'].includes(req.auth.role)) throw notFound('Scan not found');
+  // Another farmer's photo is visible to admins and to experts whose certificate was checked;
+  // to an expert still waiting on verification it does not exist.
+  const mayOversee = req.auth.role === 'admin' || (await isVerifiedExpert(req));
+  if (!isOwner && !mayOversee) throw notFound('Scan not found');
   return { scan, isOwner };
 }
 

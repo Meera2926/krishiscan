@@ -19,6 +19,7 @@ const DAYS_BY_AGENT = {
   pest: 7,
   viral: 14,
   deficiency: 14,
+  abiotic: 14,
   none: 14,
 };
 

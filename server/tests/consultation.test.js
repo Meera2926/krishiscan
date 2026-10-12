@@ -34,10 +34,16 @@ beforeEach(async () => {
 
 const bearer = (token) => ({ Authorization: `Bearer ${token}` });
 
-/** Experts cannot self-register, so promote the account and sign in again for a fresh token. */
+/**
+ * A verified expert. Promoted directly rather than through the application form, which has its
+ * own tests in experts.test.js, then signed in again for a token carrying the new role.
+ */
 async function asExpert(appInstance, name, expertProfile) {
   const { user, password } = await registerUser(appInstance, { name });
-  await User.updateOne({ _id: user.id }, { role: 'expert', ...(expertProfile && { expertProfile }) });
+  await User.updateOne(
+    { _id: user.id },
+    { role: 'expert', expertVerification: { status: 'verified' }, ...(expertProfile && { expertProfile }) },
+  );
   const res = await request(appInstance).post('/api/auth/login').send({ email: user.email, password }).expect(200);
   return { token: res.body.accessToken, id: user.id };
 }
@@ -292,6 +298,74 @@ describe('consultations API', () => {
       .set(bearer(b.token))
       .send({ decision: 'declined' })
       .expect(404);
+  });
+});
+
+describe('a case belongs to whoever took it', () => {
+  async function bookedFor(seed) {
+    const { token } = await registerUser(app);
+    const { consultation, scan } = await uncertainScan(token, seed);
+    await request(app)
+      .post(`/api/consultations/${consultation.id}/decision`)
+      .set(bearer(token))
+      .send({ decision: 'scheduled', mode: 'chat', scheduledFor: nextSlot() })
+      .expect(200);
+    return { farmerToken: token, id: consultation.id, scanId: scan.id };
+  }
+
+  it('lets nobody but the expert who took a case answer it', async () => {
+    const { id } = await bookedFor(51);
+    const { token: first } = await asExpert(app, 'Took It');
+    const { token: second } = await asExpert(app, 'Did Not');
+    await request(app).patch(`/api/consultations/${id}`).set(bearer(first)).send({ action: 'accept' }).expect(200);
+
+    // Closing it would put the second expert's advice under the first one's name, and the
+    // farmer's rating with it.
+    await request(app)
+      .patch(`/api/consultations/${id}`)
+      .set(bearer(second))
+      .send({ action: 'complete', advice: 'Not my case, but here goes.' })
+      .expect(409);
+    await request(app).patch(`/api/consultations/${id}`).set(bearer(second)).send({ action: 'accept' }).expect(409);
+    expect((await Consultation.findById(id)).status).toBe('confirmed');
+  });
+
+  it('does not let a closed case be reopened by accepting or moving it', async () => {
+    const answered = await bookedFor(52);
+    const { token: expertToken } = await asExpert(app, 'Closer');
+    await request(app)
+      .patch(`/api/consultations/${answered.id}`)
+      .set(bearer(expertToken))
+      .send({ action: 'complete', advice: 'Spray as discussed.' })
+      .expect(200);
+    await request(app).patch(`/api/consultations/${answered.id}`).set(bearer(expertToken)).send({ action: 'accept' }).expect(409);
+    await request(app)
+      .patch(`/api/consultations/${answered.id}`)
+      .set(bearer(answered.farmerToken))
+      .send({ action: 'reschedule', scheduledFor: nextSlot() })
+      .expect(409);
+    expect((await Consultation.findById(answered.id)).status).toBe('completed');
+
+    const calledOff = await bookedFor(53);
+    await request(app).patch(`/api/consultations/${calledOff.id}`).set(bearer(calledOff.farmerToken)).send({ action: 'cancel' }).expect(200);
+    await request(app)
+      .patch(`/api/consultations/${calledOff.id}`)
+      .set(bearer(calledOff.farmerToken))
+      .send({ action: 'reschedule', scheduledFor: nextSlot() })
+      .expect(409);
+  });
+
+  it('keeps advice of any length the consultation accepts, on the scan too', async () => {
+    const { id, scanId } = await bookedFor(54);
+    const { token: expertToken } = await asExpert(app, 'Thorough');
+    // Exactly the 2000 the route allows, with nothing at the end for it to trim.
+    const advice = 'Remove the lower leaves and spray in the evening.'.padEnd(2000, '.');
+    await request(app)
+      .patch(`/api/consultations/${id}`)
+      .set(bearer(expertToken))
+      .send({ action: 'complete', advice })
+      .expect(200);
+    expect((await Scan.findById(scanId)).review.note).toHaveLength(2000);
   });
 });
 

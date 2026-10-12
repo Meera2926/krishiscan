@@ -20,7 +20,8 @@ const diseaseSchema = new mongoose.Schema(
     names: { type: Map, of: String, default: {} },
     causalAgentType: {
       type: String,
-      enum: ['fungal', 'bacterial', 'viral', 'oomycete', 'pest', 'deficiency', 'none'],
+      // abiotic: a disorder with no pathogen, such as tipburn from calcium or moisture stress.
+      enum: ['fungal', 'bacterial', 'viral', 'oomycete', 'pest', 'deficiency', 'abiotic', 'none'],
       default: 'none',
     },
     pathogen: String,
