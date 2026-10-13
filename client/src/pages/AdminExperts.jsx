@@ -1,11 +1,11 @@
 import clsx from 'clsx';
-import { BadgeCheck, Ban, FileImage, Mail, MapPin, ShieldCheck, X, XCircle } from 'lucide-react';
+import { BadgeCheck, Ban, CalendarDays, FileImage, Gavel, Mail, MapPin, ShieldCheck, UserRound, X, XCircle } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { describeError } from '../api/client.js';
 import { useExpertApplications, useExpertDecision, useExpertOptions } from '../api/hooks.js';
 import { CertificateImage, ExpertFacts, VerificationBadge } from '../components/experts.jsx';
-import { Alert, EmptyState, ErrorState, Field, PageHeader, Pagination, Spinner } from '../components/ui.jsx';
+import { Alert, EmptyState, ErrorState, Field, IconBadge, PageHeader, Pagination, Spinner } from '../components/ui.jsx';
 import { shortDate } from '../lib/format.js';
 
 const TABS = ['pending', 'verified', 'rejected', 'suspended'];
@@ -26,7 +26,17 @@ const ACTION_STYLE = {
 
 const MIN_NOTE = 5;
 
-const FACT_FIELDS = ['degree', 'specialisation', 'university', 'organisation', 'designation', 'experienceYears', 'crops', 'languages', 'modes'];
+const FACT_FIELDS = [
+  'degree',
+  'specialisation',
+  'university',
+  'organisation',
+  'designation',
+  'experienceYears',
+  'crops',
+  'languages',
+  'modes',
+];
 
 function ApplicationCard({ item, degreeLabel, onDecided }) {
   const { t, i18n } = useTranslation();
@@ -65,10 +75,11 @@ function ApplicationCard({ item, degreeLabel, onDecided }) {
 
   return (
     <li className="card overflow-hidden">
-      <div className="space-y-4 p-5 sm:p-6">
-        <div className="flex flex-wrap items-start justify-between gap-3">
+      <div className="flex flex-wrap items-start justify-between gap-3 border-b border-line p-5 sm:px-6">
+        <div className="flex min-w-0 gap-3.5">
+          <IconBadge icon={UserRound} size="lg" />
           <div className="min-w-0">
-            <h2 className="text-lg font-bold leading-tight">{item.name}</h2>
+            <h2 className="text-lg font-bold leading-tight text-brand-900">{item.name}</h2>
             <p className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-sm text-ink-muted">
               <span className="inline-flex min-w-0 items-center gap-1.5 break-all">
                 <Mail className="size-3.5 shrink-0" aria-hidden="true" />
@@ -81,46 +92,72 @@ function ApplicationCard({ item, degreeLabel, onDecided }) {
                 </span>
               )}
             </p>
-            <p className="mt-1 text-xs text-ink-subtle">
+            <p className="mt-1 inline-flex items-center gap-1.5 text-xs text-ink-subtle">
+              <CalendarDays className="size-3.5 shrink-0" aria-hidden="true" />
               {t('admin.applied', { date: shortDate(verification.submittedAt ?? item.createdAt, lang) })}
             </p>
           </div>
-          <VerificationBadge status={verification.status} />
+        </div>
+        <VerificationBadge status={verification.status} />
+      </div>
+
+      {/* The details on the left, the certificate that should prove them on the right. */}
+      <div className="grid gap-6 p-5 sm:px-6 lg:grid-cols-[1.2fr_1fr]">
+        <div className="min-w-0 space-y-4">
+          {profile.qualification && (
+            <p className="inline-flex items-center gap-2 rounded-full bg-brand-50 px-3 py-1 text-base font-bold text-brand-800 ring-1 ring-brand-200/70">
+              <BadgeCheck className="size-4 text-brand-600" aria-hidden="true" />
+              {profile.qualification}
+            </p>
+          )}
+          <ExpertFacts expert={profile} degreeLabel={degreeLabel} fields={FACT_FIELDS} />
+          {profile.bio && (
+            <div className="rounded-card bg-surface-sunken p-3.5 ring-1 ring-line">
+              <p className="text-xs font-semibold uppercase tracking-wide text-ink-subtle">{t('expert.field.bio')}</p>
+              <p className="mt-0.5 whitespace-pre-wrap text-sm leading-relaxed">{profile.bio}</p>
+            </div>
+          )}
+
+          {verification.decidedAt && (
+            <div className="flex gap-3 rounded-card bg-surface-sunken p-3.5 text-sm ring-1 ring-line">
+              <Gavel className="mt-0.5 size-4 shrink-0 text-ink-subtle" aria-hidden="true" />
+              <div className="min-w-0">
+                <p className="text-ink-muted">
+                  {verification.decidedBy?.name
+                    ? t('admin.decidedBy', { name: verification.decidedBy.name, date: shortDate(verification.decidedAt, lang) })
+                    : t('admin.decidedOn', { date: shortDate(verification.decidedAt, lang) })}
+                </p>
+                {verification.note && <p className="mt-1 whitespace-pre-wrap">{verification.note}</p>}
+              </div>
+            </div>
+          )}
         </div>
 
-        {profile.qualification && <p className="text-base font-bold text-brand-700">{profile.qualification}</p>}
-        <ExpertFacts expert={profile} degreeLabel={degreeLabel} fields={FACT_FIELDS} />
-        {profile.bio && (
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-ink-subtle">{t('expert.field.bio')}</p>
-            <p className="mt-0.5 whitespace-pre-wrap text-sm leading-relaxed">{profile.bio}</p>
-          </div>
-        )}
-
-        {verification.decidedAt && (
-          <div className="rounded-card border border-line bg-surface-sunken p-3.5 text-sm">
-            <p className="text-ink-muted">
-              {verification.decidedBy?.name
-                ? t('admin.decidedBy', { name: verification.decidedBy.name, date: shortDate(verification.decidedAt, lang) })
-                : t('admin.decidedOn', { date: shortDate(verification.decidedAt, lang) })}
-            </p>
-            {verification.note && <p className="mt-1 whitespace-pre-wrap">{verification.note}</p>}
-          </div>
-        )}
-
-        <div>
+        <div className="min-w-0">
           {item.hasDocument ? (
-            <>
-              <button type="button" className="btn-secondary" aria-expanded={showDocument} onClick={() => setShowDocument((v) => !v)}>
+            <div
+              className={clsx(
+                'rounded-card border-2 bg-surface-sunken p-3',
+                showDocument ? 'border-line' : 'border-dashed border-brand-200',
+              )}
+            >
+              {showDocument ? (
+                <div className="mb-3">
+                  <CertificateImage expertId={item.id} version={verification.submittedAt} variant="large" />
+                </div>
+              ) : (
+                <div className="flex flex-col items-center px-3 py-6 text-center">
+                  <span className="icon-badge mb-3 size-14 ring-8 ring-brand-50" aria-hidden="true">
+                    <FileImage className="size-6" />
+                  </span>
+                  <p className="text-sm font-semibold text-brand-900">{t('expert.field.certificate')}</p>
+                </div>
+              )}
+              <button type="button" className="btn-outline w-full" aria-expanded={showDocument} onClick={() => setShowDocument((v) => !v)}>
                 <FileImage className="size-4" aria-hidden="true" />
                 {showDocument ? t('admin.hideCertificate') : t('admin.viewCertificate')}
               </button>
-              {showDocument && (
-                <div className="mt-3">
-                  <CertificateImage expertId={item.id} version={verification.submittedAt} variant="large" />
-                </div>
-              )}
-            </>
+            </div>
           ) : (
             <Alert tone="warn">{t('admin.noCertificate')}</Alert>
           )}
@@ -210,7 +247,7 @@ export default function AdminExperts() {
   const degreeLabel = (key) => options.data?.degrees?.find((d) => d.key === key)?.label ?? key;
 
   return (
-    <div className="mx-auto max-w-4xl">
+    <div className="mx-auto max-w-5xl">
       <PageHeader title={t('admin.title')} subtitle={t('admin.subtitle')} />
 
       {notice && (
@@ -220,14 +257,23 @@ export default function AdminExperts() {
               {t(`admin.done.${notice.decision}`, { name: notice.name })}
               {notice.released > 0 && ` ${t('admin.released', { count: notice.released })}`}
             </p>
-            <button type="button" className="-my-1 shrink-0 rounded-full p-1 hover:bg-ok/10" onClick={() => setNotice(null)} aria-label={t('admin.dismiss')}>
+            <button
+              type="button"
+              className="-my-1 shrink-0 rounded-full p-1 hover:bg-ok/10"
+              onClick={() => setNotice(null)}
+              aria-label={t('admin.dismiss')}
+            >
               <X className="size-4" aria-hidden="true" />
             </button>
           </div>
         </Alert>
       )}
 
-      <div className="mb-5 grid grid-cols-2 gap-1 rounded-xl bg-black/5 p-1 sm:flex sm:w-fit" role="tablist" aria-label={t('admin.title')}>
+      <div
+        className="mb-6 grid grid-cols-2 gap-1 rounded-[1.25rem] bg-surface p-1 shadow-[var(--shadow-xs)] ring-1 ring-line sm:flex sm:w-fit sm:rounded-full"
+        role="tablist"
+        aria-label={t('admin.title')}
+      >
         {TABS.map((s) => (
           <button
             key={s}
@@ -241,8 +287,10 @@ export default function AdminExperts() {
               setPage(1);
             }}
             className={clsx(
-              'flex min-h-10 items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-medium',
-              status === s ? 'bg-surface shadow-sm' : 'text-ink-muted',
+              'flex min-h-10 items-center justify-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition-colors',
+              status === s
+                ? 'bg-brand-700 text-white shadow-[var(--shadow-brand)]'
+                : 'text-ink-muted hover:bg-brand-50 hover:text-brand-800',
             )}
           >
             {t(`admin.tab.${s}`)}
@@ -250,7 +298,11 @@ export default function AdminExperts() {
               <span
                 className={clsx(
                   'chip tabular-nums',
-                  s === 'pending' && counts[s] > 0 ? 'bg-warn-bg text-warn ring-1 ring-warn/20' : 'bg-canvas-deep text-ink-muted',
+                  status === s
+                    ? 'bg-white/20 text-white'
+                    : s === 'pending' && counts[s] > 0
+                      ? 'bg-warn-bg text-warn ring-1 ring-warn/20'
+                      : 'bg-canvas-deep text-ink-muted',
                 )}
               >
                 {counts[s]}

@@ -1,5 +1,22 @@
 import clsx from 'clsx';
-import { ArrowLeft, BookOpen, Camera, CheckCircle2, Clock, HelpCircle, Share2, Trash2, UserCheck, Volume2, VolumeX, XCircle } from 'lucide-react';
+import {
+  AlertTriangle,
+  ArrowLeft,
+  BookOpen,
+  CalendarDays,
+  CheckCircle2,
+  Clock,
+  HelpCircle,
+  ImageUp,
+  MapPin,
+  Share2,
+  Sprout,
+  Trash2,
+  UserCheck,
+  Volume2,
+  VolumeX,
+  XCircle,
+} from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate, useParams } from 'react-router';
 import { useDeleteScan, useScan, useUpdateScan } from '../api/hooks.js';
@@ -43,7 +60,10 @@ function ListenButton({ scan, disease, className }) {
   return (
     <button
       type="button"
-      className={clsx('ml-auto inline-flex items-center gap-1.5 rounded-lg px-2 py-1 text-xs font-semibold hover:bg-black/10', className)}
+      className={clsx(
+        'ml-auto inline-flex min-h-9 shrink-0 items-center gap-1.5 rounded-full bg-surface/80 px-3 text-xs font-semibold ring-1 ring-current/15 transition-colors hover:bg-surface',
+        className,
+      )}
       onClick={() => (speaking ? stop() : speak(build()))}
       aria-pressed={speaking}
     >
@@ -52,6 +72,14 @@ function ListenButton({ scan, disease, className }) {
     </button>
   );
 }
+
+/** The verdict card's tint, by outcome: red for a disease, green for healthy, amber when unsure, grey when rejected. */
+const VERDICT = {
+  disease: { wrap: 'bg-danger-bg border-danger/15', badge: 'bg-surface text-danger ring-danger/20', text: 'text-danger', Icon: AlertTriangle },
+  healthy: { wrap: 'bg-ok-bg border-ok/15', badge: 'bg-surface text-ok ring-ok/20', text: 'text-ok', Icon: CheckCircle2 },
+  uncertain: { wrap: 'bg-warn-bg border-warn/20', badge: 'bg-surface text-warn ring-warn/25', text: 'text-warn', Icon: HelpCircle },
+  rejected: { wrap: 'bg-canvas-deep border-line-strong', badge: 'bg-surface text-ink-muted ring-line-strong', text: 'text-ink-muted', Icon: XCircle },
+};
 
 export default function ScanResult() {
   const { id } = useParams();
@@ -72,43 +100,60 @@ export default function ScanResult() {
   const status = reviewed ? 'confident' : scan.status;
   const nameFor = (key) => localName(alternatives[key], lang) || key;
 
-  const header = {
-    confident: { Icon: CheckCircle2, tone: 'bg-brand-700 text-white', label: t('result.confident') },
-    uncertain: { Icon: HelpCircle, tone: 'bg-warn-bg text-warn', label: t('result.uncertain') },
-    rejected: { Icon: XCircle, tone: 'bg-black/5 text-ink', label: t('result.rejected') },
-  }[status];
+  const label = { confident: t('result.confident'), uncertain: t('result.uncertain'), rejected: t('result.rejected') }[status];
+  // Same branches as the verdict text below; an unsure "healthy" stays amber so the doubt is not hidden by green.
+  const outcome =
+    scan.status === 'rejected' && !reviewed ? 'rejected' : status === 'uncertain' ? 'uncertain' : disease?.isHealthy ? 'healthy' : 'disease';
+  const tone = VERDICT[outcome];
+  // The chip repeats the model's confidence only when it is about the name shown; after an expert
+  // correction the top prediction is a different disease, and the bars below say which.
+  const showChip = scan.top && scan.status !== 'rejected' && scan.top.diseaseKey === disease?.key;
 
   return (
-    <div className="mx-auto max-w-4xl">
-      <Link to="/history" className="btn-ghost -ml-3 mb-2">
+    <div className="mx-auto max-w-6xl">
+      <Link to="/history" className="btn-ghost -ml-3 mb-3">
         <ArrowLeft className="size-4" aria-hidden="true" />
         {t('nav.history')}
       </Link>
 
-      <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
-        <aside className="space-y-4">
-          <img src={scan.image.url} alt="" className="aspect-square w-full rounded-2xl border border-line object-cover" />
-          <div className="card space-y-2 p-4 text-sm">
-            <p className="flex justify-between gap-2">
-              <span className="text-ink-muted">{t('scan.crop')}</span>
-              <span className="font-medium">{cropName(scan.declaredCrop)}</span>
+      <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,360px)_minmax(0,1fr)]">
+        <aside className="space-y-5">
+          <img
+            src={scan.image.url}
+            alt=""
+            className="aspect-square w-full rounded-panel bg-canvas-deep object-cover shadow-md ring-1 ring-line"
+          />
+
+          <div className="card divide-y divide-line px-5 py-1.5 text-sm">
+            <p className="flex items-center justify-between gap-3 py-2.5">
+              <span className="flex items-center gap-2 text-ink-muted">
+                <Sprout className="size-4 text-brand-600" aria-hidden="true" />
+                {t('scan.crop')}
+              </span>
+              <span className="font-semibold text-brand-900">{cropName(scan.declaredCrop)}</span>
             </p>
             {scan.plot?.name && (
-              <p className="flex justify-between gap-2">
-                <span className="text-ink-muted">{t('scan.plot')}</span>
-                <Link to={`/plots/${scan.plot.id}`} className="truncate font-medium underline">
+              <p className="flex items-center justify-between gap-3 py-2.5">
+                <span className="flex items-center gap-2 text-ink-muted">
+                  <MapPin className="size-4 text-brand-600" aria-hidden="true" />
+                  {t('scan.plot')}
+                </span>
+                <Link to={`/plots/${scan.plot.id}`} className="truncate font-semibold text-brand-700 underline underline-offset-2">
                   {scan.plot.name}
                 </Link>
               </p>
             )}
-            <p className="flex justify-between gap-2">
-              <span className="text-ink-muted">{t('history.title')}</span>
-              <span>{shortDate(scan.createdAt, lang)}</span>
+            <p className="flex items-center justify-between gap-3 py-2.5">
+              <span className="flex items-center gap-2 text-ink-muted">
+                <CalendarDays className="size-4 text-brand-600" aria-hidden="true" />
+                {t('history.title')}
+              </span>
+              <span className="font-medium">{shortDate(scan.createdAt, lang)}</span>
             </p>
             {scan.location && (
-              <label className="flex cursor-pointer items-center justify-between gap-2 pt-1">
-                <span className="flex items-center gap-1.5 text-ink-muted">
-                  <Share2 className="size-3.5" aria-hidden="true" />
+              <label className="flex cursor-pointer items-center justify-between gap-3 py-2.5">
+                <span className="flex items-center gap-2 text-ink-muted">
+                  <Share2 className="size-4 text-brand-600" aria-hidden="true" />
                   {scan.shareLocation ? t('result.shareOn') : t('result.shareOff')}
                 </span>
                 <input
@@ -124,18 +169,21 @@ export default function ScanResult() {
 
           {scan.quality?.warnings?.length > 0 && (
             <Alert tone="warn">
-              <p className="mb-1 font-semibold">{t('result.quality')}</p>
-              <ul className="list-inside list-disc font-normal">
+              <p className="mb-1.5 font-semibold">{t('result.quality')}</p>
+              <ul className="space-y-1 font-normal">
                 {scan.quality.warnings.map((w) => (
-                  <li key={w}>{t(`result.qualityWarning.${w}`)}</li>
+                  <li key={w} className="flex gap-2">
+                    <span className="mt-[0.45rem] size-1.5 shrink-0 rounded-full bg-current opacity-70" aria-hidden="true" />
+                    {t(`result.qualityWarning.${w}`)}
+                  </li>
                 ))}
               </ul>
             </Alert>
           )}
 
           <div className="flex gap-2">
-            <Link to="/scan" className="btn-primary flex-1">
-              <Camera className="size-4" aria-hidden="true" />
+            <Link to="/scan" className="btn-outline flex-1">
+              <ImageUp className="size-4" aria-hidden="true" />
               {t('result.scanAgain')}
             </Link>
             <button
@@ -154,41 +202,67 @@ export default function ScanResult() {
           </div>
         </aside>
 
-        <div className="space-y-6">
-          <section className="card overflow-hidden">
-            <div className={clsx('flex items-center gap-2 px-5 py-3 text-sm font-semibold', header.tone)}>
-              <header.Icon className="size-5" aria-hidden="true" />
-              {header.label}
-              <ListenButton scan={scan} disease={disease} className={status === 'confident' ? 'text-white' : ''} />
-            </div>
-            <div className="space-y-5 p-5">
-              {scan.status === 'rejected' && !reviewed ? (
-                <p className="leading-relaxed">{t(`result.reason.${scan.statusReason}`)}</p>
-              ) : disease?.isHealthy ? (
-                <div>
-                  <h1 className="text-2xl font-bold text-ok">{t('result.healthyTitle')}</h1>
-                  <p className="mt-1 text-ink-muted">{t('result.healthyBody')}</p>
-                </div>
-              ) : (
-                <div>
-                  <div className="flex flex-wrap items-center gap-2">
-                    <h1 className="text-2xl font-bold tracking-tight">{localName(disease, lang) || t('common.unknown')}</h1>
-                    <SeverityBadge severity={disease?.severity} />
+        <div className="min-w-0 space-y-6">
+          <section className="card animate-rise overflow-hidden">
+            <div className={clsx('border-b p-5 sm:p-6', tone.wrap)}>
+              <div className="flex items-start gap-4">
+                <span className={clsx('grid size-12 shrink-0 place-items-center rounded-full shadow-xs ring-1', tone.badge)}>
+                  <tone.Icon className="size-6" aria-hidden="true" />
+                </span>
+                <div className="min-w-0 flex-1">
+                  <div className="flex min-h-9 items-center gap-2">
+                    <p className={clsx('text-sm font-semibold', tone.text)}>{label}</p>
+                    <ListenButton scan={scan} disease={disease} className={tone.text} />
                   </div>
-                  {lang !== 'en' && disease?.commonName && <p className="text-sm text-ink-muted">{disease.commonName}</p>}
-                  {!reviewed && scan.statusReason !== 'ok' && (
-                    <p className="mt-2 text-sm leading-relaxed text-warn">{t(`result.reason.${scan.statusReason}`)}</p>
+
+                  {scan.status === 'rejected' && !reviewed ? (
+                    <p className="mt-1 leading-relaxed text-ink">{t(`result.reason.${scan.statusReason}`)}</p>
+                  ) : disease?.isHealthy ? (
+                    <div className="mt-0.5">
+                      <h1 className="text-2xl font-extrabold leading-tight text-ok sm:text-[1.75rem]">{t('result.healthyTitle')}</h1>
+                      <p className="mt-1.5 leading-relaxed text-ink-muted">{t('result.healthyBody')}</p>
+                    </div>
+                  ) : (
+                    <div className="mt-0.5">
+                      <h1 className="text-2xl font-extrabold leading-tight text-brand-900 sm:text-[1.75rem]">
+                        {localName(disease, lang) || t('common.unknown')}
+                      </h1>
+                      {lang !== 'en' && disease?.commonName && <p className="mt-0.5 text-sm text-ink-muted">{disease.commonName}</p>}
+                    </div>
+                  )}
+
+                  <div className="mt-3 flex flex-wrap items-center gap-2 empty:hidden">
+                    {outcome !== 'rejected' && !disease?.isHealthy && <SeverityBadge severity={disease?.severity} />}
+                    {showChip && (
+                      <span className={clsx('chip bg-surface/85 ring-1 ring-current/20 tabular-nums', tone.text)}>
+                        {t('result.confidence')}: {pct(scan.top.confidence)}
+                      </span>
+                    )}
+                  </div>
+
+                  {outcome !== 'rejected' && !disease?.isHealthy && !reviewed && scan.statusReason !== 'ok' && (
+                    <p className="mt-3 text-sm leading-relaxed text-warn">{t(`result.reason.${scan.statusReason}`)}</p>
                   )}
                 </div>
-              )}
+              </div>
+            </div>
 
+            {/* empty:hidden: a rejected scan with no review, offer or bars has nothing to put here. */}
+            <div className="space-y-5 p-5 empty:hidden sm:p-6">
               {review.status !== 'none' && (
-                <div className={clsx('flex gap-3 rounded-xl p-3 text-sm', review.status === 'pending' ? 'bg-info-bg text-info' : 'bg-ok-bg text-ok')}>
-                  {review.status === 'pending' ? <Clock className="size-5 shrink-0" aria-hidden="true" /> : <UserCheck className="size-5 shrink-0" aria-hidden="true" />}
-                  <div>
+                <div
+                  className={clsx(
+                    'flex gap-3 rounded-control p-3.5 text-sm ring-1',
+                    review.status === 'pending' ? 'bg-info-bg/70 text-info ring-info/15' : 'bg-ok-bg/70 text-ok ring-ok/15',
+                  )}
+                >
+                  <span className="grid size-8 shrink-0 place-items-center rounded-full bg-surface ring-1 ring-current/15">
+                    {review.status === 'pending' ? <Clock className="size-4" aria-hidden="true" /> : <UserCheck className="size-4" aria-hidden="true" />}
+                  </span>
+                  <div className="min-w-0 pt-1">
                     <p className="font-semibold">{t(`result.review.${review.status}`)}</p>
                     {review.note && (
-                      <p className="mt-1 text-ink">
+                      <p className="mt-1 leading-relaxed text-ink">
                         <span className="font-medium">{t('result.expertNote')}:</span> {review.note}
                       </p>
                     )}
@@ -202,14 +276,18 @@ export default function ScanResult() {
 
               {scan.predictions?.length > 0 && scan.status !== 'rejected' && (
                 <div className="space-y-3">
-                  <ConfidenceBar value={scan.top.confidence} label={`${t('result.confidence')}: ${nameFor(scan.top.diseaseKey)}`} tone={scan.status === 'confident' ? 'brand' : 'warn'} />
+                  <ConfidenceBar
+                    value={scan.top.confidence}
+                    label={`${t('result.confidence')}: ${nameFor(scan.top.diseaseKey)}`}
+                    tone={scan.status === 'confident' ? 'brand' : 'warn'}
+                  />
                   {scan.predictions.length > 1 && (
-                    <>
-                      <p className="pt-1 text-xs font-semibold uppercase tracking-wide text-ink-muted">{t('result.otherPossibilities')}</p>
+                    <div className="space-y-3 rounded-control bg-surface-sunken p-4 ring-1 ring-line">
+                      <p className="text-xs font-bold uppercase tracking-[0.1em] text-ink-subtle">{t('result.otherPossibilities')}</p>
                       {scan.predictions.slice(1).map((p) => (
                         <ConfidenceBar key={p.label} value={p.confidence} label={nameFor(p.diseaseKey)} tone="muted" />
                       ))}
-                    </>
+                    </div>
                   )}
                   {scan.cropProbability != null && (
                     <p className="text-xs text-ink-muted">{t('result.cropMatch', { pct: pct(scan.cropProbability) })}</p>
@@ -224,18 +302,21 @@ export default function ScanResult() {
           {!disease?.isHealthy && <OrganicRemedies remedies={remedies} sourceUrl={disease?.sourceUrl} />}
 
           {disease && (scan.status !== 'rejected' || reviewed) && (
-            <section className="card p-5">
-              <DiseaseAdvice disease={disease} />
-              {!disease.isHealthy && (
-                <Link to={`/library/${disease.key}`} className="btn-secondary mt-6">
-                  <BookOpen className="size-4" aria-hidden="true" />
-                  {t('result.viewDisease')}
-                </Link>
-              )}
-            </section>
+            <DiseaseAdvice
+              disease={disease}
+              cards
+              footer={
+                !disease.isHealthy && (
+                  <Link to={`/library/${disease.key}`} className="btn-outline">
+                    <BookOpen className="size-4" aria-hidden="true" />
+                    {t('result.viewDisease')}
+                  </Link>
+                )
+              }
+            />
           )}
 
-          <p className="text-center text-xs text-ink-muted">{t('result.model', { version: scan.modelVersion, ms: scan.inferenceMs ?? '—' })}</p>
+          <p className="text-center text-xs text-ink-subtle">{t('result.model', { version: scan.modelVersion, ms: scan.inferenceMs ?? '—' })}</p>
         </div>
       </div>
     </div>

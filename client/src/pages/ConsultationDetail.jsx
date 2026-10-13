@@ -1,13 +1,29 @@
-import { ArrowLeft, CheckCircle2, MapPin, MessageSquare, Navigation, Pencil, Phone, Send, XCircle } from 'lucide-react';
+import clsx from 'clsx';
+import {
+  ArrowLeft,
+  CalendarClock,
+  CheckCircle2,
+  ClipboardCheck,
+  Clock,
+  MapPin,
+  MessageSquare,
+  Navigation,
+  Pencil,
+  Phone,
+  Send,
+  ShieldCheck,
+  Star,
+  XCircle,
+} from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate, useParams } from 'react-router';
 import { describeError } from '../api/client.js';
 import { useConsultation, useConsultationAction, useRateConsultation } from '../api/hooks.js';
 import { useAuth } from '../auth/AuthProvider.jsx';
-import { BookingForm, CaseSummary, ChatThread, ConsultationOffer, ExpertCard, MODE_ICONS } from '../components/consultation.jsx';
+import { BookingForm, CaseSummary, ChatThread, ConsultationOffer, ExpertCard, MODE_ICONS, STATUS_TONE } from '../components/consultation.jsx';
 import { StarInput, Stars } from '../components/ratings.jsx';
-import { Alert, ErrorState, Field, PageHeader, Spinner } from '../components/ui.jsx';
+import { Alert, ErrorState, Field, IconBadge, PageHeader, SectionTitle, Spinner } from '../components/ui.jsx';
 import { shortDate } from '../lib/format.js';
 
 /**
@@ -24,17 +40,24 @@ function SessionBar({ consultation, mine, canAdvise }) {
   const joinThread = () => document.getElementById('thread')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
   return (
-    <section className={`card flex flex-wrap items-center gap-4 p-5 ${live ? 'border-ok/40 bg-ok-bg/30' : ''}`}>
-      <div className="min-w-0 flex-1">
-        <p className="flex items-center gap-2 font-bold">
-          {live && <span className="size-2 animate-pulse rounded-full bg-ok" aria-hidden="true" />}
-          {live ? t('consult.liveNow') : t('consult.startsAt', { time: new Date(consultation.scheduledFor).toLocaleTimeString(i18n.language === 'hi' ? 'hi-IN' : 'en-IN', { hour: 'numeric', minute: '2-digit' }) })}
-        </p>
-        <p className="mt-0.5 text-sm text-ink-muted">{t(`consult.joinHint.${consultation.mode}`)}</p>
+    <section className={clsx('flex flex-wrap items-center gap-4 p-5', live ? 'rounded-card bg-ok-bg/70 ring-1 ring-ok/20' : 'card')}>
+      <div className="flex min-w-0 flex-1 basis-64 items-start gap-3.5">
+        <span className="relative">
+          <IconBadge icon={Clock} tone={live ? 'white' : 'accent'} size="lg" />
+          {live && (
+            <span className="absolute right-0 top-0 size-3 animate-pulse rounded-full bg-ok ring-2 ring-surface" aria-hidden="true" />
+          )}
+        </span>
+        <div className="min-w-0">
+          <p className="font-bold text-brand-900">
+            {live ? t('consult.liveNow') : t('consult.startsAt', { time: new Date(consultation.scheduledFor).toLocaleTimeString(i18n.language === 'hi' ? 'hi-IN' : 'en-IN', { hour: 'numeric', minute: '2-digit' }) })}
+          </p>
+          <p className="mt-0.5 text-sm leading-relaxed text-ink-muted">{t(`consult.joinHint.${consultation.mode}`)}</p>
+        </div>
       </div>
 
       <div className="flex flex-wrap gap-2">
-        <button type="button" className={consultation.mode === 'chat' ? 'btn-primary' : 'btn-secondary'} onClick={joinThread}>
+        <button type="button" className={consultation.mode === 'chat' ? 'btn-primary' : 'btn-outline'} onClick={joinThread}>
           <MessageSquare className="size-4" aria-hidden="true" />
           {consultation.mode === 'chat' ? t('consult.joinChat') : t('consult.openMessages')}
         </button>
@@ -57,7 +80,7 @@ function SessionBar({ consultation, mine, canAdvise }) {
             href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(consultation.visitAddress)}`}
             target="_blank"
             rel="noreferrer noopener"
-            className="btn-secondary"
+            className="btn-outline"
           >
             <Navigation className="size-4" aria-hidden="true" />
             {t('consult.directions')}
@@ -89,10 +112,13 @@ function ExpertActions({ consultation }) {
   const [diseaseKey, setDiseaseKey] = useState(consultation.caseSummary?.diseaseKey ?? '');
 
   return (
-    <section className="card space-y-4 p-5">
-      <h2 className="font-semibold">{t('consult.expertActions')}</h2>
+    <section className="card space-y-5 p-5 sm:p-6">
+      <SectionTitle icon={ClipboardCheck} className="mb-0">
+        {t('consult.expertActions')}
+      </SectionTitle>
       {consultation.status === 'open' && (
         <button type="button" className="btn-primary" disabled={act.isPending} onClick={() => act.mutate({ action: 'accept' })}>
+          <CheckCircle2 className="size-4" aria-hidden="true" />
           {t('consult.accept')}
         </button>
       )}
@@ -100,7 +126,7 @@ function ExpertActions({ consultation }) {
         <input id="c-disease" className="input" value={diseaseKey} onChange={(e) => setDiseaseKey(e.target.value)} />
       </Field>
       <Field label={t('consult.advice')} htmlFor="c-advice">
-        <textarea id="c-advice" className="input" rows={3} value={advice} onChange={(e) => setAdvice(e.target.value)} maxLength={2000} />
+        <textarea id="c-advice" className="input py-2.5" rows={4} value={advice} onChange={(e) => setAdvice(e.target.value)} maxLength={2000} />
       </Field>
       <button
         type="button"
@@ -131,17 +157,21 @@ function RateExpert({ consultation }) {
 
   if (saved && !editing) {
     return (
-      <section className="card p-5">
-        <h2 className="font-bold">{t('rating.rateTitle')}</h2>
-        <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1">
-          <Stars value={saved.stars} size="size-5" />
-          <p className="font-semibold">{t('rating.youRated', { stars: saved.stars })}</p>
+      <section className="card p-5 sm:p-6">
+        <SectionTitle icon={Star} tone="accent">
+          {t('rating.rateTitle')}
+        </SectionTitle>
+        <div className="rounded-card bg-accent-50 p-4 ring-1 ring-accent-500/20">
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+            <Stars value={saved.stars} size="size-5" />
+            <p className="font-semibold text-ink">{t('rating.youRated', { stars: saved.stars })}</p>
+          </div>
+          {saved.comment && <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-ink-muted">{saved.comment}</p>}
         </div>
-        {saved.comment && <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-ink-muted">{saved.comment}</p>}
         <p className="mt-3 text-xs text-ink-subtle">{t('rating.rateBody')}</p>
         <button
           type="button"
-          className="btn-secondary mt-3"
+          className="btn-outline mt-4"
           onClick={() => {
             setStars(saved.stars);
             setComment(saved.comment ?? '');
@@ -165,16 +195,18 @@ function RateExpert({ consultation }) {
   };
 
   return (
-    <form className="card space-y-4 p-5" onSubmit={submit}>
+    <form className="card space-y-5 p-5 sm:p-6" onSubmit={submit}>
       <div>
-        <h2 className="font-bold">{t('rating.rateTitle')}</h2>
-        <p className="mt-1 text-sm text-ink-muted">{t('rating.rateBody')}</p>
+        <SectionTitle icon={Star} tone="accent" className="mb-1.5">
+          {t('rating.rateTitle')}
+        </SectionTitle>
+        <p className="text-sm text-ink-muted">{t('rating.rateBody')}</p>
       </div>
       <StarInput value={stars} onChange={setStars} legend={t('rating.starsLabel')} error={error?.fields?.stars} />
       <Field label={t('rating.comment')} htmlFor="r-comment" optional hint={t('rating.commentHint')} error={error?.fields?.comment}>
         <textarea
           id="r-comment"
-          className="input py-2"
+          className="input py-2.5"
           rows={3}
           maxLength={500}
           value={comment}
@@ -207,7 +239,13 @@ export default function ConsultationDetail() {
   const act = useConsultationAction(id);
   const [rescheduling, setRescheduling] = useState(false);
 
-  if (isLoading) return <Spinner />;
+  if (isLoading) {
+    return (
+      <div className="grid place-items-center py-24">
+        <Spinner className="size-7" />
+      </div>
+    );
+  }
   if (error) return <ErrorState error={error} onRetry={refetch} />;
   if (!consultation) return null;
 
@@ -233,43 +271,52 @@ export default function ConsultationDetail() {
       />
 
       {consultation.decision === 'scheduled' ? (
-        <section className="card p-5">
-          <div className="flex flex-wrap items-center gap-3">
-            <Icon className="size-5 text-brand-700" aria-hidden="true" />
-            <div className="min-w-0 flex-1">
-              <p className="font-semibold">{t(`consult.booked.${consultation.mode}`)}</p>
-              <p className="text-sm text-ink-muted">
-                {shortDate(consultation.scheduledFor, i18n.language)} ·{' '}
-                {new Date(consultation.scheduledFor).toLocaleTimeString(i18n.language === 'hi' ? 'hi-IN' : 'en-IN', {
-                  hour: 'numeric',
-                  minute: '2-digit',
-                })}
-                {consultation.expert?.name ? ` · ${consultation.expert.name}` : ` · ${t('consult.awaitingExpert')}`}
-              </p>
-              {consultation.mode === 'call' && consultation.contactPhone && (
-                <p className="mt-1 flex items-center gap-1.5 text-sm">
-                  <Phone className="size-3.5" aria-hidden="true" />
-                  {consultation.contactPhone}
+        <section className="card p-5 sm:p-6">
+          <div className="flex items-start gap-3.5 sm:gap-4">
+            <IconBadge icon={Icon} size="lg" />
+            <div className="flex min-w-0 flex-1 flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
+              <div className="min-w-0">
+                <p className="text-lg font-bold leading-snug text-brand-900">{t(`consult.booked.${consultation.mode}`)}</p>
+                <p className="mt-1 flex items-start gap-1.5 text-sm text-ink-muted">
+                  <CalendarClock className="mt-0.5 size-3.5 shrink-0 text-brand-600" aria-hidden="true" />
+                  <span className="min-w-0">
+                    {shortDate(consultation.scheduledFor, i18n.language)} ·{' '}
+                    {new Date(consultation.scheduledFor).toLocaleTimeString(i18n.language === 'hi' ? 'hi-IN' : 'en-IN', {
+                      hour: 'numeric',
+                      minute: '2-digit',
+                    })}
+                    {consultation.expert?.name ? ` · ${consultation.expert.name}` : ` · ${t('consult.awaitingExpert')}`}
+                  </span>
                 </p>
-              )}
-              {consultation.mode === 'visit' && consultation.visitAddress && (
-                <p className="mt-1 flex items-start gap-1.5 text-sm">
-                  <MapPin className="mt-0.5 size-3.5 shrink-0" aria-hidden="true" />
-                  {consultation.visitAddress}
-                </p>
-              )}
+                {consultation.mode === 'call' && consultation.contactPhone && (
+                  <p className="mt-1 flex items-center gap-1.5 text-sm font-medium">
+                    <Phone className="size-3.5 text-brand-600" aria-hidden="true" />
+                    {consultation.contactPhone}
+                  </p>
+                )}
+                {consultation.mode === 'visit' && consultation.visitAddress && (
+                  <p className="mt-1 flex items-start gap-1.5 text-sm font-medium">
+                    <MapPin className="mt-0.5 size-3.5 shrink-0 text-brand-600" aria-hidden="true" />
+                    {consultation.visitAddress}
+                  </p>
+                )}
+              </div>
+              <span className={clsx('chip w-fit shrink-0 ring-1', STATUS_TONE[consultation.status])}>
+                <span className="size-1.5 rounded-full bg-current opacity-70" aria-hidden="true" />
+                {t(`consult.status.${consultation.status}`)}
+              </span>
             </div>
-            <span className="chip border border-line px-2.5 py-1 text-xs font-semibold">{t(`consult.status.${consultation.status}`)}</span>
           </div>
 
           {mine && !closed && (
-            <div className="mt-4 flex flex-wrap gap-2">
-              <button type="button" className="btn-secondary" onClick={() => setRescheduling((v) => !v)}>
+            <div className="mt-5 flex flex-wrap gap-2.5 border-t border-line pt-5">
+              <button type="button" className="btn-outline" onClick={() => setRescheduling((v) => !v)}>
+                <CalendarClock className="size-4" aria-hidden="true" />
                 {t('consult.reschedule')}
               </button>
               <button
                 type="button"
-                className="btn-ghost text-danger"
+                className="btn-danger"
                 disabled={act.isPending}
                 onClick={() => {
                   if (window.confirm(t('consult.cancelConfirm'))) {
@@ -300,8 +347,8 @@ export default function ConsultationDetail() {
       <SessionBar consultation={consultation} mine={mine} canAdvise={canAdvise} />
 
       {consultation.expert && (
-        <section className="card p-5">
-          <h2 className="mb-3 font-bold">{t('consult.expertCredentials')}</h2>
+        <section className="card p-5 sm:p-6">
+          <SectionTitle icon={ShieldCheck}>{t('consult.expertCredentials')}</SectionTitle>
           <ExpertCard
             expert={{
               ...consultation.expert.expertProfile,
@@ -319,10 +366,16 @@ export default function ConsultationDetail() {
       <CaseSummary consultation={consultation} />
 
       {consultation.outcome?.advice && (
-        <Alert tone="ok">
-          <p className="font-semibold">{t('consult.expertAnswer')}</p>
-          <p className="whitespace-pre-wrap font-normal">{consultation.outcome.advice}</p>
-        </Alert>
+        <section className="relative overflow-hidden rounded-card bg-ok-bg/70 p-5 ring-1 ring-ok/20 sm:p-6">
+          <span className="absolute inset-y-0 left-0 w-1 bg-ok" aria-hidden="true" />
+          <div className="flex items-start gap-3.5">
+            <IconBadge icon={CheckCircle2} tone="white" size="lg" />
+            <div className="min-w-0 flex-1">
+              <p className="text-lg font-bold text-brand-900">{t('consult.expertAnswer')}</p>
+              <p className="mt-1.5 whitespace-pre-wrap text-[15px] leading-relaxed text-ink">{consultation.outcome.advice}</p>
+            </div>
+          </div>
+        </section>
       )}
 
       {/* Same rule as the server: the farmer, once the advice was given, even if cancelled after. */}
@@ -341,7 +394,7 @@ export default function ConsultationDetail() {
           <p className="font-normal">{t('consult.adminReadOnly')}</p>
           <button
             type="button"
-            className="btn-ghost mt-2 -ml-3 text-danger"
+            className="btn-danger mt-3"
             disabled={act.isPending}
             onClick={() => {
               if (window.confirm(t('consult.cancelConfirm'))) act.mutate({ action: 'cancel' });

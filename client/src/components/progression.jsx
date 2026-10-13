@@ -1,5 +1,5 @@
 import clsx from 'clsx';
-import { CalendarCheck, Leaf, Minus, Plus, ShieldAlert, Trash2, TrendingDown, TrendingUp, UserCheck } from 'lucide-react';
+import { CalendarCheck, FlaskConical, Leaf, Minus, Plus, ShieldAlert, Trash2, TrendingDown, TrendingUp, UserCheck } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
@@ -7,20 +7,35 @@ import { describeError } from '../api/client.js';
 import { useCreateTreatment, useDeleteTreatment, useDiseases } from '../api/hooks.js';
 import { localName } from '../i18n/index.js';
 import { shortDate } from '../lib/format.js';
-import { Alert, Field, Spinner } from './ui.jsx';
+import { Alert, Field, IconBadge, Spinner } from './ui.jsx';
 
 const GRADE_LINES = [5, 10, 25, 50];
+
+// Chart colours are SVG attributes, so the palette's values are spelled out once here: grid and
+// axis in the mint neutrals, the trend in brand green, treatments in the info blue, and each
+// reading by health (green, warm orange, danger red).
+const C = {
+  grid: '#e2eadf',
+  axis: '#cad8c5',
+  label: '#526357',
+  line: '#2c723a',
+  area: '#91c586',
+  treatment: '#1d55a8',
+  healthy: '#1d6b38',
+  diseased: '#d0701c',
+  severe: '#c42b2b',
+};
 
 export function TrendBadge({ trend }) {
   const { t } = useTranslation();
   const config = {
-    worsening: { cls: 'bg-danger-bg text-danger', Icon: TrendingUp },
-    improving: { cls: 'bg-ok-bg text-ok', Icon: TrendingDown },
-    stable: { cls: 'bg-info-bg text-info', Icon: Minus },
-    insufficient: { cls: 'bg-black/5 text-ink-muted', Icon: Minus },
+    worsening: { cls: 'bg-danger-bg text-danger ring-danger/20', Icon: TrendingUp },
+    improving: { cls: 'bg-ok-bg text-ok ring-ok/15', Icon: TrendingDown },
+    stable: { cls: 'bg-info-bg text-info ring-info/15', Icon: Minus },
+    insufficient: { cls: 'bg-canvas-deep text-ink-muted ring-line-strong', Icon: Minus },
   }[trend ?? 'insufficient'];
   return (
-    <span className={clsx('chip', config.cls)}>
+    <span className={clsx('chip shrink-0 ring-1', config.cls)}>
       <config.Icon className="size-3.5" aria-hidden="true" />
       {t(`progression.trend.${trend ?? 'insufficient'}`)}
     </span>
@@ -47,47 +62,50 @@ export function SeverityChart({ points, treatments = [] }) {
   const x = (d) => pad.l + ((+new Date(d) - t0) / (t1 - t0)) * (W - pad.l - pad.r);
   const y = (v) => pad.t + (1 - v / yMax) * (H - pad.t - pad.b);
   const path = readings.map((p, i) => `${i ? 'L' : 'M'}${x(p.date).toFixed(1)},${y(p.percent).toFixed(1)}`).join(' ');
+  // A faint wash under the line, closed along the 0% axis, so the trend reads as a shape.
+  const area = `${path} L${x(readings.at(-1).date).toFixed(1)},${y(0)} L${x(readings[0].date).toFixed(1)},${y(0)} Z`;
 
   return (
-    <figure>
+    <figure className="rounded-control bg-surface-sunken/70 p-2 ring-1 ring-line sm:p-4">
       <svg viewBox={`0 0 ${W} ${H}`} className="w-full" role="img" aria-label={t('progression.chartLabel')}>
         {GRADE_LINES.filter((g) => g < yMax).map((g) => (
           <g key={g}>
-            <line x1={pad.l} x2={W - pad.r} y1={y(g)} y2={y(g)} stroke="#e3e4dc" strokeDasharray="3 4" />
-            <text x={pad.l - 6} y={y(g) + 4} textAnchor="end" fontSize="11" fill="#5b6157">
+            <line x1={pad.l} x2={W - pad.r} y1={y(g)} y2={y(g)} stroke={C.grid} strokeDasharray="3 4" />
+            <text x={pad.l - 6} y={y(g) + 4} textAnchor="end" fontSize="11" fill={C.label}>
               {g}%
             </text>
           </g>
         ))}
-        <line x1={pad.l} x2={W - pad.r} y1={y(0)} y2={y(0)} stroke="#c9ccc2" />
-        <text x={pad.l - 6} y={y(0) + 4} textAnchor="end" fontSize="11" fill="#5b6157">
+        <line x1={pad.l} x2={W - pad.r} y1={y(0)} y2={y(0)} stroke={C.axis} />
+        <text x={pad.l - 6} y={y(0) + 4} textAnchor="end" fontSize="11" fill={C.label}>
           0%
         </text>
 
         {treatments.map((tr) => (
           <g key={tr.id}>
-            <line x1={x(tr.appliedAt)} x2={x(tr.appliedAt)} y1={pad.t} y2={H - pad.b} stroke="#1d4ed8" strokeDasharray="4 3" />
-            <text x={x(tr.appliedAt) + 4} y={pad.t + 10} fontSize="11" fill="#1d4ed8">
+            <line x1={x(tr.appliedAt)} x2={x(tr.appliedAt)} y1={pad.t} y2={H - pad.b} stroke={C.treatment} strokeDasharray="4 3" />
+            <text x={x(tr.appliedAt) + 4} y={pad.t + 10} fontSize="11" fontWeight="600" fill={C.treatment}>
               {tr.product.length > 16 ? `${tr.product.slice(0, 15)}…` : tr.product}
             </text>
           </g>
         ))}
 
-        <path d={path} fill="none" stroke="#16803f" strokeWidth="2.5" strokeLinejoin="round" />
+        <path d={area} fill={C.area} fillOpacity="0.18" />
+        <path d={path} fill="none" stroke={C.line} strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round" />
         {readings.map((p) => (
-          <circle key={p.scanId} cx={x(p.date)} cy={y(p.percent)} r="5" fill={p.isHealthy ? '#15803d' : p.percent > 25 ? '#b91c1c' : '#c2410c'} stroke="#fff" strokeWidth="1.5">
+          <circle key={p.scanId} cx={x(p.date)} cy={y(p.percent)} r="5" fill={p.isHealthy ? C.healthy : p.percent > 25 ? C.severe : C.diseased} stroke="#fff" strokeWidth="2">
             <title>{`${shortDate(p.date, i18n.language)}: ${p.percent}%`}</title>
           </circle>
         ))}
 
-        <text x={pad.l} y={H - 8} fontSize="11" fill="#5b6157">
+        <text x={pad.l} y={H - 8} fontSize="11" fill={C.label}>
           {shortDate(t0, i18n.language)}
         </text>
-        <text x={W - pad.r} y={H - 8} fontSize="11" fill="#5b6157" textAnchor="end">
+        <text x={W - pad.r} y={H - 8} fontSize="11" fill={C.label} textAnchor="end">
           {shortDate(t1, i18n.language)}
         </text>
       </svg>
-      <figcaption className="mt-1 text-xs text-ink-muted">{t('progression.caption')}</figcaption>
+      <figcaption className="mt-2 text-xs text-ink-muted">{t('progression.caption')}</figcaption>
     </figure>
   );
 }
@@ -107,14 +125,14 @@ export function ProgressionSummary({ summary }) {
     <div className="space-y-3">
       <dl className="grid grid-cols-2 gap-2 sm:grid-cols-4">
         {stats.map(([k, v]) => (
-          <div key={k} className="rounded-xl bg-canvas px-3 py-2">
-            <dt className="text-xs text-ink-muted">{k}</dt>
-            <dd className="font-semibold tabular-nums">{v}</dd>
+          <div key={k} className="rounded-control bg-surface px-3 py-2.5 ring-1 ring-line">
+            <dt className="text-xs font-medium text-ink-muted">{k}</dt>
+            <dd className="mt-0.5 font-bold text-brand-900 tabular-nums">{v}</dd>
           </div>
         ))}
       </dl>
       {summary.daysToSevere != null && (
-        <Alert tone="danger" className="flex gap-2">
+        <Alert tone="danger" icon={false} className="flex gap-2.5">
           <ShieldAlert className="size-4 shrink-0 translate-y-0.5" aria-hidden="true" />
           <span>{t('progression.daysToSevere', { count: summary.daysToSevere })}</span>
         </Alert>
@@ -124,12 +142,12 @@ export function ProgressionSummary({ summary }) {
 }
 
 const EFFICACY_TONE = {
-  effective: 'bg-ok-bg text-ok',
-  not_effective: 'bg-danger-bg text-danger',
-  no_change: 'bg-warn-bg text-warn',
-  awaiting_followup: 'bg-info-bg text-info',
-  no_baseline: 'bg-black/5 text-ink-muted',
-  no_followup: 'bg-black/5 text-ink-muted',
+  effective: 'bg-ok-bg text-ok ring-ok/15',
+  not_effective: 'bg-danger-bg text-danger ring-danger/20',
+  no_change: 'bg-warn-bg text-warn ring-warn/20',
+  awaiting_followup: 'bg-info-bg text-info ring-info/15',
+  no_baseline: 'bg-canvas-deep text-ink-muted ring-line-strong',
+  no_followup: 'bg-canvas-deep text-ink-muted ring-line-strong',
 };
 
 export function TreatmentLog({ plot, treatments, diseaseOptions }) {
@@ -142,36 +160,48 @@ export function TreatmentLog({ plot, treatments, diseaseOptions }) {
   return (
     <div className="space-y-4">
       {safe && (
-        <div className={clsx('flex gap-3 rounded-xl p-3 text-sm', treatments.safeToHarvestNow ? 'bg-ok-bg text-ok' : 'bg-warn-bg text-warn')}>
-          <CalendarCheck className="size-5 shrink-0" aria-hidden="true" />
+        <div
+          className={clsx(
+            'flex items-center gap-3 rounded-control p-3 text-sm ring-1',
+            treatments.safeToHarvestNow ? 'bg-ok-bg text-ok ring-ok/15' : 'bg-warn-bg text-warn ring-warn/20',
+          )}
+        >
+          <span className="grid size-9 shrink-0 place-items-center rounded-full bg-surface/80">
+            <CalendarCheck className="size-5" aria-hidden="true" />
+          </span>
           <p className="font-medium">
             {treatments.safeToHarvestNow ? t('treatments.safeNow') : t('treatments.safeFrom', { date: shortDate(safe, lang) })}
           </p>
         </div>
       )}
 
-      {treatments.items.length === 0 && !open && <p className="text-sm text-ink-muted">{t('treatments.empty')}</p>}
+      {treatments.items.length === 0 && !open && (
+        <div className="flex items-start gap-3 rounded-control bg-surface-sunken p-4 ring-1 ring-line">
+          <IconBadge icon={FlaskConical} size="sm" />
+          <p className="text-sm leading-relaxed text-ink-muted">{t('treatments.empty')}</p>
+        </div>
+      )}
 
-      <ul className="space-y-2">
+      <ul className="space-y-3">
         {treatments.items.map((tr) => (
-          <li key={tr.id} className="rounded-xl border border-line bg-surface p-3">
+          <li key={tr.id} className="rounded-control bg-surface p-4 ring-1 ring-line">
             <div className="flex flex-wrap items-start justify-between gap-2">
               <div className="min-w-0">
-                <p className="font-semibold">
+                <p className="font-bold text-brand-900">
                   {tr.product}
                   {tr.activeIngredient && <span className="font-normal text-ink-muted"> · {tr.activeIngredient}</span>}
                 </p>
-                <p className="text-xs text-ink-muted">
+                <p className="mt-0.5 text-xs text-ink-muted">
                   {t(`treatments.type.${tr.type}`)} · {shortDate(tr.appliedAt, lang)}
                   {tr.dose && ` · ${tr.dose}`}
                   {tr.phiDays != null && ` · PHI ${tr.phiDays} d`}
                 </p>
               </div>
               <div className="flex items-center gap-2">
-                <span className={clsx('chip', EFFICACY_TONE[tr.efficacy.status])}>{t(`treatments.efficacy.${tr.efficacy.status}`)}</span>
+                <span className={clsx('chip ring-1', EFFICACY_TONE[tr.efficacy.status])}>{t(`treatments.efficacy.${tr.efficacy.status}`)}</span>
                 <button
                   type="button"
-                  className="btn-ghost min-h-8 px-2"
+                  className="btn-ghost min-h-9 rounded-full px-2.5 hover:text-danger"
                   aria-label={t('common.delete')}
                   disabled={remove.isPending}
                   onClick={() => window.confirm(t('common.confirmDelete')) && remove.mutate(tr.id)}
@@ -180,7 +210,7 @@ export function TreatmentLog({ plot, treatments, diseaseOptions }) {
                 </button>
               </div>
             </div>
-            <p className="mt-1 text-xs text-ink-muted">
+            <p className="mt-2 text-xs text-ink-muted">
               {tr.efficacy.change != null
                 ? t('treatments.changeLine', { before: tr.efficacy.before.percent, after: tr.efficacy.after.percent })
                 : tr.efficacy.status === 'awaiting_followup'
@@ -191,7 +221,7 @@ export function TreatmentLog({ plot, treatments, diseaseOptions }) {
             </p>
             {tr.consultationId && (
               // The spray did not work, so the app stops guessing and offers a person.
-              <Link to={`/consultations/${tr.consultationId}`} className="btn-secondary mt-2">
+              <Link to={`/consultations/${tr.consultationId}`} className="btn-outline mt-3">
                 <UserCheck className="size-4" aria-hidden="true" />
                 {t('treatments.askExpert')}
               </Link>
@@ -203,7 +233,7 @@ export function TreatmentLog({ plot, treatments, diseaseOptions }) {
       {open ? (
         <TreatmentForm plot={plot} diseaseOptions={diseaseOptions} onDone={() => setOpen(false)} />
       ) : (
-        <button type="button" className="btn-secondary" onClick={() => setOpen(true)}>
+        <button type="button" className="btn-outline" onClick={() => setOpen(true)}>
           <Plus className="size-4" aria-hidden="true" />
           {t('treatments.add')}
         </button>
@@ -232,7 +262,7 @@ function TreatmentForm({ plot, diseaseOptions, onDone }) {
   }
 
   return (
-    <form onSubmit={submit} className="space-y-3 rounded-xl border border-line bg-canvas p-4">
+    <form onSubmit={submit} className="space-y-4 rounded-card bg-surface-sunken p-4 ring-1 ring-line sm:p-5">
       {create.error && <Alert tone="danger">{describeError(create.error).message}</Alert>}
       <div className="grid gap-3 sm:grid-cols-2">
         <Field label={t('treatments.typeLabel')} htmlFor="tr-type">
@@ -270,7 +300,7 @@ function TreatmentForm({ plot, diseaseOptions, onDone }) {
           <input id="tr-phi" type="number" min="0" max="365" inputMode="numeric" className="input" value={form.phiDays} onChange={set('phiDays')} />
         </Field>
       </div>
-      <div className="flex justify-end gap-2">
+      <div className="flex flex-wrap justify-end gap-2 border-t border-line pt-4">
         <button type="button" className="btn-ghost" onClick={onDone}>
           {t('common.cancel')}
         </button>
@@ -298,7 +328,7 @@ export function SeverityMeter({ severity, comparison }) {
           {severity.percent}% · {t('progression.grade', { grade: severity.grade })}
         </span>
       </div>
-      <div className="h-2 overflow-hidden rounded-full bg-black/5" role="meter" aria-valuemin={0} aria-valuemax={100} aria-valuenow={severity.percent} aria-label={t('progression.severity')}>
+      <div className="h-2 overflow-hidden rounded-full bg-canvas-deep ring-1 ring-inset ring-ink/5" role="meter" aria-valuemin={0} aria-valuemax={100} aria-valuenow={severity.percent} aria-label={t('progression.severity')}>
         <div className={clsx('h-full rounded-full', tone)} style={{ width: `${Math.max(2, severity.percent)}%` }} />
       </div>
       {comparison && (

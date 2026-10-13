@@ -1,5 +1,17 @@
 import clsx from 'clsx';
-import { ArrowLeft, Send, ShieldCheck } from 'lucide-react';
+import {
+  ArrowLeft,
+  BriefcaseBusiness,
+  Check,
+  FileBadge,
+  GraduationCap,
+  ImageUp,
+  MessagesSquare,
+  Send,
+  ShieldCheck,
+  UserPen,
+  UserRound,
+} from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router';
@@ -8,7 +20,7 @@ import { useCrops, useExpertOptions, useMyApplication, useResubmitApplication } 
 import { useAuth } from '../auth/AuthProvider.jsx';
 import { MODE_ICONS } from '../components/consultation.jsx';
 import { CertificateImage, useOrgTypeLabel } from '../components/experts.jsx';
-import { Alert, EmptyState, ErrorState, Field, FullPageSpinner, PageHeader, Spinner } from '../components/ui.jsx';
+import { Alert, EmptyState, ErrorState, Field, FullPageSpinner, IconBadge, PageHeader, SectionTitle, Spinner } from '../components/ui.jsx';
 import { LANGUAGES, localName } from '../i18n/index.js';
 
 const MODES = ['chat', 'call', 'visit'];
@@ -28,29 +40,55 @@ const CREDENTIAL_FIELDS = [
   'bio',
 ];
 
-function Section({ title, children }) {
+/** One step of the form: a white card headed by its icon and its place in the sequence. */
+function Section({ title, icon, step, total, children }) {
   return (
-    <section className="card space-y-4 p-5 sm:p-6">
-      <h2 className="text-lg font-bold">{title}</h2>
-      {children}
+    <section className="card p-5 sm:p-7">
+      <SectionTitle
+        icon={icon}
+        className="mb-5 border-b border-line pb-4"
+        action={
+          <span
+            className="shrink-0 rounded-full bg-brand-50 px-2.5 py-1 text-xs font-bold text-brand-700 ring-1 ring-brand-200/70 tabular-nums"
+            aria-hidden="true"
+          >
+            {step}/{total}
+          </span>
+        }
+      >
+        {title}
+      </SectionTitle>
+      <div className="space-y-5">{children}</div>
     </section>
   );
 }
 
 /** A group of tick boxes laid out as tiles, big enough to hit with a thumb. */
-function CheckGroup({ legend, hint, error, items, value, onChange, columns = 'sm:grid-cols-3' }) {
+function CheckGroup({ legend, hint, error, items, value, onChange }) {
   const toggle = (key) => onChange(value.includes(key) ? value.filter((k) => k !== key) : [...value, key]);
   return (
     <fieldset>
-      <legend className="label">{legend}</legend>
-      <div className={clsx('grid grid-cols-2 gap-2', columns)}>
+      <legend className="label mb-2.5">{legend}</legend>
+      <div className="flex flex-wrap gap-2">
         {items.map(({ key, label, Icon }) => (
           <label
             key={key}
-            className="flex min-h-11 cursor-pointer items-center gap-2.5 rounded-control border border-line-strong bg-surface px-3 py-2 text-sm transition-colors hover:border-brand-300 has-[:checked]:border-brand-600 has-[:checked]:bg-brand-50 has-[:checked]:font-semibold"
+            className={clsx(
+              'group flex min-h-11 cursor-pointer items-center gap-2 rounded-full border border-line-strong bg-surface py-2 pl-2.5 pr-4 text-sm font-medium transition-colors',
+              'hover:border-brand-400 hover:bg-brand-50/60',
+              'has-[:checked]:border-brand-600 has-[:checked]:bg-brand-50 has-[:checked]:font-semibold has-[:checked]:text-brand-900',
+              // The tick box itself is visually hidden, so the pill carries its keyboard focus ring.
+              'has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-brand-600',
+            )}
           >
-            <input type="checkbox" className="size-4 shrink-0 accent-brand-700" checked={value.includes(key)} onChange={() => toggle(key)} />
-            {Icon && <Icon className="size-4 shrink-0 text-ink-muted" aria-hidden="true" />}
+            <input type="checkbox" className="peer sr-only" checked={value.includes(key)} onChange={() => toggle(key)} />
+            <span
+              className="grid size-5 shrink-0 place-items-center rounded-full border-[1.5px] border-line-strong bg-surface text-white transition-colors peer-checked:border-brand-700 peer-checked:bg-brand-700"
+              aria-hidden="true"
+            >
+              <Check className="size-3 opacity-0 transition-opacity group-has-[:checked]:opacity-100" strokeWidth={3} />
+            </span>
+            {Icon && <Icon className="size-4 shrink-0 text-ink-muted group-has-[:checked]:text-brand-700" aria-hidden="true" />}
             <span className="min-w-0 break-words">{label}</span>
           </label>
         ))}
@@ -69,20 +107,25 @@ function CheckGroup({ legend, hint, error, items, value, onChange, columns = 'sm
 function WhyWeCheck() {
   const { t } = useTranslation();
   return (
-    <section className="card border-brand-200 bg-brand-50/60 p-5 sm:p-6">
-      <div className="flex gap-3">
-        <span className="grid size-10 shrink-0 place-items-center rounded-control bg-brand-100 text-brand-700 ring-1 ring-brand-200">
-          <ShieldCheck className="size-5" aria-hidden="true" />
-        </span>
+    <section className="relative overflow-hidden rounded-panel bg-gradient-to-br from-brand-100/80 via-brand-50 to-surface p-5 ring-1 ring-brand-200/60 sm:p-7">
+      <div className="pointer-events-none absolute -right-16 -top-20 size-56 rounded-full bg-brand-200/40 blur-3xl" aria-hidden="true" />
+      <div className="relative flex gap-4">
+        <IconBadge icon={ShieldCheck} tone="white" size="lg" />
         <div className="min-w-0">
-          <h2 className="font-bold">{t('expert.apply.whyTitle')}</h2>
+          <h2 className="text-lg font-bold text-brand-900">{t('expert.apply.whyTitle')}</h2>
           <p className="mt-1 text-sm leading-relaxed text-ink-muted">{t('expert.apply.whyBody')}</p>
         </div>
       </div>
-      <ol className="mt-4 space-y-2.5">
+      <ol className="relative mt-6 grid gap-3 sm:grid-cols-3">
         {['step1', 'step2', 'step3'].map((step, i) => (
-          <li key={step} className="flex gap-3 text-sm leading-relaxed">
-            <span className="grid size-6 shrink-0 place-items-center rounded-full bg-brand-700 text-xs font-bold text-white" aria-hidden="true">
+          <li
+            key={step}
+            className="flex gap-3 rounded-card bg-surface/85 p-3.5 text-sm leading-relaxed ring-1 ring-brand-200/50 sm:flex-col sm:gap-2.5"
+          >
+            <span
+              className="grid size-7 shrink-0 place-items-center rounded-full bg-brand-700 text-xs font-bold text-white"
+              aria-hidden="true"
+            >
               {i + 1}
             </span>
             <span className="min-w-0">{t(`expert.apply.${step}`)}</span>
@@ -186,9 +229,12 @@ function ApplicationForm({ options, application }) {
 
   const err = state.fields;
   const year = options.graduationYear ?? {};
+  // Someone correcting an application has no account step, so their numbering starts at the degree.
+  const first = resubmit ? 1 : 2;
+  const total = first + 4;
 
   return (
-    <div className="mx-auto max-w-2xl">
+    <div className="mx-auto max-w-3xl">
       <PageHeader
         eyebrow={t('expert.apply.eyebrow')}
         title={resubmit ? t('expert.apply.resubmitTitle') : t('expert.apply.title')}
@@ -203,7 +249,7 @@ function ApplicationForm({ options, application }) {
         }
       />
 
-      <div className="space-y-5">
+      <div className="space-y-6">
         {resubmit && verification?.status === 'rejected' && verification.note && (
           <Alert tone="warn">
             <p className="font-semibold">{t('expert.home.adminNote')}</p>
@@ -213,9 +259,9 @@ function ApplicationForm({ options, application }) {
 
         <WhyWeCheck />
 
-        <form className="space-y-5" onSubmit={onSubmit}>
+        <form className="space-y-6" onSubmit={onSubmit}>
           {!resubmit && (
-            <Section title={t('expert.apply.sectionAccount')}>
+            <Section title={t('expert.apply.sectionAccount')} icon={UserRound} step={1} total={total}>
               <Field label={t('auth.name')} htmlFor="name" hint={t('expert.apply.nameHint')} error={err.name}>
                 <input id="name" name="name" autoComplete="name" required minLength={2} maxLength={80} className="input" />
               </Field>
@@ -254,7 +300,7 @@ function ApplicationForm({ options, application }) {
             </Section>
           )}
 
-          <Section title={t('expert.apply.sectionQualification')}>
+          <Section title={t('expert.apply.sectionQualification')} icon={GraduationCap} step={first} total={total}>
             <Field label={t('expert.apply.degree')} htmlFor="degree" hint={t('expert.apply.degreeHint')} error={err.degree}>
               <select id="degree" name="degree" required defaultValue={profile.degree ?? ''} className="input">
                 <option value="" disabled>
@@ -311,9 +357,15 @@ function ApplicationForm({ options, application }) {
             </Field>
           </Section>
 
-          <Section title={t('expert.apply.sectionWork')}>
+          <Section title={t('expert.apply.sectionWork')} icon={BriefcaseBusiness} step={first + 1} total={total}>
             <Field label={t('expert.apply.organisationType')} htmlFor="organisationType" error={err.organisationType}>
-              <select id="organisationType" name="organisationType" required defaultValue={profile.organisationType ?? ''} className="input">
+              <select
+                id="organisationType"
+                name="organisationType"
+                required
+                defaultValue={profile.organisationType ?? ''}
+                className="input"
+              >
                 <option value="" disabled>
                   {t('expert.apply.choose')}
                 </option>
@@ -366,7 +418,7 @@ function ApplicationForm({ options, application }) {
             </div>
           </Section>
 
-          <Section title={t('expert.apply.sectionAdvice')}>
+          <Section title={t('expert.apply.sectionAdvice')} icon={MessagesSquare} step={first + 2} total={total}>
             <CheckGroup
               legend={t('expert.apply.crops')}
               hint={t('expert.apply.cropsHint')}
@@ -393,7 +445,7 @@ function ApplicationForm({ options, application }) {
             />
           </Section>
 
-          <Section title={t('expert.apply.sectionAbout')}>
+          <Section title={t('expert.apply.sectionAbout')} icon={UserPen} step={first + 3} total={total}>
             <Field label={t('expert.apply.bio')} htmlFor="bio" optional hint={t('expert.apply.bioHint')} error={err.bio}>
               <textarea
                 id="bio"
@@ -407,25 +459,51 @@ function ApplicationForm({ options, application }) {
             </Field>
           </Section>
 
-          <Section title={t('expert.apply.sectionCertificate')}>
+          <Section title={t('expert.apply.sectionCertificate')} icon={FileBadge} step={first + 4} total={total}>
             <Field
               label={t('expert.apply.certificate')}
               htmlFor="document"
               optional={resubmit}
-              hint={resubmit ? `${t('expert.apply.certificateHint')} ${t('expert.apply.certificateKeep')}` : t('expert.apply.certificateHint')}
+              hint={
+                resubmit ? `${t('expert.apply.certificateHint')} ${t('expert.apply.certificateKeep')}` : t('expert.apply.certificateHint')
+              }
               error={err.document}
             >
-              <input
-                id="document"
-                type="file"
-                accept={CERTIFICATE_TYPES.join(',')}
-                onChange={(e) => pickDocument(e.target.files?.[0])}
-                className="block w-full min-w-0 text-sm text-ink-muted file:mr-3 file:min-h-11 file:cursor-pointer file:rounded-control file:border file:border-line-strong file:bg-surface file:px-4 file:text-[15px] file:font-semibold file:text-ink hover:file:border-brand-300"
-              />
+              {/* The real file input is stretched invisibly over the dashed area, so a tap anywhere or a
+                  dropped photo reaches it, and it keeps its label, focus and keyboard behaviour. */}
+              <div
+                className={clsx(
+                  'relative flex flex-col items-center justify-center rounded-[0.875rem] border-2 border-dashed px-5 py-8 text-center transition-colors',
+                  'has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-brand-600',
+                  err.document
+                    ? 'border-danger/40 bg-danger-bg/30'
+                    : 'border-brand-200 bg-surface-sunken hover:border-brand-400 hover:bg-brand-50/60',
+                )}
+              >
+                <input
+                  id="document"
+                  type="file"
+                  accept={CERTIFICATE_TYPES.join(',')}
+                  onChange={(e) => pickDocument(e.target.files?.[0])}
+                  className="absolute inset-0 size-full cursor-pointer opacity-0"
+                />
+                <span className="icon-badge mb-4 size-16 ring-8 ring-brand-50" aria-hidden="true">
+                  <ImageUp className="size-7" />
+                </span>
+                <span className="btn-primary pointer-events-none min-h-10 px-5 py-2 text-center text-sm leading-snug" aria-hidden="true">
+                  {t('scan.chooseFile')}
+                </span>
+                {/* The browser's own "file chosen" text is hidden with the input, so the name is shown here. */}
+                {doc?.file?.name && (
+                  <span className="mt-3 max-w-full truncate text-sm font-semibold text-brand-800" aria-hidden="true">
+                    {doc.file.name}
+                  </span>
+                )}
+              </div>
             </Field>
 
             {doc?.preview && doc.check !== 'notImage' && (
-              <div className="overflow-hidden rounded-card border border-line bg-canvas-deep">
+              <div className="overflow-hidden rounded-card bg-canvas-deep ring-1 ring-line">
                 <img src={doc.preview} alt={t('expert.apply.certificatePreview')} className="max-h-80 w-full object-contain" />
               </div>
             )}
@@ -437,9 +515,9 @@ function ApplicationForm({ options, application }) {
             )}
           </Section>
 
-          <section className="card space-y-4 p-5 sm:p-6">
-            <label className="flex cursor-pointer gap-3 text-sm leading-relaxed">
-              <input type="checkbox" name="declaration" required className="mt-1 size-4 shrink-0 accent-brand-700" />
+          <section className="card space-y-5 p-5 sm:p-7">
+            <label className="flex cursor-pointer gap-3 rounded-card bg-surface-sunken p-4 text-sm leading-relaxed ring-1 ring-line transition-colors has-[:checked]:bg-brand-50 has-[:checked]:ring-brand-300">
+              <input type="checkbox" name="declaration" required className="mt-0.5 size-4 shrink-0 accent-brand-700" />
               <span className="font-medium">{t('expert.apply.declaration')}</span>
             </label>
             {err.declaration && (
@@ -450,7 +528,7 @@ function ApplicationForm({ options, application }) {
 
             {state.message && <Alert tone="danger">{state.message}</Alert>}
 
-            <button type="submit" className="btn-primary w-full sm:w-auto" disabled={state.pending || doc?.check === 'checking'}>
+            <button type="submit" className="btn-primary btn-pill w-full sm:w-auto" disabled={state.pending || doc?.check === 'checking'}>
               {state.pending ? <Spinner className="size-4 text-white" /> : <Send className="size-4" aria-hidden="true" />}
               {resubmit ? t('expert.apply.resubmit') : t('expert.apply.submit')}
             </button>

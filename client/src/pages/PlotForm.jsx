@@ -73,7 +73,7 @@ export default function PlotForm() {
           </Link>
         }
       />
-      <form onSubmit={onSubmit} className="card space-y-5 p-5 sm:p-6">
+      <form onSubmit={onSubmit} className="card space-y-6 p-5 sm:p-7">
         {save.error && <Alert tone="danger">{describeError(save.error).message}</Alert>}
         <div className="grid gap-5 sm:grid-cols-2">
           <Field label={t('plots.name')} htmlFor="name" error={fieldErrors.name}>
@@ -96,32 +96,35 @@ export default function PlotForm() {
           </Field>
         </div>
 
-        <Field label={t('plots.location')} hint={t('plots.locationHelp')} error={(locationError && !point && t('plots.pickLocation')) || fieldErrors.lat}>
-          <div className="space-y-2">
-            <MapPicker
-              value={point}
-              onChange={(p) => {
-                setPoint(p);
-                setLocationError(false);
-              }}
-            />
-            <button type="button" className="btn-secondary" onClick={geo.request} disabled={geo.status === 'loading'}>
-              {geo.status === 'loading' ? <Spinner className="size-4" /> : <LocateFixed className="size-4" aria-hidden="true" />}
-              {t('scan.useLocation')}
-            </button>
-            {geo.status === 'error' && <p className="text-xs text-danger">{t('scan.locationFailed')}</p>}
-          </div>
-        </Field>
+        {/* The map gets its own soft panel: it is the one field that is a picture, not a box. */}
+        <div className="rounded-card bg-surface-sunken p-4 ring-1 ring-line sm:p-5">
+          <Field label={t('plots.location')} hint={t('plots.locationHelp')} error={(locationError && !point && t('plots.pickLocation')) || fieldErrors.lat}>
+            <div className="space-y-3">
+              <MapPicker
+                value={point}
+                onChange={(p) => {
+                  setPoint(p);
+                  setLocationError(false);
+                }}
+              />
+              <button type="button" className="btn-outline" onClick={geo.request} disabled={geo.status === 'loading'}>
+                {geo.status === 'loading' ? <Spinner className="size-4" /> : <LocateFixed className="size-4" aria-hidden="true" />}
+                {t('scan.useLocation')}
+              </button>
+              {geo.status === 'error' && <p className="text-xs font-medium text-danger">{t('scan.locationFailed')}</p>}
+            </div>
+          </Field>
+        </div>
 
         <Field label={t('plots.notes')} htmlFor="notes" optional>
-          <textarea id="notes" rows={3} maxLength={2000} className="input py-2" value={form.notes} onChange={set('notes')} />
+          <textarea id="notes" rows={3} maxLength={2000} className="input py-2.5" value={form.notes} onChange={set('notes')} />
         </Field>
 
-        <div className="flex justify-end gap-2">
+        <div className="flex flex-wrap justify-end gap-2 border-t border-line pt-5">
           <Link to={id ? `/plots/${id}` : '/plots'} className="btn-ghost">
             {t('common.cancel')}
           </Link>
-          <button type="submit" className="btn-primary" disabled={save.isPending}>
+          <button type="submit" className="btn-primary min-w-28" disabled={save.isPending}>
             {save.isPending && <Spinner className="size-4 text-white" />}
             {t('common.save')}
           </button>

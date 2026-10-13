@@ -82,7 +82,10 @@ export function StarInput({ value, onChange, legend, error, disabled }) {
                 aria-label={t('rating.outOf', { value: n })}
               />
               <Star
-                className={clsx('size-8 transition-colors', n <= shown ? 'text-accent-500' : 'text-line-strong')}
+                className={clsx(
+                  'size-9 transition-[color,transform] duration-150',
+                  n <= shown ? 'scale-105 text-accent-500 drop-shadow-[0_1px_2px_rgb(140_106_12_/_0.25)]' : 'text-line-strong',
+                )}
                 fill="currentColor"
                 strokeWidth={1.5}
                 aria-hidden="true"
@@ -91,7 +94,7 @@ export function StarInput({ value, onChange, legend, error, disabled }) {
           ))}
         </div>
         {shown > 0 && (
-          <span className="text-sm font-semibold text-ink-muted" aria-hidden="true">
+          <span className="chip bg-accent-100 text-accent-700 ring-1 ring-accent-700/15" aria-hidden="true">
             {t(`rating.word.${shown}`)}
           </span>
         )}
@@ -110,7 +113,7 @@ export function RatingDistribution({ distribution = {} }) {
   const { t } = useTranslation();
   const max = Math.max(1, ...STARS.map((n) => distribution[n] ?? 0));
   return (
-    <ul className="space-y-1.5" aria-label={t('rating.distribution')}>
+    <ul className="space-y-2" aria-label={t('rating.distribution')}>
       {[...STARS].reverse().map((n) => {
         const value = distribution[n] ?? 0;
         return (

@@ -1,27 +1,32 @@
-import { AlertTriangle, ArrowRight, Camera, CheckCircle2, ClipboardList, Map, Plus, ScanLine, Sprout, UserCheck } from 'lucide-react';
+import { AlertTriangle, ArrowRight, BarChart3, Bug, Camera, CheckCircle2, ClipboardList, Map, Plus, ScanLine, Sprout, UserCheck } from 'lucide-react';
 import { MODE_ICONS } from '../components/consultation.jsx';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
 import { useConsultationSummary, useConsultations, useOutbreakAlerts, usePlots, useScans, useScanSummary } from '../api/hooks.js';
 import { useAuth } from '../auth/AuthProvider.jsx';
 import { ScanCard } from '../components/domain.jsx';
-import { EmptyState, SeverityBadge, Spinner, StatCard } from '../components/ui.jsx';
+import { EmptyState, HeroPanel, IconBadge, SectionTitle, SeverityBadge, Spinner, StatCard } from '../components/ui.jsx';
 import { relativeTime, shortDate } from '../lib/format.js';
 
-/** Scans per week as plain CSS bars; a charting library would add ~100 KB for this one chart. */
+/**
+ * Scans per week as plain CSS bars; a charting library would add ~100 KB for this one chart.
+ * Each bar is the week's scans: brand green for healthy leaves, a warm soil-to-amber cap for the
+ * diseased share, so the split reads at a glance and not by red against green alone.
+ */
 function WeeklyBars({ data }) {
+  const { t } = useTranslation();
   const max = Math.max(1, ...data.map((d) => d.scans));
   return (
     <div>
-      <div className="flex h-32 items-end gap-1.5" role="img" aria-label={data.map((d) => `${d.week}: ${d.scans}`).join(', ')}>
+      <div className="flex h-36 items-end gap-2 border-b border-line" role="img" aria-label={data.map((d) => `${d.week}: ${d.scans}`).join(', ')}>
         {data.map((d) => (
           <div key={d.week} className="group flex h-full flex-1 flex-col justify-end" title={`${d.week}: ${d.scans}`}>
             <div
-              className="overflow-hidden rounded-t-md bg-gradient-to-t from-brand-600 to-brand-400 transition-opacity duration-200 group-hover:opacity-80"
+              className="overflow-hidden rounded-t-lg bg-gradient-to-t from-brand-600 to-brand-400 transition-opacity duration-200 group-hover:opacity-80"
               style={{ height: `${Math.max(3, (d.scans / max) * 100)}%` }}
             >
               {d.diseased > 0 && (
-                <div className="rounded-t-md bg-gradient-to-t from-warn to-accent-500" style={{ height: `${(d.diseased / d.scans) * 100}%` }} />
+                <div className="bg-gradient-to-t from-soil-500 to-accent-500" style={{ height: `${(d.diseased / d.scans) * 100}%` }} />
               )}
             </div>
           </div>
@@ -31,24 +36,30 @@ function WeeklyBars({ data }) {
         <span>{data[0].week}</span>
         <span>{data.at(-1).week}</span>
       </div>
+      {/* The bar's aria-label already gives the totals; the key is for sighted readers only. */}
+      <ul className="mt-4 flex flex-wrap gap-x-5 gap-y-1.5 text-xs font-medium text-ink-muted" aria-hidden="true">
+        <li className="flex items-center gap-1.5">
+          <span className="size-2.5 rounded-full bg-brand-500" />
+          {t('dashboard.healthy')}
+        </li>
+        <li className="flex items-center gap-1.5">
+          <span className="size-2.5 rounded-full bg-gradient-to-t from-soil-500 to-accent-500" />
+          {t('dashboard.diseasedScans')}
+        </li>
+      </ul>
     </div>
   );
 }
 
-function SectionHeading({ icon: Icon, tone = 'brand', children, action }) {
-  const tones = { brand: 'bg-brand-50 text-brand-600 ring-brand-200/70', warn: 'bg-warn-bg text-warn ring-warn/20' };
+/** A row inside a dashboard card that links somewhere: tinted on hover, arrow nudges right. */
+const ROW_LINK = 'group flex items-center gap-4 rounded-control px-3 py-3 transition-colors duration-200 hover:bg-brand-50';
+
+function RowArrow() {
   return (
-    <div className="mb-4 flex items-center justify-between gap-3">
-      <h2 className="flex items-center gap-2.5 text-lg font-bold">
-        {Icon && (
-          <span className={`grid size-8 place-items-center rounded-control ring-1 ${tones[tone]}`}>
-            <Icon className="size-4" aria-hidden="true" />
-          </span>
-        )}
-        {children}
-      </h2>
-      {action}
-    </div>
+    <ArrowRight
+      className="size-4 shrink-0 text-ink-subtle transition-transform duration-200 group-hover:translate-x-0.5 group-hover:text-brand-700"
+      aria-hidden="true"
+    />
   );
 }
 
@@ -79,50 +90,40 @@ export default function Dashboard() {
   });
 
   return (
-    <div className="space-y-9">
-      {/* A gradient band gives the page an opening, instead of text starting at the top edge. */}
-      <header className="animate-rise relative overflow-hidden rounded-panel bg-gradient-to-br from-brand-800 via-brand-700 to-brand-600 px-6 py-7 text-white shadow-[var(--shadow-lg)] sm:px-8 sm:py-9">
-        <div
-          className="pointer-events-none absolute -right-16 -top-24 size-72 rounded-full bg-brand-300/20 blur-3xl"
-          aria-hidden="true"
-        />
-        <div className="relative flex flex-wrap items-end justify-between gap-5">
-          <div className="min-w-0">
-            <p className="text-xs font-bold uppercase tracking-[0.14em] text-brand-200">{today}</p>
-            <h1 className="mt-2 text-[1.75rem] font-extrabold leading-tight sm:text-4xl">
-              {t('dashboard.greeting', { name: user.name.split(' ')[0] })}
-            </h1>
-            <p className="mt-1.5 text-[15px] text-brand-100/90">{t('dashboard.subtitle')}</p>
-          </div>
-          <Link
-            to="/scan"
-            className="btn hidden bg-white px-5 text-brand-800 shadow-[var(--shadow-md)] hover:bg-brand-50 sm:inline-flex"
-          >
+    <div className="space-y-8">
+      <HeroPanel
+        eyebrow={today}
+        title={t('dashboard.greeting', { name: user.name.split(' ')[0] })}
+        subtitle={t('dashboard.subtitle')}
+        action={
+          // Phones reach the scanner from the bottom bar, so the hero keeps its button for wider screens.
+          <Link to="/scan" className="btn-primary btn-pill hidden sm:inline-flex">
             <Camera className="size-5" aria-hidden="true" />
             {t('dashboard.newScan')}
           </Link>
-        </div>
-      </header>
+        }
+      />
 
       {unanswered.length > 0 && (
-        <section className="overflow-hidden rounded-card bg-warn-bg/50 ring-1 ring-warn/20">
-          <div className="border-b border-warn/15 px-5 py-3.5">
-            <h2 className="flex items-center gap-2.5 font-bold text-warn">
-              <UserCheck className="size-5" aria-hidden="true" />
-              {t('dashboard.expertOffers')}
-            </h2>
-          </div>
-          <ul className="divide-y divide-warn/10">
+        <section className="rounded-card bg-gradient-to-br from-accent-50 via-accent-50/60 to-surface p-5 shadow-[var(--shadow-sm)] ring-1 ring-accent-500/30 sm:p-6">
+          <SectionTitle icon={UserCheck} tone="accent">
+            {t('dashboard.expertOffers')}
+          </SectionTitle>
+          <ul className="space-y-2.5">
             {unanswered.map((c) => (
-              <li key={c.id} className="flex flex-wrap items-center justify-between gap-3 px-5 py-3.5 text-sm">
+              <li
+                key={c.id}
+                className="flex flex-wrap items-center justify-between gap-3 rounded-control bg-surface/90 px-4 py-3.5 text-sm ring-1 ring-accent-500/15"
+              >
                 <span className="min-w-0">
-                  <span className="font-semibold">{c.caseSummary?.diseaseName || t('consult.caseTitle')}</span>
+                  <span className="font-bold text-brand-900">{c.caseSummary?.diseaseName || t('consult.caseTitle')}</span>
                   <span className="mt-0.5 block text-ink-muted">
                     {t('consult.retentionNotice', { date: shortDate(c.expiresAt, i18n.language) })}
                   </span>
                 </span>
-                <Link to={`/consultations/${c.id}`} className="btn-secondary">
+                <Link to={`/consultations/${c.id}`} className="btn-primary">
                   {c.reminder ? t('dashboard.reminderNth', { n: c.reminder.index, of: c.reminder.of }) : t('consult.open')}
+                  <ArrowRight className="size-4" aria-hidden="true" />
                 </Link>
               </li>
             ))}
@@ -131,27 +132,29 @@ export default function Dashboard() {
       )}
 
       {consultSummary.data?.upcoming?.length > 0 && (
-        <section>
-          <SectionHeading icon={UserCheck}>{t('consult.pageTitle')}</SectionHeading>
-          <ul className="space-y-2.5">
+        <section className="card p-5 sm:p-6">
+          <SectionTitle icon={UserCheck}>{t('consult.pageTitle')}</SectionTitle>
+          <ul className="-mx-3 -mb-2 divide-y divide-line">
             {consultSummary.data.upcoming.map((c) => {
               const Icon = MODE_ICONS[c.mode] ?? UserCheck;
               return (
-                <li key={c.id}>
-                  <Link to={`/consultations/${c.id}`} className="card-interactive group flex items-center gap-4 p-4">
-                    <span className="grid size-11 shrink-0 place-items-center rounded-control bg-brand-50 text-brand-600 ring-1 ring-brand-200/70">
-                      <Icon className="size-5" aria-hidden="true" />
-                    </span>
+                <li key={c.id} className="py-0.5">
+                  <Link to={`/consultations/${c.id}`} className={ROW_LINK}>
+                    <IconBadge icon={Icon} />
                     <div className="min-w-0 flex-1">
-                      <p className="truncate font-bold">{t(`consult.booked.${c.mode}`)}</p>
+                      <p className="truncate font-bold text-brand-900">{t(`consult.booked.${c.mode}`)}</p>
                       <p className="truncate text-sm text-ink-muted">
                         {shortDate(c.scheduledFor, lang)} ·{' '}
                         {c.expert?.name ?? t('consult.awaitingExpert')}
                         {c.expert?.expertProfile?.qualification ? ` · ${c.expert.expertProfile.qualification}` : ''}
                       </p>
+                      {/* A phone has no room beside the line, so the status sits under it there. */}
+                      <span className="chip mt-1.5 bg-brand-50 text-brand-800 ring-1 ring-brand-200 sm:hidden">{t(`consult.status.${c.status}`)}</span>
                     </div>
-                    <span className="chip bg-canvas-deep text-ink-muted">{t(`consult.status.${c.status}`)}</span>
-                    <ArrowRight className="size-4 shrink-0 text-ink-subtle transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
+                    <span className="chip shrink-0 bg-brand-50 text-brand-800 ring-1 ring-brand-200 max-sm:hidden">
+                      {t(`consult.status.${c.status}`)}
+                    </span>
+                    <RowArrow />
                   </Link>
                 </li>
               );
@@ -160,34 +163,34 @@ export default function Dashboard() {
         </section>
       )}
 
-      <section className="grid grid-cols-2 gap-3 lg:grid-cols-4" aria-busy={summary.isLoading}>
+      <section className="grid grid-cols-2 gap-4 lg:grid-cols-4" aria-busy={summary.isLoading}>
         <StatCard icon={ScanLine} label={t('dashboard.totalScans')} value={s?.total ?? '—'} />
         <StatCard icon={CheckCircle2} tone="ok" label={t('dashboard.healthy')} value={s?.healthy ?? '—'} />
         <StatCard icon={ClipboardList} tone="warn" label={t('dashboard.needsReview')} value={s?.pendingReview ?? '—'} />
         <StatCard icon={Sprout} tone="soil" label={t('dashboard.plots')} value={plots.data?.length ?? '—'} />
       </section>
 
-      <section>
-        <SectionHeading icon={AlertTriangle} tone="warn">
+      <section className="card p-5 sm:p-6">
+        <SectionTitle icon={AlertTriangle} tone="warn">
           {t('dashboard.nearbyAlerts')}
-        </SectionHeading>
+        </SectionTitle>
         {alerts.isLoading || plots.isLoading ? (
           <Spinner />
         ) : !plots.data?.length ? (
-          <div className="card flex flex-wrap items-center justify-between gap-3 p-5">
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-control bg-surface-sunken p-4">
             <p className="text-sm text-ink-muted">{t('dashboard.addPlotPrompt')}</p>
-            <Link to="/plots/new" className="btn-secondary">
+            <Link to="/plots/new" className="btn-outline">
               <Plus className="size-4" aria-hidden="true" />
               {t('dashboard.addPlot')}
             </Link>
           </div>
         ) : alerts.data?.length ? (
-          <ul className="space-y-2.5">
+          <ul className="-mx-3 -mb-2 divide-y divide-line">
             {alerts.data.flatMap((a) =>
               a.outbreaks.map((o) => (
-                <li key={`${a.plotId}-${o.diseaseKey}`}>
-                  <Link to={`/plots/${a.plotId}`} className="card-interactive group flex items-center gap-4 overflow-hidden p-4 pl-0">
-                    <span className="h-12 w-1 shrink-0 rounded-r-full bg-gradient-to-b from-warn to-danger" aria-hidden="true" />
+                <li key={`${a.plotId}-${o.diseaseKey}`} className="py-0.5">
+                  <Link to={`/plots/${a.plotId}`} className={ROW_LINK}>
+                    <IconBadge icon={AlertTriangle} tone={o.severity === 'severe' ? 'danger' : 'warn'} />
                     <div className="min-w-0 flex-1">
                       <p className="font-semibold leading-snug">
                         {t('dashboard.alertLine', { disease: o.commonName, count: o.reports, km: o.nearestKm, plot: a.plotName })}
@@ -195,27 +198,27 @@ export default function Dashboard() {
                       <p className="mt-0.5 text-xs text-ink-subtle">{relativeTime(o.lastSeen, lang)}</p>
                     </div>
                     <SeverityBadge severity={o.severity} />
-                    <ArrowRight
-                      className="size-4 shrink-0 text-ink-subtle transition-transform duration-200 group-hover:translate-x-0.5"
-                      aria-hidden="true"
-                    />
+                    <RowArrow />
                   </Link>
                 </li>
               )),
             )}
           </ul>
         ) : (
-          <p className="card p-5 text-sm text-ink-muted">{t('dashboard.noAlerts')}</p>
+          <div className="flex items-center gap-3 rounded-control bg-ok-bg/60 px-4 py-3.5">
+            <CheckCircle2 className="size-5 shrink-0 text-ok" aria-hidden="true" />
+            <p className="text-sm text-ink-muted">{t('dashboard.noAlerts')}</p>
+          </div>
         )}
       </section>
 
-      <div className="grid gap-8 lg:grid-cols-[1.4fr_1fr]">
-        <section>
-          <SectionHeading
+      <div className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">
+        <section className="min-w-0">
+          <SectionTitle
             icon={ScanLine}
             action={
               recent.data?.total > 0 && (
-                <Link to="/history" className="inline-flex items-center gap-1 text-sm font-bold text-brand-600 hover:text-brand-800">
+                <Link to="/history" className="inline-flex shrink-0 items-center gap-1 text-sm font-bold text-brand-700 hover:text-brand-900">
                   {t('common.viewAll')}
                   <ArrowRight className="size-3.5" aria-hidden="true" />
                 </Link>
@@ -223,11 +226,11 @@ export default function Dashboard() {
             }
           >
             {t('dashboard.recentScans')}
-          </SectionHeading>
+          </SectionTitle>
           {recent.isLoading ? (
             <Spinner />
           ) : recent.data?.items.length ? (
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
               {recent.data.items.map((scan) => (
                 <ScanCard key={scan.id} scan={scan} />
               ))}
@@ -245,22 +248,22 @@ export default function Dashboard() {
           )}
         </section>
 
-        <section className="space-y-5">
+        <section className="min-w-0 space-y-6">
           {s?.topDiseases?.length > 0 && (
-            <div className="card p-5">
-              <h2 className="mb-4 font-bold">{t('dashboard.topDiseases')}</h2>
-              <ul className="space-y-3">
+            <div className="card p-5 sm:p-6">
+              <SectionTitle icon={Bug}>{t('dashboard.topDiseases')}</SectionTitle>
+              <ul className="space-y-3.5">
                 {s.topDiseases.map((d, i) => (
                   <li key={d.diseaseKey}>
                     <div className="flex items-center justify-between gap-3">
-                      <Link to={`/library/${d.diseaseKey}`} className="truncate text-sm font-medium hover:text-brand-700">
+                      <Link to={`/library/${d.diseaseKey}`} className="truncate text-sm font-semibold hover:text-brand-700 hover:underline">
                         {d.commonName}
                       </Link>
-                      <span className="shrink-0 text-sm font-bold tabular-nums text-ink-muted">{d.count}</span>
+                      <span className="chip shrink-0 bg-brand-50 font-bold tabular-nums text-brand-800">{d.count}</span>
                     </div>
-                    <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-canvas-deep">
+                    <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-canvas-deep">
                       <div
-                        className="h-full rounded-full bg-gradient-to-r from-brand-400 to-brand-600"
+                        className="h-full rounded-full bg-gradient-to-r from-brand-400 to-brand-700"
                         style={{ width: `${(d.count / s.topDiseases[0].count) * 100}%`, opacity: 1 - i * 0.12 }}
                       />
                     </div>
@@ -270,23 +273,18 @@ export default function Dashboard() {
             </div>
           )}
           {weekly.length > 1 && (
-            <div className="card p-5">
-              <h2 className="mb-4 font-bold">{t('dashboard.weeklyActivity')}</h2>
+            <div className="card p-5 sm:p-6">
+              <SectionTitle icon={BarChart3}>{t('dashboard.weeklyActivity')}</SectionTitle>
               <WeeklyBars data={weekly} />
             </div>
           )}
           <Link
             to="/outbreaks"
-            className="card-interactive group flex items-center gap-4 bg-gradient-to-br from-surface to-brand-50 p-5"
+            className="card-interactive group flex items-center gap-4 bg-gradient-to-br from-brand-100/70 via-brand-50 to-surface p-5"
           >
-            <span className="grid size-11 shrink-0 place-items-center rounded-control bg-brand-100 text-brand-700 ring-1 ring-brand-200/70">
-              <Map className="size-5" aria-hidden="true" />
-            </span>
-            <span className="min-w-0 flex-1 font-bold">{t('nav.outbreaks')}</span>
-            <ArrowRight
-              className="size-4 shrink-0 text-ink-subtle transition-transform duration-200 group-hover:translate-x-0.5"
-              aria-hidden="true"
-            />
+            <IconBadge icon={Map} tone="white" size="lg" />
+            <span className="min-w-0 flex-1 font-bold text-brand-900">{t('nav.outbreaks')}</span>
+            <RowArrow />
           </Link>
         </section>
       </div>

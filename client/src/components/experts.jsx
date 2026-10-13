@@ -1,11 +1,27 @@
 import clsx from 'clsx';
-import { BadgeCheck, Clock, ExternalLink, ShieldOff, XCircle } from 'lucide-react';
+import {
+  Award,
+  BadgeCheck,
+  Briefcase,
+  Building2,
+  Clock,
+  ExternalLink,
+  GraduationCap,
+  Languages,
+  MapPin,
+  MessagesSquare,
+  Microscope,
+  School,
+  ShieldOff,
+  Sprout,
+  XCircle,
+} from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { describeError } from '../api/client.js';
 import { useExpertDocument } from '../api/hooks.js';
 import { useCropName } from './domain.jsx';
-import { Alert } from './ui.jsx';
+import { Alert, IconBadge } from './ui.jsx';
 
 /** Organisation types come from the server in English; the UI shows its own translation. */
 export function useOrgTypeLabel() {
@@ -32,6 +48,20 @@ export function VerificationBadge({ status }) {
   );
 }
 
+const FACT_ICONS = {
+  qualification: GraduationCap,
+  degree: GraduationCap,
+  specialisation: Microscope,
+  university: School,
+  organisation: Building2,
+  designation: Briefcase,
+  experienceYears: Award,
+  place: MapPin,
+  languages: Languages,
+  modes: MessagesSquare,
+  crops: Sprout,
+};
+
 const DEFAULT_FIELDS = ['qualification', 'university', 'organisation', 'designation', 'experienceYears'];
 
 /**
@@ -39,7 +69,7 @@ const DEFAULT_FIELDS = ['qualification', 'university', 'organisation', 'designat
  * page, the admin's review card and the public profile, each with its own selection.
  * `expert` is either the flat public profile or an expertProfile plus name and place.
  */
-export function ExpertFacts({ expert, degreeLabel, fields = DEFAULT_FIELDS, className }) {
+export function ExpertFacts({ expert, degreeLabel, fields = DEFAULT_FIELDS, className, variant = 'plain' }) {
   const { t } = useTranslation();
   const cropName = useCropName();
   const orgType = useOrgTypeLabel();
@@ -62,12 +92,17 @@ export function ExpertFacts({ expert, degreeLabel, fields = DEFAULT_FIELDS, clas
   const rows = fields.filter((f) => values[f]);
   if (!rows.length) return null;
 
+  // 'tiles' sets each fact on its own pale panel, for the public profile where they are the page's body.
+  const tiles = variant === 'tiles';
   return (
-    <dl className={clsx('grid gap-x-6 gap-y-3 text-sm sm:grid-cols-2', className)}>
+    <dl className={clsx('grid text-sm sm:grid-cols-2', tiles ? 'gap-3' : 'gap-x-6 gap-y-3', className)}>
       {rows.map((f) => (
-        <div key={f} className="min-w-0">
-          <dt className="text-xs font-semibold uppercase tracking-wide text-ink-subtle">{t(`expert.field.${f}`)}</dt>
-          <dd className="mt-0.5 break-words font-medium">{values[f]}</dd>
+        <div key={f} className={clsx('min-w-0', tiles && 'flex gap-3 rounded-control bg-surface-sunken px-3.5 py-3 ring-1 ring-line')}>
+          {tiles && <IconBadge icon={FACT_ICONS[f] ?? BadgeCheck} size="sm" tone="white" />}
+          <div className="min-w-0">
+            <dt className="text-xs font-semibold uppercase tracking-wide text-ink-subtle">{t(`expert.field.${f}`)}</dt>
+            <dd className={clsx('mt-0.5 break-words font-medium', tiles && 'text-ink')}>{values[f]}</dd>
+          </div>
         </div>
       ))}
     </dl>

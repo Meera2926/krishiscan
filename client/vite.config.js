@@ -29,6 +29,8 @@ export default defineConfig({
         ],
       },
       workbox: {
+        // The bundled font files too, so the app keeps its typeface offline.
+        globPatterns: ['**/*.{js,css,html,woff2}'],
         navigateFallbackDenylist: [/^\/api\//, /^\/uploads\//],
         runtimeCaching: [
           {

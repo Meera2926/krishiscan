@@ -4,67 +4,68 @@
 /**
  * Design tokens.
  *
- * No webfont: the app targets 3G in rural India and has to work offline, so the system stack
- * carries the typography and the character comes from the scale, weight and spacing instead.
- * Colour is a single deep-forest ramp plus a brass accent used sparingly; shadows are layered
- * rather than a single flat drop, which is most of what separates "clean" from "considered".
+ * Type is Plus Jakarta Sans, bundled with the app rather than fetched from a font CDN, so it is
+ * cached for offline use like the rest of the code; Indic scripts fall back to the system's Noto fonts.
+ * The look is fresh and agricultural: a pale mint canvas, white cards with soft shadows, one deep
+ * forest green for actions and the app sidebar, and round light-green badges behind icons.
  */
 @theme {
-  --font-sans: 'Noto Sans', 'Noto Sans Devanagari', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-sans: 'Plus Jakarta Sans Variable', 'Noto Sans', 'Noto Sans Devanagari', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
 
-  /* Warm paper neutrals: a pure grey canvas reads cold next to green. */
-  --color-canvas: #f6f5ef;
-  --color-canvas-deep: #eceadf;
+  /* Mint-tinted neutrals: the canvas reads as a field in morning light, not as grey paper. */
+  --color-canvas: #f1f6ef;
+  --color-canvas-deep: #e3ecdf;
   --color-surface: #ffffff;
-  --color-surface-sunken: #faf9f5;
-  --color-ink: #131710;
-  --color-ink-muted: #5a6155;
-  --color-ink-subtle: #868c80;
-  --color-line: #e5e4d9;
-  --color-line-strong: #d4d3c5;
+  --color-surface-sunken: #f6faf4;
+  --color-ink: #13261a;
+  --color-ink-muted: #526357;
+  --color-ink-subtle: #829087;
+  --color-line: #e2eadf;
+  --color-line-strong: #cad8c5;
 
-  --color-brand-50: #eef7f1;
-  --color-brand-100: #d4ecdd;
-  --color-brand-200: #a9dabc;
-  --color-brand-300: #74c396;
-  --color-brand-400: #43a772;
-  --color-brand-500: #2a8b59;
-  --color-brand-600: #1c7047;
-  --color-brand-700: #145938;
-  --color-brand-800: #0e422a;
-  --color-brand-900: #0a2e1e;
+  /* Forest green. 700 is the action colour; 800-900 carry the sidebar and headings. */
+  --color-brand-50: #eef6ec;
+  --color-brand-100: #dcedd6;
+  --color-brand-200: #bddcb4;
+  --color-brand-300: #91c586;
+  --color-brand-400: #62a85c;
+  --color-brand-500: #3f8c46;
+  --color-brand-600: #2c723a;
+  --color-brand-700: #1f5d31;
+  --color-brand-800: #184b28;
+  --color-brand-900: #10351d;
 
-  /* Brass. Reserved for moments that should feel earned — never for whole surfaces. */
-  --color-accent-50: #fbf4e6;
-  --color-accent-100: #f3e4c4;
-  --color-accent-500: #c08a2e;
-  --color-accent-700: #8a5f17;
+  /* Sunlight yellow. For tips and small highlights only — never for whole surfaces. */
+  --color-accent-50: #fdf8e3;
+  --color-accent-100: #faefbf;
+  --color-accent-500: #e0b326;
+  --color-accent-700: #8c6a0c;
 
-  --color-soil-100: #f2ebe1;
+  --color-soil-100: #f3ece2;
   --color-soil-500: #9a6b3f;
   --color-soil-700: #6b4526;
 
-  --color-ok: #166d3c;
-  --color-ok-bg: #dcf0e3;
-  --color-warn: #96590a;
-  --color-warn-bg: #fbeed2;
-  --color-danger: #b02020;
-  --color-danger-bg: #fbe0e0;
-  --color-info: #1b4fa8;
-  --color-info-bg: #dde8fa;
+  --color-ok: #1d6b38;
+  --color-ok-bg: #ddf0e1;
+  --color-warn: #93580b;
+  --color-warn-bg: #fcf0d6;
+  --color-danger: #c42b2b;
+  --color-danger-bg: #fde8e7;
+  --color-info: #1d55a8;
+  --color-info-bg: #e1ebfb;
 
   /* Named rather than overriding Tailwind's radius scale, so adding a token here cannot
      silently reshape every rounded-* class already in the app. */
-  --radius-control: 0.875rem;
-  --radius-card: 1.125rem;
+  --radius-control: 0.75rem;
+  --radius-card: 1rem;
   --radius-panel: 1.5rem;
 
-  /* Two-layer shadows: a tight contact shadow plus a wide soft one. */
-  --shadow-xs: 0 1px 2px rgb(19 23 16 / 0.06);
-  --shadow-sm: 0 1px 2px rgb(19 23 16 / 0.05), 0 2px 6px -2px rgb(19 23 16 / 0.07);
-  --shadow-md: 0 2px 4px -1px rgb(19 23 16 / 0.05), 0 10px 20px -6px rgb(19 23 16 / 0.11);
-  --shadow-lg: 0 6px 10px -4px rgb(19 23 16 / 0.06), 0 24px 44px -14px rgb(19 23 16 / 0.18);
-  --shadow-brand: 0 1px 2px rgb(10 46 30 / 0.25), 0 8px 18px -6px rgb(20 89 56 / 0.45);
+  /* Soft, slightly green-tinted shadows: cards float on the mint canvas rather than sit in holes. */
+  --shadow-xs: 0 1px 2px rgb(16 53 29 / 0.05);
+  --shadow-sm: 0 1px 2px rgb(16 53 29 / 0.04), 0 4px 14px -4px rgb(16 53 29 / 0.08);
+  --shadow-md: 0 2px 4px -1px rgb(16 53 29 / 0.05), 0 12px 28px -8px rgb(16 53 29 / 0.14);
+  --shadow-lg: 0 6px 12px -4px rgb(16 53 29 / 0.06), 0 28px 52px -16px rgb(16 53 29 / 0.22);
+  --shadow-brand: 0 1px 2px rgb(16 53 29 / 0.2), 0 8px 18px -8px rgb(31 93 49 / 0.55);
 
   --ease-smooth: cubic-bezier(0.22, 1, 0.36, 1);
 }
@@ -76,8 +77,10 @@
   body {
     @apply bg-canvas text-ink font-sans antialiased;
     min-height: 100dvh;
-    /* Barely-there warmth at the top of the page, so the canvas is not a flat slab. */
-    background-image: radial-gradient(70rem 32rem at 50% -14rem, rgb(67 167 114 / 0.1), transparent 70%);
+    /* Two faint washes of green light, so the canvas is not a flat slab. */
+    background-image:
+      radial-gradient(60rem 30rem at 85% -10rem, rgb(98 168 92 / 0.12), transparent 70%),
+      radial-gradient(50rem 28rem at -10% 20%, rgb(145 197 134 / 0.1), transparent 70%);
     background-attachment: fixed;
   }
   :focus-visible {
@@ -92,7 +95,8 @@
   /* Display sizes need tighter tracking than a UI font sets by default. */
   .text-3xl,
   .text-4xl,
-  .text-5xl {
+  .text-5xl,
+  .text-6xl {
     letter-spacing: -0.028em;
   }
   p {
@@ -137,13 +141,16 @@
     transform 120ms var(--ease-smooth);
 }
 @utility btn-primary {
-  @apply btn text-white;
-  background-image: linear-gradient(to bottom, var(--color-brand-600), var(--color-brand-700));
+  @apply btn bg-brand-700 text-white;
   box-shadow: var(--shadow-brand);
 }
 @utility btn-secondary {
   @apply btn bg-surface text-ink border border-line-strong;
   box-shadow: var(--shadow-xs);
+}
+/** Outlined in the action colour: the quieter partner of a primary button. */
+@utility btn-outline {
+  @apply btn bg-surface/70 text-brand-800 border-[1.5px] border-brand-700;
 }
 @utility btn-ghost {
   @apply btn text-ink-muted;
@@ -152,11 +159,15 @@
   @apply btn bg-surface text-danger border border-danger/25;
   box-shadow: var(--shadow-xs);
 }
+/** Fully rounded ends, for calls to action on open pages and in the top bar. */
+@utility btn-pill {
+  @apply rounded-full px-6;
+}
 
 @utility input {
   @apply w-full rounded-control border border-line-strong bg-surface px-3.5 min-h-11 text-[15px];
   @apply placeholder:text-ink-subtle focus:border-brand-500 focus:outline-none;
-  box-shadow: inset 0 1px 2px rgb(19 23 16 / 0.04);
+  box-shadow: inset 0 1px 2px rgb(16 53 29 / 0.04);
   transition:
     border-color 160ms var(--ease-smooth),
     box-shadow 160ms var(--ease-smooth);
@@ -166,6 +177,12 @@
 }
 @utility chip {
   @apply inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold;
+}
+
+/** A round, pale-green disc behind an icon: the app's signature mark for features and sections. */
+@utility icon-badge {
+  @apply grid shrink-0 place-items-center rounded-full bg-brand-100 text-brand-700;
+  box-shadow: inset 0 0 0 1px rgb(31 93 49 / 0.08);
 }
 
 /** Eyebrow text above a heading. */
@@ -189,13 +206,16 @@
 
 @layer components {
   .btn-primary:hover:not(:disabled) {
-    background-image: linear-gradient(to bottom, var(--color-brand-500), var(--color-brand-600));
+    @apply bg-brand-800;
   }
   .btn-secondary:hover:not(:disabled) {
-    @apply bg-surface-sunken border-brand-300;
+    @apply bg-brand-50 border-brand-300;
+  }
+  .btn-outline:hover:not(:disabled) {
+    @apply bg-brand-50;
   }
   .btn-ghost:hover:not(:disabled) {
-    @apply bg-ink/5 text-ink;
+    @apply bg-brand-900/5 text-ink;
   }
   .btn-danger:hover:not(:disabled) {
     @apply bg-danger-bg border-danger/40;
@@ -210,7 +230,7 @@
     @apply border-brand-200;
   }
   .input:focus {
-    box-shadow: 0 0 0 3px rgb(42 139 89 / 0.16);
+    box-shadow: 0 0 0 3px rgb(63 140 70 / 0.18);
   }
 }
 
@@ -234,6 +254,22 @@
 /** Content that should arrive rather than appear. Used once per view, never on lists. */
 @utility animate-rise {
   animation: rise 420ms var(--ease-smooth) both;
+}
+
+@keyframes sway {
+  0%,
+  100% {
+    transform: rotate(-1.2deg);
+  }
+  50% {
+    transform: rotate(1.2deg);
+  }
+}
+
+/** A plant moving in a light breeze. Decorative illustrations only. */
+@utility animate-sway {
+  transform-origin: 50% 100%;
+  animation: sway 6s ease-in-out infinite;
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -1,5 +1,5 @@
 import clsx from 'clsx';
-import { Camera, ImagePlus, Lightbulb, LocateFixed, MapPin } from 'lucide-react';
+import { Camera, Check, ImagePlus, ImageUp, Lightbulb, LocateFixed, MapPin } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { useTranslation } from 'react-i18next';
@@ -7,7 +7,7 @@ import { useNavigate, useSearchParams } from 'react-router';
 import { describeError } from '../api/client.js';
 import { useCreateScan, usePlots } from '../api/hooks.js';
 import { CropSelect } from '../components/domain.jsx';
-import { Alert, Field, PageHeader, Spinner } from '../components/ui.jsx';
+import { Alert, Field, IconBadge, PageHeader, Spinner } from '../components/ui.jsx';
 import { useGeolocation } from '../lib/useGeolocation.js';
 
 const MAX_MB = 8;
@@ -65,17 +65,17 @@ export default function NewScan() {
   }
 
   return (
-    <div className="mx-auto max-w-3xl">
+    <div className="mx-auto max-w-6xl">
       <PageHeader title={t('scan.title')} subtitle={t('scan.subtitle')} />
 
-      <form onSubmit={onSubmit} className="grid gap-6 md:grid-cols-[1.1fr_1fr]">
-        <div>
+      <form onSubmit={onSubmit} className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
+        <div className="card p-3 sm:p-4">
           <div
             {...getRootProps()}
             className={clsx(
-              'card relative flex aspect-square cursor-pointer flex-col items-center justify-center overflow-hidden border-2 border-dashed text-center transition-colors',
-              isDragActive ? 'border-brand-600 bg-brand-50' : 'border-line hover:border-brand-500',
-              file && 'cursor-default border-solid',
+              'relative flex min-h-80 cursor-pointer flex-col items-center justify-center overflow-hidden rounded-[0.875rem] border-2 border-dashed text-center transition-colors sm:aspect-[4/3]',
+              isDragActive ? 'border-brand-600 bg-brand-50' : 'border-brand-200 bg-surface-sunken hover:border-brand-400 hover:bg-brand-50/60',
+              file && 'cursor-default border-solid border-line bg-canvas-deep',
             )}
           >
             {/* capture="environment" opens the rear camera directly on phones. */}
@@ -83,17 +83,38 @@ export default function NewScan() {
             {preview ? (
               <img src={preview} alt="" className="absolute inset-0 size-full object-cover" />
             ) : (
-              <div className="px-6">
-                <div className="mx-auto mb-4 grid size-16 place-items-center rounded-2xl bg-brand-700 text-white">
-                  <Camera className="size-8" aria-hidden="true" />
-                </div>
-                <p className="font-semibold">{isDragActive ? t('scan.dropActive') : t('scan.dropPrompt')}</p>
-                <p className="mt-1 text-sm text-ink-muted">{t('scan.dropHint')}</p>
+              <div className="flex flex-col items-center px-6 py-8">
+                <span className="icon-badge mb-5 size-20 ring-8 ring-brand-50">
+                  <ImageUp className="size-9" aria-hidden="true" />
+                </span>
+                {isDragActive ? (
+                  <p className="text-[15px] font-semibold text-brand-900">{t('scan.dropActive')}</p>
+                ) : (
+                  <>
+                    {/* Phones have nothing to drag from, so they get the tap wording. */}
+                    <p className="hidden text-[15px] font-semibold text-brand-900 sm:block">{t('scan.dragPrompt')}</p>
+                    <p className="text-[15px] font-semibold text-brand-900 sm:hidden">{t('scan.dropPrompt')}</p>
+                  </>
+                )}
+                <p className="my-3 text-sm text-ink-subtle">{t('scan.or')}</p>
+                <button
+                  type="button"
+                  className="btn-primary px-6"
+                  onClick={(e) => {
+                    // The card opens the picker on click too; without this it would open twice.
+                    e.stopPropagation();
+                    open();
+                  }}
+                >
+                  <Camera className="size-4" aria-hidden="true" />
+                  {t('scan.chooseFile')}
+                </button>
+                <p className="mt-5 text-xs text-ink-subtle">{t('scan.dropHint')}</p>
               </div>
             )}
           </div>
           {file && (
-            <button type="button" onClick={open} className="btn-secondary mt-3 w-full">
+            <button type="button" onClick={open} className="btn-outline mt-3 w-full">
               <ImagePlus className="size-4" aria-hidden="true" />
               {t('scan.change')}
             </button>
@@ -105,64 +126,77 @@ export default function NewScan() {
           )}
         </div>
 
-        <div className="space-y-5">
-          {plots.length > 0 && (
-            <Field label={t('scan.plot')} htmlFor="plot" optional>
-              <select id="plot" className="input" value={plotId} onChange={(e) => setPlotId(e.target.value)}>
-                <option value="">{t('scan.noPlot')}</option>
-                {plots.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.name}
-                  </option>
-                ))}
-              </select>
+        <div className="space-y-6">
+          <div className="card space-y-5 p-5 sm:p-6">
+            {plots.length > 0 && (
+              <Field label={t('scan.plot')} htmlFor="plot" optional>
+                <select id="plot" className="input" value={plotId} onChange={(e) => setPlotId(e.target.value)}>
+                  <option value="">{t('scan.noPlot')}</option>
+                  {plots.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.name}
+                    </option>
+                  ))}
+                </select>
+              </Field>
+            )}
+
+            <Field label={t('scan.crop')} htmlFor="crop" hint={t('scan.cropHelp')} error={apiError?.fields?.crop}>
+              <CropSelect id="crop" value={crop} onChange={setCrop} required />
             </Field>
-          )}
 
-          <Field label={t('scan.crop')} htmlFor="crop" hint={t('scan.cropHelp')} error={apiError?.fields?.crop}>
-            <CropSelect id="crop" value={crop} onChange={setCrop} required />
-          </Field>
+            {!plot && (
+              <div>
+                <button
+                  type="button"
+                  className={clsx('btn-secondary w-full', geo.status === 'success' && 'border-brand-500 bg-brand-50 text-brand-800')}
+                  onClick={geo.request}
+                  disabled={geo.status === 'loading'}
+                >
+                  {geo.status === 'loading' ? (
+                    <Spinner className="size-4" />
+                  ) : geo.status === 'success' ? (
+                    <MapPin className="size-4" aria-hidden="true" />
+                  ) : (
+                    <LocateFixed className="size-4" aria-hidden="true" />
+                  )}
+                  {geo.status === 'loading' ? t('scan.locating') : geo.status === 'success' ? t('scan.locationSet') : t('scan.useLocation')}
+                </button>
+                {geo.status === 'error' && <p className="mt-1.5 text-xs font-semibold text-danger">{t('scan.locationFailed')}</p>}
+              </div>
+            )}
 
-          {!plot && (
-            <div>
-              <button
-                type="button"
-                className={clsx('btn-secondary w-full', geo.status === 'success' && 'border-brand-600 text-brand-800')}
-                onClick={geo.request}
-                disabled={geo.status === 'loading'}
-              >
-                {geo.status === 'loading' ? <Spinner className="size-4" /> : geo.status === 'success' ? <MapPin className="size-4" aria-hidden="true" /> : <LocateFixed className="size-4" aria-hidden="true" />}
-                {geo.status === 'loading' ? t('scan.locating') : geo.status === 'success' ? t('scan.locationSet') : t('scan.useLocation')}
-              </button>
-              {geo.status === 'error' && <p className="mt-1 text-xs text-danger">{t('scan.locationFailed')}</p>}
-            </div>
-          )}
+            {location && (
+              <label className="flex cursor-pointer gap-3 rounded-control bg-surface-sunken p-3.5 ring-1 ring-line transition-shadow hover:ring-brand-300">
+                <input type="checkbox" className="mt-0.5 size-4 shrink-0 accent-brand-700" checked={share} onChange={(e) => setShare(e.target.checked)} />
+                <span>
+                  <span className="block text-sm font-semibold">{t('scan.share')}</span>
+                  <span className="mt-0.5 block text-xs leading-relaxed text-ink-muted">{t('scan.shareHelp')}</span>
+                </span>
+              </label>
+            )}
 
-          {location && (
-            <label className="flex cursor-pointer gap-3 rounded-xl border border-line bg-surface p-3">
-              <input type="checkbox" className="mt-1 size-4 accent-brand-700" checked={share} onChange={(e) => setShare(e.target.checked)} />
-              <span>
-                <span className="block text-sm font-medium">{t('scan.share')}</span>
-                <span className="block text-xs text-ink-muted">{t('scan.shareHelp')}</span>
-              </span>
-            </label>
-          )}
+            {apiError && !apiError.fields?.crop && <Alert tone="danger">{apiError.message}</Alert>}
 
-          {apiError && !apiError.fields?.crop && <Alert tone="danger">{apiError.message}</Alert>}
+            <button type="submit" className="btn-primary min-h-12 w-full text-base" disabled={!file || !crop || createScan.isPending}>
+              {createScan.isPending ? <Spinner className="size-5 text-white" /> : <Camera className="size-5" aria-hidden="true" />}
+              {createScan.isPending ? t('scan.analysing') : t('scan.submit')}
+            </button>
+          </div>
 
-          <button type="submit" className="btn-primary w-full text-base" disabled={!file || !crop || createScan.isPending}>
-            {createScan.isPending ? <Spinner className="size-5 text-white" /> : <Camera className="size-5" aria-hidden="true" />}
-            {createScan.isPending ? t('scan.analysing') : t('scan.submit')}
-          </button>
-
-          <div className="rounded-2xl bg-soil-100 p-4 text-sm text-soil-700">
-            <p className="mb-2 flex items-center gap-2 font-semibold">
-              <Lightbulb className="size-4" aria-hidden="true" />
+          <div className="card p-5 sm:p-6">
+            <p className="mb-4 flex items-center gap-3 font-bold text-brand-900">
+              <IconBadge icon={Lightbulb} tone="accent" />
               {t('scan.tipsTitle')}
             </p>
-            <ul className="list-inside list-disc space-y-1">
+            <ul className="space-y-3">
               {['tip1', 'tip2', 'tip3', 'tip4'].map((k) => (
-                <li key={k}>{t(`scan.${k}`)}</li>
+                <li key={k} className="flex items-start gap-3 text-sm leading-relaxed">
+                  <span className="mt-0.5 grid size-5 shrink-0 place-items-center rounded-full bg-brand-100 text-brand-700">
+                    <Check className="size-3" strokeWidth={3} aria-hidden="true" />
+                  </span>
+                  <span>{t(`scan.${k}`)}</span>
+                </li>
               ))}
             </ul>
           </div>

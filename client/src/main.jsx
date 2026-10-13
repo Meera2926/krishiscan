@@ -1,6 +1,8 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
+// Bundled with the app (no font CDN), so it works offline; Indic scripts fall back to the system's Noto fonts.
+import '@fontsource-variable/plus-jakarta-sans';
 import './i18n/index.js';
 import './index.css';
 import App from './App.jsx';

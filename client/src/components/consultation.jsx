@@ -1,13 +1,65 @@
-import { Award, BadgeCheck, CalendarClock, ExternalLink, GraduationCap, ImagePlus, Languages, MapPin, MessageSquare, Phone, Send, UserCheck, X } from 'lucide-react';
+import clsx from 'clsx';
+import {
+  ArrowRight,
+  Award,
+  BadgeCheck,
+  CalendarClock,
+  Check,
+  Clock,
+  ExternalLink,
+  FileText,
+  GraduationCap,
+  ImagePlus,
+  Languages,
+  MapPin,
+  MessageSquare,
+  Phone,
+  Send,
+  UserCheck,
+  Users,
+  X,
+} from 'lucide-react';
 import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
 import { useConsultationDecision, useConsultationMessage, useConsultationSlots, useExperts } from '../api/hooks.js';
 import { shortDate } from '../lib/format.js';
 import { RatingLine } from './ratings.jsx';
-import { Alert, Field, Spinner } from './ui.jsx';
+import { Alert, Field, IconBadge, SectionTitle, Spinner } from './ui.jsx';
 
 export const MODE_ICONS = { call: Phone, chat: MessageSquare, visit: MapPin };
+
+/** Chip colours for a consultation's status, shared by the list and the detail page. */
+export const STATUS_TONE = {
+  open: 'bg-info-bg text-info ring-info/15',
+  confirmed: 'bg-ok-bg text-ok ring-ok/15',
+  completed: 'bg-brand-50 text-brand-800 ring-brand-700/15',
+  cancelled: 'bg-canvas-deep text-ink-muted ring-line-strong',
+  expired: 'bg-warn-bg text-warn ring-warn/20',
+};
+
+/** A choice tile around a visually hidden radio: the ring follows keyboard focus too. */
+const choiceTile = (selected) =>
+  clsx(
+    'relative flex cursor-pointer rounded-card border bg-surface transition-[border-color,background-color,box-shadow] duration-200',
+    'has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-brand-600',
+    selected ? 'border-brand-600 bg-brand-50 shadow-[0_0_0_3px_rgb(63_140_70_/_0.15)]' : 'border-line hover:border-brand-300 hover:bg-brand-50/40',
+  );
+
+/** The round tick in the corner of the selected tile. */
+function SelectedMark({ selected }) {
+  return (
+    <span
+      className={clsx(
+        'grid size-5 shrink-0 place-items-center rounded-full ring-1 transition-colors',
+        selected ? 'bg-brand-700 text-white ring-brand-700' : 'bg-surface ring-line-strong',
+      )}
+      aria-hidden="true"
+    >
+      {selected && <Check className="size-3" strokeWidth={3} />}
+    </span>
+  );
+}
 
 const dayKey = (iso) => iso.slice(0, 10);
 
@@ -36,7 +88,7 @@ export function ConsultationOffer({ consultation }) {
       <Alert tone="info">
         <p className="font-semibold">{t('consult.declinedTitle')}</p>
         <p className="font-normal">{deadline ? t('consult.declinedBody', { date: deadline }) : null}</p>
-        <button type="button" className="btn-secondary mt-3" onClick={() => setChoosing(true)}>
+        <button type="button" className="btn-outline mt-3" onClick={() => setChoosing(true)}>
           {t('consult.changeMind')}
         </button>
         {choosing && <BookingForm consultation={consultation} onDone={() => setChoosing(false)} />}
@@ -45,24 +97,34 @@ export function ConsultationOffer({ consultation }) {
   }
 
   return (
-    <section className="card border-info/40 bg-info-bg/40 p-5">
-      <div className="flex items-start gap-3">
-        <UserCheck className="mt-0.5 size-5 shrink-0 text-info" aria-hidden="true" />
+    <section className="relative overflow-hidden rounded-card bg-gradient-to-br from-brand-50 via-surface to-surface p-5 ring-1 ring-brand-200/70 sm:p-6">
+      <div className="pointer-events-none absolute -right-16 -top-20 size-56 rounded-full bg-brand-100/70 blur-3xl" aria-hidden="true" />
+      <div className="relative flex items-start gap-4">
+        <IconBadge icon={UserCheck} size="lg" className="max-sm:hidden" />
         <div className="min-w-0 flex-1">
-          <h2 className="font-semibold">{t('consult.offerTitle')}</h2>
-          <p className="mt-1 text-sm leading-relaxed text-ink-muted">
+          <h2 className="flex items-center gap-2.5 text-lg font-bold leading-snug text-brand-900">
+            <IconBadge icon={UserCheck} size="sm" className="sm:hidden" />
+            {t('consult.offerTitle')}
+          </h2>
+          <p className="mt-1.5 text-sm leading-relaxed text-ink-muted">
             {t(`consult.reason.${consultation.trigger}`)} {t('consult.offerBody')}
           </p>
-          {deadline && <p className="mt-2 text-sm font-medium text-warn">{t('consult.retentionNotice', { date: deadline })}</p>}
+          {deadline && (
+            <p className="mt-3 flex items-start gap-2 rounded-control bg-warn-bg/70 px-3 py-2 text-sm font-medium text-warn ring-1 ring-warn/15">
+              <Clock className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+              {t('consult.retentionNotice', { date: deadline })}
+            </p>
+          )}
 
           {!choosing ? (
-            <div className="mt-4 flex flex-wrap gap-2">
+            <div className="mt-5 flex flex-wrap gap-2.5">
               <button type="button" className="btn-primary" onClick={() => setChoosing(true)}>
+                <CalendarClock className="size-4" aria-hidden="true" />
                 {t('consult.yes')}
               </button>
               <button
                 type="button"
-                className="btn-secondary"
+                className="btn-outline"
                 disabled={decide.isPending}
                 onClick={() => decide.mutate({ decision: 'declined' })}
               >
@@ -97,66 +159,66 @@ export function ExpertCard({ expert, rating, compact = false, profileLink = true
   const score = rating ?? expert.rating;
 
   return (
-    <div className={compact ? 'flex gap-3' : 'flex gap-3.5'}>
-      <span className="grid size-11 shrink-0 place-items-center rounded-control bg-gradient-to-br from-brand-500 to-brand-800 text-white ring-1 ring-brand-900/15">
-        <UserCheck className="size-5" aria-hidden="true" />
-      </span>
+    <div className={compact ? 'flex gap-3' : 'flex gap-3.5 sm:gap-4'}>
+      <IconBadge icon={UserCheck} size={compact ? 'md' : 'lg'} />
       <div className="min-w-0 flex-1">
-        <p className="flex flex-wrap items-center gap-1.5 font-bold leading-tight">
+        <p className="flex flex-wrap items-center gap-x-2 gap-y-1 font-bold leading-tight text-brand-900">
           {expert.name}
           {expert.verified === true && (
-            <span className="inline-flex text-brand-600" title={t('expert.verified')}>
-              <BadgeCheck className="size-4 shrink-0" aria-hidden="true" />
-              <span className="sr-only">{t('expert.verified')}</span>
+            <span className="chip bg-ok-bg text-ok ring-1 ring-ok/15">
+              <BadgeCheck className="size-3.5 shrink-0" aria-hidden="true" />
+              {t('expert.verified')}
             </span>
           )}
         </p>
-        {expert.qualification && <p className="text-sm font-semibold text-brand-700">{expert.qualification}</p>}
+        {expert.qualification && <p className="mt-1 text-sm font-semibold text-brand-700">{expert.qualification}</p>}
         {studied && (
-          <p className="flex items-center gap-1 text-xs text-ink-muted">
-            <GraduationCap className="size-3.5 shrink-0" aria-hidden="true" />
+          <p className="mt-0.5 flex items-start gap-1.5 text-xs text-ink-muted">
+            <GraduationCap className="mt-px size-3.5 shrink-0" aria-hidden="true" />
             {studied}
           </p>
         )}
         {(expert.designation || expert.organisation) && (
           <p className="mt-0.5 text-sm text-ink-muted">{[expert.designation, expert.organisation].filter(Boolean).join(' · ')}</p>
         )}
-        <RatingLine rating={score} className="mt-1" />
+        <RatingLine rating={score} className="mt-1.5" />
         {!compact && (
-          <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-ink-subtle">
+          <div className="mt-2.5 flex flex-wrap items-center gap-1.5 text-xs text-ink-muted">
             {expert.experienceYears != null && (
-              <span className="inline-flex items-center gap-1">
-                <Award className="size-3.5" aria-hidden="true" />
+              <span className="inline-flex items-center gap-1 rounded-full bg-surface-sunken px-2.5 py-1 ring-1 ring-line">
+                <Award className="size-3.5 text-brand-600" aria-hidden="true" />
                 {t('consult.yearsExperience', { count: expert.experienceYears })}
               </span>
             )}
             {place && (
-              <span className="inline-flex items-center gap-1">
-                <MapPin className="size-3.5" aria-hidden="true" />
+              <span className="inline-flex items-center gap-1 rounded-full bg-surface-sunken px-2.5 py-1 ring-1 ring-line">
+                <MapPin className="size-3.5 text-brand-600" aria-hidden="true" />
                 {place}
               </span>
             )}
             {expert.languages?.length > 0 && (
-              <span className="inline-flex items-center gap-1">
-                <Languages className="size-3.5" aria-hidden="true" />
+              <span className="inline-flex items-center gap-1 rounded-full bg-surface-sunken px-2.5 py-1 ring-1 ring-line">
+                <Languages className="size-3.5 text-brand-600" aria-hidden="true" />
                 {expert.languages.map((l) => t(`lang.${l}`, l)).join(', ')}
               </span>
             )}
           </div>
         )}
-        {!compact && expert.bio && <p className="mt-2 text-sm leading-relaxed text-ink-muted">{expert.bio}</p>}
+        {!compact && expert.bio && <p className="mt-2.5 text-sm leading-relaxed text-ink-muted">{expert.bio}</p>}
         {profileLink && expert.id && (
           <Link
             to={`/experts/${expert.id}`}
-            className="mt-2 inline-flex min-h-9 items-center gap-1 text-sm font-bold text-brand-700 underline-offset-2 hover:underline"
+            className="group mt-2 inline-flex min-h-9 items-center gap-1 text-sm font-bold text-brand-700 underline-offset-2 hover:underline"
             {...(newTab && { target: '_blank', rel: 'noopener noreferrer' })}
           >
             {t('expert.viewProfile')}
-            {newTab && (
+            {newTab ? (
               <>
                 <ExternalLink className="size-3.5" aria-hidden="true" />
                 <span className="sr-only">({t('expert.opensNewTab')})</span>
               </>
+            ) : (
+              <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
             )}
           </Link>
         )}
@@ -176,14 +238,9 @@ function ExpertPicker({ crop, mode, value, onChange }) {
   return (
     <fieldset>
       <legend className="label">{t('consult.chooseExpert')}</legend>
-      <div className="space-y-2">
+      <div className="space-y-2.5">
         {options.map((e) => (
-          <label
-            key={e.id || 'any'}
-            className={`flex cursor-pointer gap-3 rounded-card border p-3.5 transition-colors ${
-              value === e.id ? 'border-brand-600 bg-brand-50' : 'border-line hover:border-brand-300'
-            }`}
-          >
+          <label key={e.id || 'any'} className={clsx(choiceTile(value === e.id), 'gap-3 p-3.5 sm:p-4')}>
             <input
               type="radio"
               name="expert"
@@ -193,13 +250,19 @@ function ExpertPicker({ crop, mode, value, onChange }) {
               className="sr-only"
             />
             {e.any ? (
-              <span className="min-w-0 flex-1">
-                <span className="block font-bold">{e.name}</span>
-                <span className="mt-0.5 block text-sm text-ink-muted">{t('consult.anyExpertHint')}</span>
+              <span className="flex min-w-0 flex-1 items-center gap-3">
+                <IconBadge icon={Users} tone="accent" />
+                <span className="min-w-0">
+                  <span className="block font-bold text-brand-900">{e.name}</span>
+                  <span className="mt-0.5 block text-sm text-ink-muted">{t('consult.anyExpertHint')}</span>
+                </span>
               </span>
             ) : (
-              <ExpertCard expert={e} newTab />
+              <span className="min-w-0 flex-1">
+                <ExpertCard expert={e} newTab />
+              </span>
             )}
+            <SelectedMark selected={value === e.id} />
           </label>
         ))}
       </div>
@@ -240,25 +303,21 @@ export function BookingForm({ consultation, onDone }) {
   };
 
   return (
-    <form className="mt-4 space-y-4" onSubmit={submit}>
+    <form className="mt-5 space-y-5 border-t border-line pt-5" onSubmit={submit}>
       <fieldset>
-        <legend className="mb-2 text-sm font-semibold">{t('consult.howTitle')}</legend>
-        <div className="grid gap-2 sm:grid-cols-3">
+        <legend className="label">{t('consult.howTitle')}</legend>
+        <div className="grid gap-2.5 sm:grid-cols-3">
           {['chat', 'call', 'visit'].map((m) => {
             const Icon = MODE_ICONS[m];
             return (
-              <label
-                key={m}
-                className={`flex cursor-pointer items-center gap-2 rounded-xl border p-3 text-sm ${
-                  mode === m ? 'border-brand-700 bg-brand-50 font-semibold' : 'border-line'
-                }`}
-              >
+              <label key={m} className={clsx(choiceTile(mode === m), 'items-center gap-3 p-3 text-sm')}>
                 <input type="radio" name="mode" value={m} checked={mode === m} onChange={() => setMode(m)} className="sr-only" />
-                <Icon className="size-4 shrink-0" aria-hidden="true" />
-                <span>
+                <IconBadge icon={Icon} tone={mode === m ? 'white' : 'brand'} />
+                <span className="min-w-0 flex-1 font-semibold text-ink">
                   {t(`consult.mode.${m}`)}
                   <span className="block text-xs font-normal text-ink-muted">{t(`consult.modeHint.${m}`)}</span>
                 </span>
+                <SelectedMark selected={mode === m} />
               </label>
             );
           })}
@@ -274,7 +333,7 @@ export function BookingForm({ consultation, onDone }) {
       )}
       {mode === 'visit' && (
         <Field label={t('consult.address')} htmlFor="c-addr" error={error?.fields?.visitAddress}>
-          <textarea id="c-addr" className="input" rows={2} value={visitAddress} onChange={(e) => setAddress(e.target.value)} required />
+          <textarea id="c-addr" className="input py-2.5" rows={2} value={visitAddress} onChange={(e) => setAddress(e.target.value)} required />
         </Field>
       )}
 
@@ -302,14 +361,14 @@ export function BookingForm({ consultation, onDone }) {
       </Field>
 
       <Field label={t('consult.question')} htmlFor="c-q" optional hint={t('consult.questionHint')}>
-        <textarea id="c-q" className="input" rows={2} value={question} onChange={(e) => setQuestion(e.target.value)} maxLength={1000} />
+        <textarea id="c-q" className="input py-2.5" rows={2} value={question} onChange={(e) => setQuestion(e.target.value)} maxLength={1000} />
       </Field>
 
       {error && !error.fields && <Alert tone="danger">{error.message}</Alert>}
 
-      <div className="flex gap-2">
+      <div className="flex flex-wrap gap-2.5">
         <button type="submit" className="btn-primary" disabled={decide.isPending || !slot}>
-          {decide.isPending ? <Spinner /> : <CalendarClock className="size-4" aria-hidden="true" />}
+          {decide.isPending ? <Spinner className="size-4 text-white" /> : <CalendarClock className="size-4" aria-hidden="true" />}
           {t('consult.confirm')}
         </button>
         <button type="button" className="btn-ghost" onClick={() => onDone?.()}>
@@ -324,11 +383,11 @@ export function ScheduledCard({ consultation }) {
   const { t, i18n } = useTranslation();
   const Icon = MODE_ICONS[consultation.mode] ?? CalendarClock;
   return (
-    <section className="card border-ok/40 bg-ok-bg/40 p-5">
-      <div className="flex items-start gap-3">
-        <Icon className="mt-0.5 size-5 shrink-0 text-ok" aria-hidden="true" />
+    <section className="rounded-card bg-ok-bg/60 p-5 ring-1 ring-ok/15">
+      <div className="flex items-start gap-3.5">
+        <IconBadge icon={Icon} tone="white" size="lg" />
         <div className="min-w-0 flex-1">
-          <h2 className="font-semibold">{t(`consult.booked.${consultation.mode}`)}</h2>
+          <h2 className="text-lg font-bold leading-snug text-brand-900">{t(`consult.booked.${consultation.mode}`)}</h2>
           <p className="mt-1 text-sm text-ink-muted">
             {shortDate(consultation.scheduledFor, i18n.language)} ·{' '}
             {formatSlot(consultation.scheduledFor, i18n.language)}
@@ -338,8 +397,9 @@ export function ScheduledCard({ consultation }) {
             <p className="mt-0.5 text-sm font-semibold text-brand-700">{consultation.expert.expertProfile.qualification}</p>
           )}
           {consultation.expert && <RatingLine rating={consultation.expertRating} className="mt-1" />}
-          <Link to={`/consultations/${consultation.id}`} className="btn-secondary mt-3">
+          <Link to={`/consultations/${consultation.id}`} className="btn-outline mt-4">
             {t('consult.open')}
+            <ArrowRight className="size-4" aria-hidden="true" />
           </Link>
         </div>
       </div>
@@ -364,26 +424,33 @@ export function CaseSummary({ consultation }) {
   ].filter(([, value]) => value);
 
   return (
-    <section className="card p-5">
-      <h2 className="mb-3 font-semibold">{t('consult.caseTitle')}</h2>
-      <div className="flex gap-4">
-        {s.imageUrl && <img src={s.imageUrl} alt="" className="size-28 shrink-0 rounded-xl border border-line object-cover" />}
-        <dl className="min-w-0 flex-1 space-y-1 text-sm">
+    <section className="card p-5 sm:p-6">
+      <SectionTitle icon={FileText}>{t('consult.caseTitle')}</SectionTitle>
+      <div className="flex flex-col gap-4 sm:flex-row sm:gap-5">
+        {s.imageUrl && (
+          <img
+            src={s.imageUrl}
+            alt=""
+            className="h-44 w-full shrink-0 rounded-card object-cover ring-1 ring-line sm:size-36"
+          />
+        )}
+        <dl className="min-w-0 flex-1 divide-y divide-line text-sm">
           {rows.map(([label, value]) => (
-            <div key={label} className="flex justify-between gap-3">
+            <div key={label} className="flex justify-between gap-3 py-2 first:pt-0 last:pb-0">
               <dt className="text-ink-muted">{label}</dt>
-              <dd className="text-right font-medium">{value}</dd>
+              <dd className="text-right font-semibold text-ink">{value}</dd>
             </div>
           ))}
-          <div className="flex justify-between gap-3">
+          <div className="flex justify-between gap-3 py-2 first:pt-0 last:pb-0">
             <dt className="text-ink-muted">{t('consult.raised')}</dt>
             <dd className="text-right">{shortDate(consultation.createdAt, i18n.language)}</dd>
           </div>
         </dl>
       </div>
       {consultation.scan?.id && (
-        <Link to={`/scans/${consultation.scan.id}`} className="btn-ghost mt-3 -ml-3">
+        <Link to={`/scans/${consultation.scan.id}`} className="btn-ghost group mt-3 -ml-3 text-brand-700">
           {t('consult.viewScan')}
+          <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
         </Link>
       )}
     </section>
@@ -434,19 +501,19 @@ export function ChatThread({ consultation, meId, id, readOnly = false }) {
   const error = send.error?.response?.data?.error?.message;
 
   return (
-    <section className="card p-5" id={id}>
-      <h2 className="mb-3 font-bold">{title}</h2>
+    <section className="card scroll-mt-24 p-5 sm:p-6" id={id}>
+      <SectionTitle icon={MessageSquare}>{title}</SectionTitle>
       {/* The photo and the model's answer are the first things in the thread, so the farmer
           never has to describe what they already uploaded. */}
       {consultation.caseSummary?.imageUrl && (
-        <div className="mb-4 flex gap-3 rounded-card border border-line bg-surface-sunken p-3">
+        <div className="mb-4 flex gap-3.5 rounded-card bg-brand-50/70 p-3 ring-1 ring-brand-200/60">
           <img
             src={consultation.caseSummary.imageUrl}
             alt={t('consult.caseTitle')}
-            className="size-20 shrink-0 rounded-control border border-line object-cover"
+            className="size-20 shrink-0 rounded-control object-cover ring-1 ring-line"
           />
           <div className="min-w-0 text-sm">
-            <p className="font-semibold">{consultation.caseSummary.diseaseName || t('common.unknown')}</p>
+            <p className="font-bold text-brand-900">{consultation.caseSummary.diseaseName || t('common.unknown')}</p>
             {consultation.caseSummary.confidence != null && (
               <p className="text-ink-muted">
                 {t('result.confidence')}: {Math.round(consultation.caseSummary.confidence * 100)}%
@@ -462,15 +529,17 @@ export function ChatThread({ consultation, meId, id, readOnly = false }) {
         </div>
       )}
 
-      <ol className="space-y-3">
+      <ol className="space-y-3 rounded-card bg-surface-sunken p-3 ring-1 ring-line sm:p-4">
         {consultation.messages?.map((m) => {
           const mine = String(m.sender?.id ?? m.sender) === String(meId);
           return (
             <li key={m.id ?? m.sentAt} className={`flex ${mine ? 'justify-end' : 'justify-start'}`}>
               <div
-                className={`max-w-[85%] overflow-hidden rounded-2xl text-sm ${
-                  mine ? 'bg-brand-700 text-white' : 'border border-line bg-surface'
-                } ${m.image?.url ? 'p-1.5' : 'px-4 py-2'}`}
+                className={clsx(
+                  'max-w-[85%] overflow-hidden rounded-2xl text-sm',
+                  mine ? 'rounded-br-md bg-brand-700 text-white shadow-[var(--shadow-brand)]' : 'rounded-bl-md border border-line bg-surface shadow-[var(--shadow-xs)]',
+                  m.image?.url ? 'p-1.5' : 'px-4 py-2.5',
+                )}
               >
                 {m.image?.url && (
                   <a href={m.image.url} target="_blank" rel="noreferrer noopener" className="block">
@@ -492,21 +561,26 @@ export function ChatThread({ consultation, meId, id, readOnly = false }) {
             </li>
           );
         })}
-        {!consultation.messages?.length && <li className="text-sm text-ink-muted">{t('consult.chatEmpty')}</li>}
+        {!consultation.messages?.length && (
+          <li className="flex items-center justify-center gap-2 py-6 text-sm text-ink-muted">
+            <MessageSquare className="size-4" aria-hidden="true" />
+            {t('consult.chatEmpty')}
+          </li>
+        )}
       </ol>
 
       {!closed && !readOnly && (
         <form className="mt-4" onSubmit={submit}>
           {photo && (
-            <div className="mb-2 flex items-center gap-3 rounded-card border border-line bg-surface-sunken p-2">
+            <div className="mb-2.5 flex items-center gap-3 rounded-card border border-line bg-surface-sunken p-2">
               <img src={photo.preview} alt="" className="size-14 shrink-0 rounded-control border border-line object-cover" />
               <p className="min-w-0 flex-1 truncate text-sm font-medium">{photo.file.name}</p>
-              <button type="button" className="btn-ghost px-2" onClick={clearPhoto} aria-label={t('common.cancel')}>
+              <button type="button" className="btn-ghost rounded-full px-2" onClick={clearPhoto} aria-label={t('common.cancel')}>
                 <X className="size-4" aria-hidden="true" />
               </button>
             </div>
           )}
-          <div className="flex gap-2">
+          <div className="flex items-center gap-2">
             <input
               ref={fileRef}
               type="file"
@@ -517,23 +591,27 @@ export function ChatThread({ consultation, meId, id, readOnly = false }) {
             />
             <button
               type="button"
-              className="btn-secondary px-3"
+              className="btn-secondary size-11 shrink-0 rounded-full px-0 text-brand-700"
               onClick={() => fileRef.current?.click()}
               aria-label={t('consult.attachPhoto')}
               title={t('consult.attachPhoto')}
             >
-              <ImagePlus className="size-4" aria-hidden="true" />
+              <ImagePlus className="size-5" aria-hidden="true" />
             </button>
             <input
-              className="input flex-1"
+              className="input min-w-0 flex-1 rounded-full px-5"
               value={body}
               onChange={(e) => setBody(e.target.value)}
               placeholder={photo ? t('consult.captionPlaceholder') : t('consult.chatPlaceholder')}
               maxLength={2000}
               aria-label={title}
             />
-            <button type="submit" className="btn-primary" disabled={send.isPending || (!body.trim() && !photo)}>
-              {send.isPending ? <Spinner className="size-4" /> : <Send className="size-4" aria-hidden="true" />}
+            <button
+              type="submit"
+              className="btn-primary size-11 shrink-0 rounded-full px-0"
+              disabled={send.isPending || (!body.trim() && !photo)}
+            >
+              {send.isPending ? <Spinner className="size-4 text-white" /> : <Send className="size-4" aria-hidden="true" />}
               <span className="sr-only">{t('consult.send')}</span>
             </button>
           </div>

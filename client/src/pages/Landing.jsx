@@ -1,130 +1,190 @@
-import { ArrowRight, Camera, CloudSun, Map, ShieldAlert, Sparkles } from 'lucide-react';
+import { useEffect } from 'react';
+import { ArrowRight, BookOpen, CloudSun, FileText, ImageUp, Leaf, Map, ScanLine, ScanSearch, ShieldAlert, ShieldCheck } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { Link, Navigate } from 'react-router';
+import { Link, Navigate, useLocation } from 'react-router';
 import { useAuth } from '../auth/AuthProvider.jsx';
 import { useCrops } from '../api/hooks.js';
+import LandingHero from '../components/LandingHero.jsx';
+import { CropArt } from '../components/illustrations.jsx';
+import { IconBadge } from '../components/ui.jsx';
 import { cropLabel } from '../i18n/index.js';
 
-/** The product shot: a diagnosis card, drawn rather than screenshotted so it stays translated. */
-function DiagnosisPreview() {
+/** Centred eyebrow, title and subtitle that open each section below the hero. */
+function SectionIntro({ eyebrow, title, subtitle, id }) {
   return (
-    <div className="relative" aria-hidden="true">
-      {/* Soft glow behind the card, so it sits on the page rather than being pasted onto it.
-          Kept inside the card's own box: a negative inset here widens the page on small screens. */}
-      <div className="absolute inset-0 rounded-[2.5rem] bg-gradient-to-br from-brand-200/50 via-brand-100/40 to-accent-100/40 blur-2xl" />
-      <div className="card-raised relative overflow-hidden p-6">
-        <div className="absolute -right-12 -top-12 size-44 rounded-full bg-brand-50" />
-        <div className="relative space-y-5">
-          <div className="flex items-center gap-3.5">
-            <div className="size-16 shrink-0 rounded-panel bg-[radial-gradient(circle_at_35%_40%,#6b4a1f_0_14%,transparent_15%),radial-gradient(circle_at_65%_60%,#8a5a2b_0_10%,transparent_11%),linear-gradient(135deg,#43a772,#145938)] shadow-[var(--shadow-sm)] ring-1 ring-brand-900/10" />
-            <div className="min-w-0">
-              <p className="font-bold">Tomato · Late blight</p>
-              <span className="chip mt-1 bg-brand-100 text-brand-800 ring-1 ring-brand-300/40">
-                <Sparkles className="size-3" />
-                Confident diagnosis
-              </span>
-            </div>
-          </div>
-          {[
-            ['Late blight', 0.86],
-            ['Early blight', 0.09],
-            ['Septoria leaf spot', 0.03],
-          ].map(([label, v], i) => (
-            <div key={label}>
-              <div className="mb-1.5 flex justify-between text-sm">
-                <span className={i === 0 ? 'font-semibold' : 'text-ink-muted'}>{label}</span>
-                <span className="font-bold tabular-nums">{Math.round(v * 100)}%</span>
-              </div>
-              <div className="h-2 overflow-hidden rounded-full bg-canvas-deep">
-                <div
-                  className={`h-full rounded-full ${i === 0 ? 'bg-gradient-to-r from-brand-500 to-brand-600' : 'bg-ink-muted/30'}`}
-                  style={{ width: `${Math.max(3, v * 100)}%` }}
-                />
-              </div>
-            </div>
-          ))}
-          <div className="flex items-center gap-2 rounded-control bg-danger-bg px-3.5 py-2.5 text-sm font-semibold text-danger ring-1 ring-danger/15">
-            <ShieldAlert className="size-4 shrink-0" />
-            High late-blight risk this week
-          </div>
-        </div>
-      </div>
+    <div className="mx-auto mb-8 max-w-2xl text-center sm:mb-10">
+      {eyebrow && <p className="eyebrow mb-2 [&:not(:lang(en))]:tracking-normal">{eyebrow}</p>}
+      <h2 id={id} className="text-[1.75rem] font-extrabold leading-tight text-brand-900 sm:text-[2.1rem]">
+        {title}
+      </h2>
+      {subtitle && <p className="mt-2.5 text-[15px] leading-relaxed text-ink-muted">{subtitle}</p>}
     </div>
   );
 }
+
+/** The arrow after a crop's name: the card is a way in, not just a label. */
+function GoArrow() {
+  return <ArrowRight className="ml-auto mt-0.5 size-4 shrink-0 text-brand-700 transition-transform duration-200 group-hover:translate-x-0.5" aria-hidden="true" />;
+}
+
+/**
+ * "Cabbage (Patta Gobhi, Bandgobhi)": the name farmers search for first with the arrow beside it, the
+ * other names quieter below. The arrow drops under a name too long to share the line, rather than
+ * squeezing a single long Tamil or Malayalam word into a mid-word break.
+ */
+function CropName({ label, longWords, className }) {
+  const [, name, others] = label.match(/^(.+?) \((.+)\)$/) ?? [null, label, null];
+  return (
+    <span
+      className={`block flex-1 pb-1.5 pt-2.5 font-semibold leading-snug ${longWords ? 'px-1.5 text-[13px] sm:px-2 sm:text-sm' : 'px-2 text-sm'} ${className}`}
+    >
+      <span className="flex flex-wrap items-start gap-x-2">
+        <span className="min-w-0 break-words">{name}</span>
+        <GoArrow />
+      </span>
+      {others && <span className="mt-0.5 block break-words text-xs font-medium text-ink-muted">{others}</span>}
+    </span>
+  );
+}
+
+const LONG_WORD_LANGS = ['ta', 'te', 'ml'];
+
+// Tile widths for the crop grid: 2, 3, 4 then 6 to a row. Eleven crops plus the "All crops" tile make
+// twelve, which fills every one of those rows exactly; flex-wrap with centring keeps it tidy if the list changes.
+// Tamil, Telugu and Malayalam crop names are single long words that a sixth of the row would split
+// mid-word, so those languages stop at four to a row.
+const TILE_BASE = 'w-[calc(50%-0.5rem)] sm:w-[calc(33.333%-0.667rem)] md:w-[calc(25%-0.75rem)]';
+const cropTile = (longWords) => (longWords ? TILE_BASE : `${TILE_BASE} lg:w-[calc(16.666%-0.834rem)]`);
 
 export default function Landing() {
   const { t, i18n } = useTranslation();
   const { status } = useAuth();
   const { data: crops = [] } = useCrops();
+  const { hash } = useLocation();
+
+  const supported = crops.filter((c) => c.supportedByModel);
+  const longWords = LONG_WORD_LANGS.includes(i18n.language);
+
+  // The top bar's "Crops" link is /#crops. The crop section only exists once the list has loaded,
+  // so try again when it arrives as well as when the hash changes.
+  useEffect(() => {
+    if (!hash) return;
+    const el = document.getElementById(decodeURIComponent(hash.slice(1)));
+    el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, [hash, supported.length]);
 
   if (status === 'authenticated') return <Navigate to="/dashboard" replace />;
 
   const features = [
-    { icon: Camera, title: t('landing.f1Title'), body: t('landing.f1Body') },
-    { icon: Map, title: t('landing.f2Title'), body: t('landing.f2Body') },
-    { icon: CloudSun, title: t('landing.f3Title'), body: t('landing.f3Body') },
+    { icon: ScanLine, tone: 'brand', title: t('landing.f1Title'), body: t('landing.f1Body') },
+    { icon: Map, tone: 'brand', title: t('landing.f2Title'), body: t('landing.f2Body') },
+    { icon: CloudSun, tone: 'accent', title: t('landing.f3Title'), body: t('landing.f3Body') },
+    { icon: ShieldCheck, tone: 'brand', title: t('landing.f4Title'), body: t('landing.f4Body') },
+  ];
+
+  const steps = [
+    { icon: ImageUp, title: t('landing.step1Title'), body: t('landing.step1Body') },
+    { icon: ScanSearch, title: t('landing.step2Title'), body: t('landing.step2Body') },
+    { icon: FileText, title: t('landing.step3Title'), body: t('landing.step3Body') },
+    { icon: Leaf, title: t('landing.step4Title'), body: t('landing.step4Body') },
   ];
 
   return (
-    <div className="space-y-16 sm:space-y-24">
-      <section className="animate-rise grid items-center gap-12 pt-4 lg:grid-cols-[1.15fr_1fr] lg:gap-16 lg:pt-10">
-        <div>
-          <p className="eyebrow mb-4 inline-flex items-center gap-2 rounded-full bg-brand-50 px-3 py-1.5 ring-1 ring-brand-200/70">
-            {t('app.tagline')}
-          </p>
-          <h1 className="text-[2.5rem] font-extrabold leading-[1.05] sm:text-6xl">{t('landing.heroTitle')}</h1>
-          <p className="mt-6 max-w-xl text-lg leading-relaxed text-ink-muted">{t('landing.heroBody')}</p>
-          <div className="mt-9 flex flex-wrap gap-3">
-            <Link to="/register" className="btn-primary group px-6 text-base">
-              <Camera className="size-5" aria-hidden="true" />
-              {t('landing.ctaStart')}
-              <ArrowRight className="size-4 transition-transform duration-200 group-hover:translate-x-0.5" aria-hidden="true" />
-            </Link>
-            <Link to="/library" className="btn-secondary px-6 text-base">
-              {t('landing.ctaLibrary')}
-            </Link>
-          </div>
-          {crops.length > 0 && (
-            <div className="mt-10">
-              <p className="mb-3 text-xs font-bold uppercase tracking-[0.12em] text-ink-subtle">{t('library.allCrops')}</p>
-              <ul className="flex flex-wrap gap-2" aria-label="Supported crops">
-                {crops
-                  .filter((c) => c.supportedByModel)
-                  .map((c) => (
-                    <li
-                      key={c.key}
-                      className="chip border border-line-strong bg-surface px-3.5 py-1.5 text-sm text-ink shadow-[var(--shadow-xs)]"
-                    >
-                      {cropLabel(c, i18n.language)}
-                    </li>
-                  ))}
-              </ul>
-            </div>
-          )}
+    <div className="space-y-8 sm:space-y-10">
+      <LandingHero />
+
+      {/* Why choose: four white cards on a soft panel, as in the design's features row. */}
+      <section
+        id="features"
+        aria-labelledby="why-title"
+        className="scroll-mt-24 rounded-[1.75rem] bg-gradient-to-b from-surface/80 to-brand-50/60 px-4 py-10 shadow-[var(--shadow-xs)] ring-1 ring-brand-200/50 sm:px-8 sm:py-12"
+      >
+        <SectionIntro id="why-title" eyebrow={t('landing.whyEyebrow')} title={t('landing.whyTitle', { app: t('app.name') })} subtitle={t('landing.whySubtitle')} />
+        <ul className="grid gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-4">
+          {features.map((f) => (
+            <li key={f.title} className="card p-6">
+              <IconBadge icon={f.icon} tone={f.tone} size="xl" />
+              <h3 className="mt-5 text-[17px] font-bold leading-snug text-brand-900">{f.title}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-ink-muted">{f.body}</p>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      {/* Supported crops: one picture card per crop the model knows, each opening its diseases. */}
+      {supported.length > 0 && (
+        <section
+          id="crops"
+          aria-labelledby="crops-title"
+          className="scroll-mt-24 rounded-[1.75rem] bg-surface px-4 py-10 shadow-[var(--shadow-xs)] ring-1 ring-line sm:px-8 sm:py-12"
+        >
+          <SectionIntro id="crops-title" title={t('landing.cropsTitle')} subtitle={t('landing.cropsSubtitle')} />
+          <ul className="flex flex-wrap justify-center gap-4">
+            {supported.map((c) => (
+              <li key={c.key} className={cropTile(longWords)}>
+                <Link
+                  to={`/library?crop=${encodeURIComponent(c.key)}`}
+                  className="card-interactive group flex h-full flex-col overflow-hidden p-1.5"
+                >
+                  <CropArt crop={c.key} className="block aspect-[4/3] w-full rounded-[0.7rem]" />
+                  <CropName label={cropLabel(c, i18n.language)} longWords={longWords} className="text-brand-900" />
+                </Link>
+              </li>
+            ))}
+            {/* Every crop at once: the whole disease library. */}
+            <li className={cropTile(longWords)}>
+              <Link
+                to="/library"
+                className="group flex h-full flex-col overflow-hidden rounded-card border border-dashed border-brand-300 bg-brand-50/70 p-1.5 transition-colors hover:border-brand-500 hover:bg-brand-50"
+              >
+                <span className="grid aspect-[4/3] w-full place-items-center rounded-[0.7rem] bg-surface/70">
+                  <IconBadge icon={BookOpen} size="xl" className="transition-transform duration-300 group-hover:scale-105" />
+                </span>
+                <CropName label={t('library.allCrops')} longWords={longWords} className="text-brand-800" />
+              </Link>
+            </li>
+          </ul>
+        </section>
+      )}
+
+      {/* How it works: a white panel with four steps, joined by thin arrows on wide screens. */}
+      <section
+        aria-labelledby="how-title"
+        className="relative overflow-hidden rounded-[1.75rem] bg-surface px-5 py-10 shadow-[var(--shadow-xs)] ring-1 ring-line sm:px-8 sm:py-12"
+      >
+        <div className="pointer-events-none absolute -right-24 -top-24 size-72 rounded-full bg-brand-100/60 blur-3xl" aria-hidden="true" />
+        <div className="pointer-events-none absolute -bottom-28 -left-20 size-64 rounded-full bg-brand-50 blur-3xl" aria-hidden="true" />
+        <div className="relative">
+          <SectionIntro id="how-title" eyebrow={t('landing.howEyebrow')} title={t('landing.howTitle')} subtitle={t('landing.howSubtitle')} />
+          <ol className="grid gap-7 sm:grid-cols-2 sm:gap-x-8 sm:gap-y-10 lg:grid-cols-4 lg:gap-x-12">
+            {steps.map((s, i) => (
+              <li key={s.title} className="relative flex gap-4 sm:flex-col sm:items-center sm:text-center">
+                <span
+                  className={`grid size-14 shrink-0 place-items-center rounded-full ring-4 ring-surface ${
+                    i === 0 ? 'bg-brand-700 text-white shadow-[var(--shadow-brand)]' : 'bg-brand-100 text-brand-700 shadow-[var(--shadow-sm)]'
+                  }`}
+                >
+                  <s.icon className="size-6" aria-hidden="true" />
+                </span>
+                <div className="min-w-0">
+                  <p className="text-xs font-bold tabular-nums text-brand-600">{i + 1}</p>
+                  <h3 className="mt-0.5 font-bold leading-snug text-brand-900">{s.title}</h3>
+                  <p className="mx-auto mt-1.5 max-w-60 text-sm leading-relaxed text-ink-muted">{s.body}</p>
+                </div>
+                {i < steps.length - 1 && (
+                  <ArrowRight className="absolute -right-[2.1rem] top-[1.125rem] hidden size-5 text-brand-300 lg:block" strokeWidth={1.5} aria-hidden="true" />
+                )}
+              </li>
+            ))}
+          </ol>
         </div>
-
-        <DiagnosisPreview />
       </section>
 
-      <section className="grid gap-5 sm:grid-cols-3">
-        {features.map((f, i) => (
-          <div key={f.title} className="card-interactive group p-6">
-            <div className="mb-5 flex items-center justify-between">
-              <div className="grid size-12 place-items-center rounded-control bg-gradient-to-b from-brand-50 to-brand-100 text-brand-600 ring-1 ring-brand-200/70 transition-transform duration-300 group-hover:scale-105">
-                <f.icon className="size-6" aria-hidden="true" />
-              </div>
-              <span className="text-sm font-bold tabular-nums text-line-strong">0{i + 1}</span>
-            </div>
-            <h2 className="text-lg font-bold">{f.title}</h2>
-            <p className="mt-2 text-sm leading-relaxed text-ink-muted">{f.body}</p>
-          </div>
-        ))}
-      </section>
-
-      <section className="flex gap-3.5 rounded-panel bg-gradient-to-br from-soil-100 to-canvas-deep p-6 text-soil-700 ring-1 ring-soil-500/15">
-        <ShieldAlert className="size-5 shrink-0 translate-y-0.5" aria-hidden="true" />
-        <p className="text-sm leading-relaxed">{t('landing.honesty')}</p>
+      <section className="flex gap-3.5 rounded-panel bg-accent-50 p-5 text-soil-700 ring-1 ring-accent-500/25 sm:p-6">
+        <span className="grid size-9 shrink-0 place-items-center rounded-full bg-accent-100 text-accent-700">
+          <ShieldAlert className="size-[18px]" aria-hidden="true" />
+        </span>
+        <p className="self-center text-sm leading-relaxed">{t('landing.honesty')}</p>
       </section>
     </div>
   );

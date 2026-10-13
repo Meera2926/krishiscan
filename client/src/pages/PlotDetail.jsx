@@ -1,11 +1,11 @@
 import clsx from 'clsx';
-import { ArrowLeft, Camera, CloudRain, Droplets, Pencil, Trash2 } from 'lucide-react';
+import { Activity, ArrowLeft, Camera, CloudRain, CloudSun, Droplets, FlaskConical, Pencil, ScanLine, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate, useParams } from 'react-router';
 import { useDeletePlot, usePlot, usePlotRisk, useProgression, useScans } from '../api/hooks.js';
 import { RiskLevelBadge, ScanCard, useCropName } from '../components/domain.jsx';
 import { ProgressionSummary, SeverityChart, TreatmentLog, TrendBadge } from '../components/progression.jsx';
-import { Alert, EmptyState, ErrorState, FullPageSpinner, PageHeader, Spinner } from '../components/ui.jsx';
+import { Alert, EmptyState, ErrorState, FullPageSpinner, PageHeader, SectionTitle, Spinner } from '../components/ui.jsx';
 import { localName } from '../i18n/index.js';
 import { daysSince, weekday } from '../lib/format.js';
 
@@ -17,7 +17,7 @@ function RiskPanel({ plotId }) {
   if (error) return <ErrorState error={error} />;
 
   const forecast = data.weather.days.filter((d) => d.isForecast).slice(0, 7);
-  const levelTone = { high: 'border-l-danger', moderate: 'border-l-warn', low: 'border-l-ok', unknown: 'border-l-line' };
+  const levelTone = { high: 'border-l-danger', moderate: 'border-l-warn', low: 'border-l-ok', unknown: 'border-l-line-strong' };
 
   return (
     <div className="space-y-4">
@@ -26,36 +26,39 @@ function RiskPanel({ plotId }) {
       ) : (
         <ul className="space-y-3">
           {data.assessments.map((a) => (
-            <li key={a.ruleId} className={clsx('rounded-xl border border-l-4 border-line bg-surface p-4', levelTone[a.level])}>
+            <li key={a.ruleId} className={clsx('rounded-control border border-l-4 border-line bg-surface-sunken/70 p-4', levelTone[a.level])}>
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <p className="font-semibold">{localName(a, i18n.language)}</p>
+                <p className="font-bold text-brand-900">{localName(a, i18n.language)}</p>
                 <RiskLevelBadge level={a.level} />
               </div>
               <p className="mt-1 text-sm text-ink-muted">{a.reason}</p>
               {a.preventive?.length > 0 && (
                 <details className="mt-2 text-sm">
-                  <summary className="cursor-pointer font-medium text-brand-700">{t('risk.prevent')}</summary>
-                  <ul className="mt-2 list-inside list-disc space-y-1">
+                  <summary className="cursor-pointer font-semibold text-brand-700 hover:text-brand-900">{t('risk.prevent')}</summary>
+                  <ul className="mt-2 space-y-1.5">
                     {a.preventive.map((p) => (
-                      <li key={p}>{p}</li>
+                      <li key={p} className="flex gap-2.5">
+                        <span className="mt-2 size-1.5 shrink-0 rounded-full bg-brand-500" aria-hidden="true" />
+                        <span>{p}</span>
+                      </li>
                     ))}
                   </ul>
                 </details>
               )}
-              <p className="mt-2 text-[11px] text-ink-muted">{a.model}</p>
+              <p className="mt-2 text-[11px] text-ink-subtle">{a.model}</p>
             </li>
           ))}
         </ul>
       )}
 
-      <div className="-mx-1 overflow-x-auto px-1">
+      <div className="overflow-x-auto rounded-control bg-surface-sunken px-3 py-2 ring-1 ring-line">
         <table className="w-full min-w-[520px] text-center text-xs">
           <caption className="sr-only">{t('risk.forecast')}</caption>
           <thead>
-            <tr className="text-ink-muted">
-              <th className="py-1 text-left font-medium">{t('risk.forecast')}</th>
+            <tr className="border-b border-line text-ink-muted">
+              <th className="py-2 text-left font-semibold text-brand-900">{t('risk.forecast')}</th>
               {forecast.map((d) => (
-                <th key={d.date} className="py-1 font-medium">
+                <th key={d.date} className="py-2 font-semibold">
                   {weekday(d.date, i18n.language)}
                 </th>
               ))}
@@ -95,7 +98,7 @@ function RiskPanel({ plotId }) {
           </tbody>
         </table>
       </div>
-      <p className="text-xs text-ink-muted">{data.disclaimer} · Open-Meteo</p>
+      <p className="text-xs leading-relaxed text-ink-muted">{data.disclaimer} · Open-Meteo</p>
     </div>
   );
 }
@@ -105,12 +108,11 @@ function ProgressionCard({ plotId }) {
   const { data, isLoading, error, refetch } = useProgression(plotId);
 
   return (
-    <section className="card p-5">
-      <div className="mb-1 flex flex-wrap items-center justify-between gap-2">
-        <h2 className="text-lg font-semibold">{t('progression.title')}</h2>
-        {data && <TrendBadge trend={data.overall.summary.trend} />}
-      </div>
-      <p className="mb-4 text-sm text-ink-muted">{t('progression.subtitle')}</p>
+    <section className="card min-w-0 p-5 sm:p-6">
+      <SectionTitle icon={Activity} className="flex-wrap" action={data && <TrendBadge trend={data.overall.summary.trend} />}>
+        {t('progression.title')}
+      </SectionTitle>
+      <p className="mb-5 -mt-2.5 text-sm text-ink-muted sm:pl-[2.625rem]">{t('progression.subtitle')}</p>
       {isLoading ? (
         <Spinner />
       ) : error ? (
@@ -124,7 +126,7 @@ function ProgressionCard({ plotId }) {
               {data.byDisease
                 .filter((d) => d.summary.latestPercent != null)
                 .map((d) => (
-                  <li key={d.diseaseKey} className="chip border border-line bg-canvas text-ink">
+                  <li key={d.diseaseKey} className="chip bg-brand-50 text-brand-900 ring-1 ring-brand-200">
                     {localName(d, i18n.language)}: {d.summary.latestPercent}%
                   </li>
                 ))}
@@ -174,12 +176,12 @@ export default function PlotDetail() {
               <Camera className="size-4" aria-hidden="true" />
               {t('plots.scanThisPlot')}
             </Link>
-            <Link to={`/plots/${plot.id}/edit`} className="btn-secondary" aria-label={t('common.edit')}>
+            <Link to={`/plots/${plot.id}/edit`} className="btn-secondary w-11 rounded-full px-0" aria-label={t('common.edit')}>
               <Pencil className="size-4" aria-hidden="true" />
             </Link>
             <button
               type="button"
-              className="btn-danger"
+              className="btn-danger w-11 rounded-full px-0"
               aria-label={t('common.delete')}
               disabled={deletePlot.isPending}
               onClick={() => {
@@ -196,21 +198,23 @@ export default function PlotDetail() {
 
       <div className="mb-6 grid gap-6 lg:grid-cols-[1.35fr_1fr]">
         <ProgressionCard plotId={plot.id} />
-        <section className="card p-5">
-          <h2 className="mb-3 text-lg font-semibold">{t('treatments.title')}</h2>
+        <section className="card min-w-0 p-5 sm:p-6">
+          <SectionTitle icon={FlaskConical}>{t('treatments.title')}</SectionTitle>
           <TreatmentsCard plot={plot} />
         </section>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-[1.2fr_1fr]">
-        <section className="card p-5">
-          <h2 className="text-lg font-semibold">{t('risk.title')}</h2>
-          <p className="mb-4 text-sm text-ink-muted">{t('risk.subtitle')}</p>
+      <div className="grid gap-6 lg:grid-cols-[1.2fr_1fr] lg:items-start">
+        <section className="card min-w-0 p-5 sm:p-6">
+          <SectionTitle icon={CloudSun} tone="info">
+            {t('risk.title')}
+          </SectionTitle>
+          <p className="mb-5 -mt-2.5 text-sm text-ink-muted sm:pl-[2.625rem]">{t('risk.subtitle')}</p>
           <RiskPanel plotId={plot.id} />
         </section>
 
-        <section>
-          <h2 className="mb-3 text-lg font-semibold">{t('dashboard.recentScans')}</h2>
+        <section className="min-w-0">
+          <SectionTitle icon={ScanLine}>{t('dashboard.recentScans')}</SectionTitle>
           {scans.isLoading ? (
             <Spinner />
           ) : scans.data?.items.length ? (
@@ -219,7 +223,7 @@ export default function PlotDetail() {
                 <ScanCard key={scan.id} scan={scan} />
               ))}
               {scans.data.total > scans.data.items.length && (
-                <Link to={`/history?plotId=${plot.id}`} className="btn-secondary w-full">
+                <Link to={`/history?plotId=${plot.id}`} className="btn-outline w-full">
                   {t('common.viewAll')}
                 </Link>
               )}

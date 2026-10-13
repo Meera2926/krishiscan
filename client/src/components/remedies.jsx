@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
 import { shortDate } from '../lib/format.js';
+import { IconBadge, SectionTitle } from './ui.jsx';
 
 /**
  * The organic options the knowledge base already recommends for this disease, made shoppable
@@ -20,21 +21,20 @@ export function OrganicRemedies({ remedies, sourceUrl }) {
 
   return (
     <section className="card overflow-hidden">
-      <header className="flex items-center gap-2.5 border-b border-line bg-gradient-to-r from-brand-50 to-surface px-5 py-3.5">
-        <span className="grid size-8 place-items-center rounded-control bg-brand-100 text-brand-700 ring-1 ring-brand-200/70">
-          <Leaf className="size-4" aria-hidden="true" />
-        </span>
-        <h2 className="font-bold">{t('remedies.title')}</h2>
+      <header className="px-5 pt-5 sm:px-6 sm:pt-6">
+        <SectionTitle icon={Leaf} className="mb-2">
+          {t('remedies.title')}
+        </SectionTitle>
       </header>
 
-      <ul className="divide-y divide-line">
+      <ul className="divide-y divide-line px-2 pb-2 sm:px-3">
         {remedies.map((r, i) => {
           const open = openIndex === i;
           // Something to do in the field rather than buy: shown as advice, with no shop to send them to.
           if (r.practice) {
             return (
-              <li key={r.advice} className="flex items-start gap-3 px-5 py-4">
-                <span className="mt-0.5 grid size-6 shrink-0 place-items-center rounded-full bg-ok-bg text-xs font-bold text-ok tabular-nums">
+              <li key={r.advice} className="flex items-start gap-3 px-3 py-4">
+                <span className="mt-0.5 grid size-6 shrink-0 place-items-center rounded-full bg-brand-100 text-xs font-bold text-brand-700 tabular-nums">
                   {i + 1}
                 </span>
                 <span className="min-w-0 flex-1 font-semibold leading-snug">{r.advice}</span>
@@ -45,17 +45,17 @@ export function OrganicRemedies({ remedies, sourceUrl }) {
             <li key={r.advice}>
               <button
                 type="button"
-                className="flex w-full items-start gap-3 px-5 py-4 text-left transition-colors hover:bg-surface-sunken"
+                className="group flex w-full items-start gap-3 rounded-control px-3 py-4 text-left transition-colors hover:bg-surface-sunken"
                 aria-expanded={open}
                 onClick={() => setOpenIndex(open ? null : i)}
               >
-                <span className="mt-0.5 grid size-6 shrink-0 place-items-center rounded-full bg-ok-bg text-xs font-bold text-ok tabular-nums">
+                <span className="mt-0.5 grid size-6 shrink-0 place-items-center rounded-full bg-brand-100 text-xs font-bold text-brand-700 tabular-nums">
                   {i + 1}
                 </span>
                 <span className="min-w-0 flex-1">
-                  <span className="block font-semibold leading-snug">{r.product?.name ?? r.advice}</span>
-                  {r.product && <span className="mt-0.5 block text-sm text-ink-muted">{r.advice}</span>}
-                  <span className="mt-1.5 inline-flex items-center gap-1.5 text-xs font-bold text-brand-600">
+                  <span className="block font-semibold leading-snug text-brand-900">{r.product?.name ?? r.advice}</span>
+                  {r.product && <span className="mt-0.5 block text-sm leading-relaxed text-ink-muted">{r.advice}</span>}
+                  <span className="mt-2 inline-flex items-center gap-1.5 text-xs font-bold text-brand-700 underline-offset-2 group-hover:underline">
                     {r.homemade ? t('remedies.homemade') : t(open ? 'remedies.hide' : 'remedies.whereToBuy')}
                   </span>
                 </span>
@@ -65,7 +65,7 @@ export function OrganicRemedies({ remedies, sourceUrl }) {
               </button>
 
               {open && (
-                <div className="bg-surface-sunken px-5 pb-5 pt-1">
+                <div className="mx-3 mb-3 rounded-control bg-surface-sunken p-4 ring-1 ring-line">
                   {r.homemade ? (
                     <p className="text-sm text-ink-muted">{t('remedies.homemadeBody')}</p>
                   ) : (
@@ -95,12 +95,12 @@ export function OrganicRemedies({ remedies, sourceUrl }) {
         })}
       </ul>
 
-      <p className="border-t border-line bg-surface-sunken px-5 py-3 text-xs leading-relaxed text-ink-subtle">
+      <p className="border-t border-line bg-surface-sunken px-5 py-3.5 text-xs leading-relaxed text-ink-subtle sm:px-6">
         {t('remedies.disclaimer')}
         {sourceUrl && (
           <>
             {' '}
-            <a href={sourceUrl} target="_blank" rel="noreferrer noopener" className="font-semibold underline">
+            <a href={sourceUrl} target="_blank" rel="noreferrer noopener" className="font-semibold text-brand-700 underline">
               {t('result.source')}
             </a>
           </>
@@ -117,17 +117,15 @@ export function FollowUpCard({ followUp, plotId }) {
   const date = shortDate(followUp.date, i18n.language);
 
   return (
-    <section className="card flex flex-wrap items-center gap-4 border-brand-200/70 bg-gradient-to-br from-brand-50/60 to-surface p-5">
-      <span className="grid size-12 shrink-0 place-items-center rounded-control bg-brand-100 text-brand-700 ring-1 ring-brand-200/70">
-        <CalendarPlus className="size-6" aria-hidden="true" />
-      </span>
-      <div className="min-w-0 flex-1">
-        <p className="font-bold">{t('followUp.title', { date })}</p>
+    <section className="card flex flex-wrap items-center gap-4 p-5 sm:p-6">
+      <IconBadge icon={CalendarPlus} size="lg" />
+      <div className="min-w-0 flex-1 basis-56">
+        <p className="font-bold text-brand-900">{t('followUp.title', { date })}</p>
         <p className="mt-0.5 text-sm leading-relaxed text-ink-muted">
           {t(followUp.healthy ? 'followUp.healthyBody' : 'followUp.body', { days: followUp.days })}
         </p>
       </div>
-      <Link to={plotId ? `/scan?plot=${plotId}` : '/scan'} className="btn-secondary">
+      <Link to={plotId ? `/scan?plot=${plotId}` : '/scan'} className="btn-outline max-sm:w-full">
         {t('followUp.remind')}
       </Link>
     </section>
