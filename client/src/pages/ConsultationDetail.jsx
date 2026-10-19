@@ -21,9 +21,17 @@ import { Link, useNavigate, useParams } from 'react-router';
 import { describeError } from '../api/client.js';
 import { useConsultation, useConsultationAction, useRateConsultation } from '../api/hooks.js';
 import { useAuth } from '../auth/AuthProvider.jsx';
-import { BookingForm, CaseSummary, ChatThread, ConsultationOffer, ExpertCard, MODE_ICONS, STATUS_TONE } from '../components/consultation.jsx';
+import {
+  BookingForm,
+  CaseSummary,
+  ChatThread,
+  ConsultationOffer,
+  ConsultationStatusChip,
+  ExpertCard,
+  MODE_ICONS,
+} from '../components/consultation.jsx';
 import { StarInput, Stars } from '../components/ratings.jsx';
-import { Alert, ErrorState, Field, IconBadge, PageHeader, SectionTitle, Spinner } from '../components/ui.jsx';
+import { Alert, ErrorState, Field, FullPageSpinner, IconBadge, PageHeader, SectionTitle, Spinner } from '../components/ui.jsx';
 import { shortDate } from '../lib/format.js';
 
 /**
@@ -239,13 +247,7 @@ export default function ConsultationDetail() {
   const act = useConsultationAction(id);
   const [rescheduling, setRescheduling] = useState(false);
 
-  if (isLoading) {
-    return (
-      <div className="grid place-items-center py-24">
-        <Spinner className="size-7" />
-      </div>
-    );
-  }
+  if (isLoading) return <FullPageSpinner />;
   if (error) return <ErrorState error={error} onRetry={refetch} />;
   if (!consultation) return null;
 
@@ -301,10 +303,7 @@ export default function ConsultationDetail() {
                   </p>
                 )}
               </div>
-              <span className={clsx('chip w-fit shrink-0 ring-1', STATUS_TONE[consultation.status])}>
-                <span className="size-1.5 rounded-full bg-current opacity-70" aria-hidden="true" />
-                {t(`consult.status.${consultation.status}`)}
-              </span>
+              <ConsultationStatusChip consultation={consultation} />
             </div>
           </div>
 

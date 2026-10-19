@@ -196,7 +196,7 @@ export default function PlotDetail() {
         }
       />
 
-      <div className="mb-6 grid gap-6 lg:grid-cols-[1.35fr_1fr]">
+      <div className="mb-6 grid gap-6 lg:grid-cols-[1.3fr_1fr]">
         <ProgressionCard plotId={plot.id} />
         <section className="card min-w-0 p-5 sm:p-6">
           <SectionTitle icon={FlaskConical}>{t('treatments.title')}</SectionTitle>
@@ -204,7 +204,7 @@ export default function PlotDetail() {
         </section>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-[1.2fr_1fr] lg:items-start">
+      <div className="grid gap-6 lg:grid-cols-[1.3fr_1fr] lg:items-start">
         <section className="card min-w-0 p-5 sm:p-6">
           <SectionTitle icon={CloudSun} tone="info">
             {t('risk.title')}

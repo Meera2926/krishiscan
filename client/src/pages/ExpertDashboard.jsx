@@ -119,6 +119,8 @@ function Appointment({ consultation, lang, t, cropName }) {
             {summary.crop ? ` · ${cropName(summary.crop)}` : ''}
             {consultation.farmer?.district ? ` · ${consultation.farmer.district}` : ''}
           </p>
+          {/* The chip below has no room on a phone row, so the status moves under the farmer line there. */}
+          {!live && <p className="mt-1 text-xs font-semibold text-brand-800 sm:hidden">{t(`consult.status.${consultation.status}`)}</p>}
         </div>
         {live ? (
           <span className="chip bg-ok text-white">
@@ -258,7 +260,8 @@ export default function ExpertDashboard() {
         <ErrorState error={summary.error} onRetry={summary.refetch} />
       ) : (
         <>
-          <div className="grid items-start gap-6 lg:grid-cols-2">
+          {/* Stacked at every width: the empty Today message tells the expert to take a request "below". */}
+          <div className="space-y-6 sm:space-y-7">
             <Panel icon={CalendarClock} title={t('expert.todaySchedule')}>
               {summary.isLoading ? (
                 <Spinner />

@@ -16,6 +16,7 @@ import {
   User,
   UserCheck,
 } from 'lucide-react';
+import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, NavLink, Outlet, ScrollRestoration, useLocation } from 'react-router';
 import { isUnverifiedExpert, useAuth } from '../auth/AuthProvider.jsx';
@@ -41,7 +42,10 @@ function LanguageSwitcher() {
           </option>
         ))}
       </select>
-      <ChevronDown className="pointer-events-none absolute right-1.5 top-1/2 size-3.5 sm:right-2.5 -translate-y-1/2 text-ink-subtle" aria-hidden="true" />
+      <ChevronDown
+        className="pointer-events-none absolute right-1.5 top-1/2 size-3.5 sm:right-2.5 -translate-y-1/2 text-ink-subtle"
+        aria-hidden="true"
+      />
     </div>
   );
 }
@@ -62,7 +66,13 @@ function Brand({ onDark = false, compact = false, className }) {
         strokeWidth={1.5}
         aria-hidden="true"
       />
-      <span className={clsx('text-lg font-extrabold tracking-tight sm:text-xl', onDark ? 'text-white' : 'text-brand-900', compact && 'max-[379px]:sr-only')}>
+      <span
+        className={clsx(
+          'text-lg font-extrabold tracking-tight sm:text-xl',
+          onDark ? 'text-white' : 'text-brand-900',
+          compact && 'max-[379px]:sr-only',
+        )}
+      >
         {t('app.name')}
       </span>
     </Link>
@@ -97,7 +107,12 @@ function useBreadcrumbs(nav) {
   const home = { to: '/dashboard', label: t('nav.dashboard') };
   if (pathname === '/dashboard') return [home];
   // Pages that are reached from a section rather than listed in the menu.
-  const parents = { scans: '/history', experts: '/consultations', admin: '/admin/experts', expert: '/dashboard' };
+  const parents = {
+    scans: '/history',
+    experts: '/consultations',
+    admin: '/admin/experts',
+    expert: '/dashboard',
+  };
   const first = pathname.split('/')[1];
   const sectionPath = parents[first] ?? `/${first}`;
   const section = nav.find((n) => n.to === sectionPath) ?? (first === 'profile' ? { to: '/profile', label: t('nav.profile') } : null);
@@ -172,8 +187,16 @@ function PublicShell({ nav }) {
   const { status } = useAuth();
   const { pathname, hash } = useLocation();
   // "Crops" is a section of the home page, so the two share a path and are told apart by the hash.
-  const isActive = (item) => (item.hash ? pathname === '/' && hash === item.hash : item.to === '/' ? pathname === '/' && !hash : pathname.startsWith(item.to));
+  const isActive = (item) =>
+    item.hash ? pathname === '/' && hash === item.hash : item.to === '/' ? pathname === '/' && !hash : pathname.startsWith(item.to);
   const linkTo = (item) => (item.hash ? { pathname: '/', hash: item.hash } : item.to);
+  // The phone link row scrolls sideways; bring the current page's link into view so it is never cut off.
+  const strip = useRef(null);
+  useEffect(() => {
+    const row = strip.current;
+    const current = row?.querySelector('[aria-current="page"]');
+    if (row && current) row.scrollLeft = current.offsetLeft - (row.clientWidth - current.offsetWidth) / 2;
+  }, [pathname, hash]);
   return (
     <div className="flex min-h-dvh flex-col">
       <SkipLink />
@@ -205,21 +228,32 @@ function PublicShell({ nav }) {
           </div>
         </div>
         {/* On narrower screens the links move under the bar, so the open pages stay one tap away. */}
-        <nav className="flex gap-1 overflow-x-auto px-4 pb-2.5 lg:hidden" aria-label="Main mobile">
-          {nav.map((item) => (
-            <Link
-              key={item.label}
-              to={linkTo(item)}
-              aria-current={isActive(item) ? 'page' : undefined}
-              className={clsx(
-                'shrink-0 rounded-lg px-3.5 py-1.5 text-sm font-semibold transition-colors',
-                isActive(item) ? 'bg-brand-100/80 text-brand-900' : 'text-ink-muted hover:bg-brand-50',
-              )}
-            >
-              {item.label}
-            </Link>
-          ))}
-        </nav>
+        {/* A fade at the right edge shows the row carries on past the screen. */}
+        <div className="relative lg:hidden">
+          <nav
+            ref={strip}
+            className="flex gap-1 overflow-x-auto scroll-smooth px-4 pb-2.5 pr-10 [scrollbar-width:none]"
+            aria-label="Main mobile"
+          >
+            {nav.map((item) => (
+              <Link
+                key={item.label}
+                to={linkTo(item)}
+                aria-current={isActive(item) ? 'page' : undefined}
+                className={clsx(
+                  'shrink-0 rounded-lg px-3.5 py-1.5 text-sm font-semibold transition-colors',
+                  isActive(item) ? 'bg-brand-100/80 text-brand-900' : 'text-ink-muted hover:bg-brand-50',
+                )}
+              >
+                {item.label}
+              </Link>
+            ))}
+          </nav>
+          <span
+            className="pointer-events-none absolute inset-y-0 right-0 w-10 bg-gradient-to-l from-surface to-transparent"
+            aria-hidden="true"
+          />
+        </div>
       </header>
 
       <main id="main" className="mx-auto w-full max-w-6xl flex-1 px-4 py-7 sm:py-10">
@@ -285,7 +319,12 @@ function AppShell({ nav }) {
         aria-label="Main mobile"
       >
         {/* Columns follow the list, so three items spread out rather than bunching to the left. */}
-        <ul className="mx-auto grid max-w-lg" style={{ gridTemplateColumns: `repeat(${mobileNav.length}, minmax(0, 1fr))` }}>
+        <ul
+          className="mx-auto grid max-w-lg"
+          style={{
+            gridTemplateColumns: `repeat(${mobileNav.length}, minmax(0, 1fr))`,
+          }}
+        >
           {mobileNav.map((item) => (
             <li key={item.to}>
               <NavLink
@@ -334,7 +373,12 @@ export default function Layout() {
    * to a page that will never have anything on it. An expert still waiting to be checked gets
    * only the public pages: every case page would turn them away.
    */
-  const home = { to: '/dashboard', label: t('nav.dashboard'), icon: Home, mobile: true };
+  const home = {
+    to: '/dashboard',
+    label: t('nav.dashboard'),
+    icon: Home,
+    mobile: true,
+  };
   const outbreaks = { to: '/outbreaks', label: t('nav.outbreaks'), icon: Map };
   const library = { to: '/library', label: t('nav.library'), icon: BookOpen };
 
@@ -356,26 +400,66 @@ export default function Layout() {
     : user.role === 'admin'
       ? [
           home,
-          { to: '/admin/experts', label: t('nav.adminExperts'), icon: ShieldCheck, mobile: true },
-          { to: '/consultations', label: t('nav.consultations'), icon: UserCheck, mobile: true },
-          { to: '/reviews', label: t('nav.reviews'), icon: ClipboardCheck, mobile: true },
+          {
+            to: '/admin/experts',
+            label: t('nav.adminExperts'),
+            icon: ShieldCheck,
+            mobile: true,
+          },
+          {
+            to: '/consultations',
+            label: t('nav.consultations'),
+            icon: UserCheck,
+            mobile: true,
+          },
+          {
+            to: '/reviews',
+            label: t('nav.reviews'),
+            icon: ClipboardCheck,
+            mobile: true,
+          },
           { ...outbreaks, mobile: true },
           library,
         ]
       : user.role === 'expert'
         ? [
             home,
-            { to: '/consultations', label: t('nav.consultations'), icon: UserCheck, mobile: true },
-            { to: '/reviews', label: t('nav.reviews'), icon: ClipboardCheck, mobile: true },
+            {
+              to: '/consultations',
+              label: t('nav.consultations'),
+              icon: UserCheck,
+              mobile: true,
+            },
+            {
+              to: '/reviews',
+              label: t('nav.reviews'),
+              icon: ClipboardCheck,
+              mobile: true,
+            },
             { ...outbreaks, mobile: true },
             { ...library, mobile: true },
           ]
         : [
             home,
-            { to: '/scan', label: t('nav.scan'), icon: Camera, primary: true, mobile: true },
-            { to: '/history', label: t('nav.history'), icon: History, mobile: true },
+            {
+              to: '/scan',
+              label: t('nav.scan'),
+              icon: Camera,
+              primary: true,
+              mobile: true,
+            },
+            {
+              to: '/history',
+              label: t('nav.history'),
+              icon: History,
+              mobile: true,
+            },
             { to: '/plots', label: t('nav.plots'), icon: Sprout, mobile: true },
-            { to: '/consultations', label: t('nav.consultations'), icon: UserCheck },
+            {
+              to: '/consultations',
+              label: t('nav.consultations'),
+              icon: UserCheck,
+            },
             outbreaks,
             { ...library, mobile: true },
           ];

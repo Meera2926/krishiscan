@@ -91,15 +91,17 @@ export default function NewScan() {
                   <p className="text-[15px] font-semibold text-brand-900">{t('scan.dropActive')}</p>
                 ) : (
                   <>
-                    {/* Phones have nothing to drag from, so they get the tap wording. */}
-                    <p className="hidden text-[15px] font-semibold text-brand-900 sm:block">{t('scan.dragPrompt')}</p>
-                    <p className="text-[15px] font-semibold text-brand-900 sm:hidden">{t('scan.dropPrompt')}</p>
+                    {/* Touch screens have nothing to drag from, so they get the tap wording. Keyed on the pointer, not the
+                        width, so a large touch tablet is not told to drag and a narrow desktop window still is. */}
+                    <p className="text-[15px] font-semibold text-brand-900 pointer-coarse:hidden">{t('scan.dragPrompt')}</p>
+                    <p className="hidden text-[15px] font-semibold text-brand-900 pointer-coarse:block">{t('scan.dropPrompt')}</p>
                   </>
                 )}
-                <p className="my-3 text-sm text-ink-subtle">{t('scan.or')}</p>
+                {/* The tap wording already says "or choose one", so touch screens get the button without a second "or". */}
+                <p className="my-3 text-sm text-ink-muted pointer-coarse:hidden">{t('scan.or')}</p>
                 <button
                   type="button"
-                  className="btn-primary px-6"
+                  className="btn-primary px-6 pointer-coarse:mt-4"
                   onClick={(e) => {
                     // The card opens the picker on click too; without this it would open twice.
                     e.stopPropagation();
@@ -109,7 +111,7 @@ export default function NewScan() {
                   <Camera className="size-4" aria-hidden="true" />
                   {t('scan.chooseFile')}
                 </button>
-                <p className="mt-5 text-xs text-ink-subtle">{t('scan.dropHint')}</p>
+                <p className="mt-5 text-xs text-ink-muted">{t('scan.dropHint')}</p>
               </div>
             )}
           </div>

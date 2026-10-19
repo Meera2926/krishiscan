@@ -46,9 +46,9 @@ export default function LandingHero() {
       <div className="pointer-events-none absolute -left-24 -top-24 size-96 rounded-full bg-brand-200/35 blur-3xl" aria-hidden="true" />
       <div className="pointer-events-none absolute -bottom-32 left-1/3 size-80 rounded-full bg-white/60 blur-3xl" aria-hidden="true" />
 
-      <div className="relative grid lg:min-h-[35rem] lg:grid-cols-[1.32fr_1fr]">
+      <div className="relative grid grid-cols-[minmax(0,1fr)] lg:min-h-[35rem] lg:grid-cols-[minmax(0,1.32fr)_minmax(0,1fr)]">
         <div className="relative z-10 px-6 pb-10 pt-10 sm:px-10 lg:py-16 lg:pl-14 lg:pr-4">
-          <h1 className="whitespace-pre-line text-[2.5rem] font-bold leading-[1.1] tracking-[-0.025em] text-brand-900 sm:text-[3.25rem] xl:text-[3.5rem]">
+          <h1 className="whitespace-pre-line break-words text-[1.85rem] font-bold leading-[1.1] tracking-[-0.025em] text-brand-900 min-[420px]:text-[2.5rem] sm:text-[3.25rem] xl:text-[3.5rem]">
             {t('landing.heroTitle')}
           </h1>
           <p className="mt-5 max-w-[30rem] text-[1.1rem] leading-relaxed text-ink/80 sm:text-[1.2rem]">{t('landing.heroBody')}</p>

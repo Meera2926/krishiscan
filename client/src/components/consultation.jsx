@@ -29,14 +29,34 @@ import { Alert, Field, IconBadge, SectionTitle, Spinner } from './ui.jsx';
 
 export const MODE_ICONS = { call: Phone, chat: MessageSquare, visit: MapPin };
 
-/** Chip colours for a consultation's status, shared by the list and the detail page. */
-export const STATUS_TONE = {
+const STATUS_TONE = {
   open: 'bg-info-bg text-info ring-info/15',
   confirmed: 'bg-ok-bg text-ok ring-ok/15',
   completed: 'bg-brand-50 text-brand-800 ring-brand-700/15',
   cancelled: 'bg-canvas-deep text-ink-muted ring-line-strong',
   expired: 'bg-warn-bg text-warn ring-warn/20',
 };
+
+/**
+ * A consultation's status as a chip, for the list and the detail page. An unanswered offer is the
+ * one state that asks something of the farmer, so it reads "needs your answer" in sunlight yellow.
+ */
+export function ConsultationStatusChip({ consultation, className }) {
+  const { t } = useTranslation();
+  const pending = consultation.decision === 'pending';
+  return (
+    <span
+      className={clsx(
+        'chip w-fit shrink-0 ring-1',
+        pending ? 'bg-accent-100 text-accent-700 ring-accent-700/15' : STATUS_TONE[consultation.status],
+        className,
+      )}
+    >
+      <span className="size-1.5 rounded-full bg-current opacity-70" aria-hidden="true" />
+      {pending ? t('consult.needsAnswer') : t(`consult.status.${consultation.status}`)}
+    </span>
+  );
+}
 
 /** A choice tile around a visually hidden radio: the ring follows keyboard focus too. */
 const choiceTile = (selected) =>

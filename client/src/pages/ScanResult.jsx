@@ -283,7 +283,7 @@ export default function ScanResult() {
                   />
                   {scan.predictions.length > 1 && (
                     <div className="space-y-3 rounded-control bg-surface-sunken p-4 ring-1 ring-line">
-                      <p className="text-xs font-bold uppercase tracking-[0.1em] text-ink-subtle">{t('result.otherPossibilities')}</p>
+                      <p className="text-xs font-bold uppercase tracking-[0.1em] text-ink-muted">{t('result.otherPossibilities')}</p>
                       {scan.predictions.slice(1).map((p) => (
                         <ConfidenceBar key={p.label} value={p.confidence} label={nameFor(p.diseaseKey)} tone="muted" />
                       ))}
@@ -316,7 +316,7 @@ export default function ScanResult() {
             />
           )}
 
-          <p className="text-center text-xs text-ink-subtle">{t('result.model', { version: scan.modelVersion, ms: scan.inferenceMs ?? '—' })}</p>
+          <p className="text-center text-xs text-ink-muted">{t('result.model', { version: scan.modelVersion, ms: scan.inferenceMs ?? '—' })}</p>
         </div>
       </div>
     </div>

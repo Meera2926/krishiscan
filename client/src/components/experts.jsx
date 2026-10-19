@@ -93,16 +93,18 @@ export function ExpertFacts({ expert, degreeLabel, fields = DEFAULT_FIELDS, clas
   if (!rows.length) return null;
 
   // 'tiles' sets each fact on its own pale panel, for the public profile where they are the page's body.
+  // Each group stays a bare div of dt + dd, which is all a <dl> may hold: the tile's icon lives inside
+  // the dt and is lifted into the left padding, rather than wrapping the pair in another element.
   const tiles = variant === 'tiles';
   return (
-    <dl className={clsx('grid text-sm sm:grid-cols-2', tiles ? 'gap-3' : 'gap-x-6 gap-y-3', className)}>
+    <dl className={clsx(tiles ? 'grid gap-3 text-sm sm:grid-cols-2' : 'grid gap-x-6 gap-y-3 text-sm sm:grid-cols-2', className)}>
       {rows.map((f) => (
-        <div key={f} className={clsx('min-w-0', tiles && 'flex gap-3 rounded-control bg-surface-sunken px-3.5 py-3 ring-1 ring-line')}>
-          {tiles && <IconBadge icon={FACT_ICONS[f] ?? BadgeCheck} size="sm" tone="white" />}
-          <div className="min-w-0">
-            <dt className="text-xs font-semibold uppercase tracking-wide text-ink-subtle">{t(`expert.field.${f}`)}</dt>
-            <dd className={clsx('mt-0.5 break-words font-medium', tiles && 'text-ink')}>{values[f]}</dd>
-          </div>
+        <div key={f} className={tiles ? 'relative min-w-0 rounded-control bg-surface-sunken py-3 pl-14 pr-3.5 ring-1 ring-line' : 'min-w-0'}>
+          <dt className="text-xs font-semibold uppercase tracking-wide text-ink-subtle">
+            {tiles && <IconBadge icon={FACT_ICONS[f] ?? BadgeCheck} size="sm" tone="white" className="absolute left-3.5 top-3" />}
+            {t(`expert.field.${f}`)}
+          </dt>
+          <dd className={tiles ? 'mt-0.5 break-words font-medium text-ink' : 'mt-0.5 break-words font-medium'}>{values[f]}</dd>
         </div>
       ))}
     </dl>

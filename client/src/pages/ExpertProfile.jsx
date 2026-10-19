@@ -1,10 +1,10 @@
-import { ArrowLeft, BadgeCheck, ClipboardList, Leaf, MessageSquareQuote, ShieldCheck, Star, UserCheck, UserX } from 'lucide-react';
+import { ArrowLeft, BadgeCheck, ClipboardList, MessageSquareQuote, ShieldCheck, Star, UserCheck, UserX } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate, useParams } from 'react-router';
 import { useExpertProfile } from '../api/hooks.js';
 import { ExpertFacts } from '../components/experts.jsx';
 import { RatingDistribution, Stars, formatAverage } from '../components/ratings.jsx';
-import { EmptyState, ErrorState, SectionTitle, Spinner } from '../components/ui.jsx';
+import { EmptyState, ErrorState, FullPageSpinner, HeroPanel, SectionTitle } from '../components/ui.jsx';
 import { shortDate } from '../lib/format.js';
 
 const FACT_FIELDS = ['degree', 'specialisation', 'university', 'organisation', 'designation', 'experienceYears', 'place', 'languages', 'modes', 'crops'];
@@ -91,13 +91,7 @@ export default function ExpertProfile() {
     </button>
   );
 
-  if (isLoading) {
-    return (
-      <div className="grid place-items-center py-24">
-        <Spinner className="size-7" />
-      </div>
-    );
-  }
+  if (isLoading) return <FullPageSpinner />;
   if (error?.response?.status === 404) {
     return (
       <div className="mx-auto max-w-xl">
@@ -113,43 +107,39 @@ export default function ExpertProfile() {
     <div className="mx-auto max-w-3xl space-y-6">
       <div>
         {back}
-        {/* The profile header: the light mint panel of the design, with the person in it. */}
-        <header className="animate-rise relative overflow-hidden rounded-panel bg-gradient-to-br from-brand-100 via-brand-50 to-surface px-5 py-6 ring-1 ring-brand-200/60 sm:px-8 sm:py-8">
-          <div className="pointer-events-none absolute -right-20 -top-28 size-72 rounded-full bg-brand-200/45 blur-3xl" aria-hidden="true" />
-          <Leaf
-            className="pointer-events-none absolute -bottom-8 right-4 size-36 -rotate-12 fill-brand-200/40 text-brand-300/50 max-sm:hidden"
-            strokeWidth={0.75}
-            aria-hidden="true"
-          />
-          <div className="relative flex flex-col gap-4 sm:flex-row sm:items-start sm:gap-6">
-            <span className="grid size-20 shrink-0 place-items-center rounded-full bg-surface text-brand-700 shadow-[var(--shadow-md)] ring-4 ring-brand-100">
+        {/* The shared mint hero, with the person in it. The avatar disc rides in the action slot,
+            which sits beside the name on wider screens; on a phone the name needs the width. */}
+        <HeroPanel
+          eyebrow={t('expert.profile.eyebrow')}
+          title={expert.name}
+          action={
+            <span className="grid size-20 shrink-0 place-items-center rounded-full bg-surface text-brand-700 shadow-[var(--shadow-md)] ring-4 ring-brand-100 max-sm:hidden">
               <UserCheck className="size-9" aria-hidden="true" />
             </span>
-            <div className="min-w-0 flex-1">
-              <p className="eyebrow">{t('expert.profile.eyebrow')}</p>
-              <h1 className="mt-1.5 text-[1.75rem] font-extrabold leading-[1.15] text-brand-900 sm:text-[2.125rem]">{expert.name}</h1>
-              {expert.verified && (
-                <p className="mt-2.5 flex flex-wrap items-center gap-x-2 gap-y-1">
-                  <span className="chip bg-ok-bg text-ok ring-1 ring-ok/15">
-                    <BadgeCheck className="size-3.5" aria-hidden="true" />
-                    {t('expert.verified')}
-                  </span>
-                  {expert.verifiedSince && (
-                    <span className="text-xs text-ink-muted">{t('expert.verifiedSince', { date: shortDate(expert.verifiedSince, i18n.language) })}</span>
-                  )}
-                </p>
-              )}
-              {expert.qualification && <p className="mt-3 text-lg font-bold leading-snug text-brand-700">{expert.qualification}</p>}
-              {(expert.designation || expert.organisation) && (
-                <p className="mt-0.5 text-sm text-ink-muted">{[expert.designation, expert.organisation].filter(Boolean).join(' · ')}</p>
-              )}
-              <p className="mt-4 flex items-start gap-1.5 text-xs leading-relaxed text-ink-muted">
-                <ShieldCheck className="mt-px size-3.5 shrink-0 text-brand-600" aria-hidden="true" />
-                {t('expert.profile.checkedNote')}
+          }
+        >
+          <div className="-mt-3">
+            {expert.verified && (
+              <p className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                <span className="chip bg-ok-bg text-ok ring-1 ring-ok/15">
+                  <BadgeCheck className="size-3.5" aria-hidden="true" />
+                  {t('expert.verified')}
+                </span>
+                {expert.verifiedSince && (
+                  <span className="text-xs text-ink-muted">{t('expert.verifiedSince', { date: shortDate(expert.verifiedSince, i18n.language) })}</span>
+                )}
               </p>
-            </div>
+            )}
+            {expert.qualification && <p className="mt-3 text-lg font-bold leading-snug text-brand-700">{expert.qualification}</p>}
+            {(expert.designation || expert.organisation) && (
+              <p className="mt-0.5 text-sm text-ink-muted">{[expert.designation, expert.organisation].filter(Boolean).join(' · ')}</p>
+            )}
+            <p className="mt-4 flex items-start gap-1.5 text-xs leading-relaxed text-ink-muted">
+              <ShieldCheck className="mt-px size-3.5 shrink-0 text-brand-600" aria-hidden="true" />
+              {t('expert.profile.checkedNote')}
+            </p>
           </div>
-        </header>
+        </HeroPanel>
       </div>
 
       <section className="card p-5 sm:p-6">

@@ -1,4 +1,4 @@
-import { LocateFixed, ShieldCheck, Sprout } from 'lucide-react';
+import { ChevronDown, LocateFixed, ShieldCheck, Sprout } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
@@ -10,8 +10,18 @@ import { ErrorState, IconBadge, PageHeader, SeverityBadge, Spinner } from '../co
 import { shortDate } from '../lib/format.js';
 import { useGeolocation } from '../lib/useGeolocation.js';
 
-/** Filter selects as rounded pills, matching the location buttons beside them. */
-const FILTER = 'input w-full rounded-full pr-9 font-medium sm:w-auto';
+/**
+ * A filter select as a rounded pill, matching the location buttons above. The native arrow is hidden and a muted
+ * chevron drawn instead, as in the shell's language picker. It styles whatever select it wraps, so CropSelect fits too.
+ */
+function PillSelect({ children }) {
+  return (
+    <span className="relative block [&_select]:cursor-pointer [&_select]:appearance-none [&_select]:rounded-full [&_select]:pr-10 [&_select]:font-medium [&_select:disabled]:cursor-not-allowed [&_select:disabled]:opacity-60">
+      {children}
+      <ChevronDown className="pointer-events-none absolute right-3.5 top-1/2 size-4 -translate-y-1/2 text-ink-subtle" aria-hidden="true" />
+    </span>
+  );
+}
 
 export default function Outbreaks() {
   const { t, i18n } = useTranslation();
@@ -73,30 +83,34 @@ export default function Outbreaks() {
         <div className="flex flex-wrap items-end gap-3 border-t border-line pt-4">
           <label className="w-full text-sm sm:w-auto">
             <span className="label">{t('outbreaks.radius')}</span>
-            <select className={FILTER} value={radiusKm} onChange={(e) => setRadiusKm(Number(e.target.value))} disabled={isCountryView}>
-              {[10, 25, 50, 100, 200].map((r) => (
-                <option key={r} value={r}>
-                  {r} km
-                </option>
-              ))}
-            </select>
+            <PillSelect>
+              <select className="input sm:w-auto" value={radiusKm} onChange={(e) => setRadiusKm(Number(e.target.value))} disabled={isCountryView}>
+                {[10, 25, 50, 100, 200].map((r) => (
+                  <option key={r} value={r}>
+                    {r} km
+                  </option>
+                ))}
+              </select>
+            </PillSelect>
           </label>
           <label className="w-full text-sm sm:w-auto">
             <span className="label">{t('outbreaks.period')}</span>
-            <select className={FILTER} value={days} onChange={(e) => setDays(Number(e.target.value))}>
-              {[7, 14, 30, 60, 90].map((d) => (
-                <option key={d} value={d}>
-                  {t('outbreaks.days', { count: d })}
-                </option>
-              ))}
-            </select>
+            <PillSelect>
+              <select className="input sm:w-auto" value={days} onChange={(e) => setDays(Number(e.target.value))}>
+                {[7, 14, 30, 60, 90].map((d) => (
+                  <option key={d} value={d}>
+                    {t('outbreaks.days', { count: d })}
+                  </option>
+                ))}
+              </select>
+            </PillSelect>
           </label>
           <label className="w-full text-sm sm:w-52">
             <span className="label">{t('scan.crop')}</span>
-            {/* CropSelect brings its own input styling; the wrapper rounds it to match the other filters. */}
-            <span className="block [&_select]:rounded-full [&_select]:font-medium">
+            {/* CropSelect brings its own input styling; PillSelect rounds it and swaps the arrow to match the other filters. */}
+            <PillSelect>
               <CropSelect value={crop} onChange={setCrop} allowAll allLabel={t('outbreaks.allCrops')} onlySupported={false} />
-            </span>
+            </PillSelect>
           </label>
           {isFetching && <Spinner className="mb-3 size-4" />}
         </div>
@@ -147,12 +161,7 @@ export default function Outbreaks() {
           {data?.diseases?.length ? (
             <ul className="divide-y divide-line">
               {data.diseases.map((d) => (
-                <li key={d.diseaseKey} className="flex items-center justify-between gap-3 rounded-control px-3 py-3">
-                  <span
-                    className="size-2.5 shrink-0 rounded-full"
-                    style={{ backgroundColor: SEVERITY_COLORS[d.severity] ?? SEVERITY_COLORS.low }}
-                    aria-hidden="true"
-                  />
+                <li key={d.diseaseKey} className="flex items-center justify-between gap-3 px-3 py-3">
                   <div className="min-w-0 flex-1">
                     <Link to={`/library/${d.diseaseKey}`} className="block truncate font-semibold text-brand-900 hover:text-brand-700 hover:underline">
                       {d.commonName}

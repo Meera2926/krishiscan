@@ -106,7 +106,7 @@ export function DiseaseAdvice({ disease, compact = false, cards = false, footer 
             {fc.leafWetnessHours != null && <Condition label={t('library.leafWetness')} value={`${fc.leafWetnessHours} h`} />}
             {fc.rainfall && (
               <div className="col-span-full rounded-control bg-surface-sunken px-3.5 py-2.5 ring-1 ring-line">
-                <dt className="text-xs font-medium text-ink-subtle">{t('library.rainfall')}</dt>
+                <dt className="text-xs font-medium text-ink-muted">{t('library.rainfall')}</dt>
                 <dd className="mt-0.5 text-sm leading-relaxed">{fc.rainfall}</dd>
               </div>
             )}
@@ -223,7 +223,7 @@ function AdviceList({ icon, title, items }) {
 function Condition({ label, value }) {
   return (
     <div className="rounded-control bg-surface-sunken px-3.5 py-2.5 ring-1 ring-line">
-      <dt className="text-xs font-medium text-ink-subtle">{label}</dt>
+      <dt className="text-xs font-medium text-ink-muted">{label}</dt>
       <dd className="mt-0.5 font-bold text-brand-900 tabular-nums">{value}</dd>
     </div>
   );
@@ -266,7 +266,7 @@ export function ScanCard({ scan }) {
           )}
         </div>
         <p className="mt-1.5 truncate font-bold leading-snug text-brand-900 transition-colors group-hover:text-brand-700">{title}</p>
-        <p className="mt-0.5 truncate text-xs text-ink-subtle">
+        <p className="mt-0.5 truncate text-xs text-ink-muted">
           {cropName(scan.declaredCrop)}
           {scan.plot?.name && ` · ${scan.plot.name}`} · {relativeTime(scan.createdAt, i18n.language)}
         </p>

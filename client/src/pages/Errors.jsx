@@ -2,13 +2,16 @@ import { House, Leaf, RotateCw, SearchX, TriangleAlert } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { isRouteErrorResponse, Link, useRouteError } from 'react-router';
 
-/** The shared frame: a white card centred on the canvas, a faint leaf in the corner. */
+/**
+ * The shared frame: a white card centred on the canvas, with the same faint corner leaf as HeroPanel.
+ * Only a sliver of the leaf is tucked under the edge, so its outline still reads as a leaf.
+ */
 function ErrorPanel({ badge, children }) {
   return (
     <div className="card-raised animate-rise relative w-full max-w-md overflow-hidden px-6 py-10 text-center sm:px-10 sm:py-12">
       <div className="pointer-events-none absolute -right-16 -top-20 size-56 rounded-full bg-brand-100/80 blur-3xl" aria-hidden="true" />
       <Leaf
-        className="pointer-events-none absolute -bottom-10 -left-8 size-24 rotate-12 opacity-70 fill-brand-100 text-brand-200"
+        className="pointer-events-none absolute -bottom-5 -right-3 size-20 -rotate-12 fill-brand-200/40 text-brand-300/50 sm:size-28"
         strokeWidth={0.75}
         aria-hidden="true"
       />

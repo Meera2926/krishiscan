@@ -1,12 +1,22 @@
-import { History as HistoryIcon, SlidersHorizontal } from 'lucide-react';
+import { ChevronDown, History as HistoryIcon, SlidersHorizontal } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router';
 import { usePlots, useScans } from '../api/hooks.js';
 import { ScanCard } from '../components/domain.jsx';
 import { EmptyState, ErrorState, PageHeader, Pagination, Spinner } from '../components/ui.jsx';
 
-/** Filter selects as rounded pills; on a phone they share the row instead of overflowing it. */
-const FILTER = 'input w-auto min-w-0 max-w-full rounded-full pr-9 font-medium max-sm:flex-1';
+/**
+ * A filter select as a rounded pill. The native arrow is hidden and a muted chevron drawn instead, as in the
+ * shell's language picker; on a phone the pills share the row instead of overflowing it.
+ */
+function PillSelect({ children }) {
+  return (
+    <span className="relative inline-block min-w-0 max-w-full max-sm:flex-1 [&_select]:cursor-pointer [&_select]:appearance-none [&_select]:rounded-full [&_select]:pr-10 [&_select]:font-medium">
+      {children}
+      <ChevronDown className="pointer-events-none absolute right-3.5 top-1/2 size-4 -translate-y-1/2 text-ink-subtle" aria-hidden="true" />
+    </span>
+  );
+}
 
 export default function History() {
   const { t } = useTranslation();
@@ -40,23 +50,27 @@ export default function History() {
         <span className="icon-badge size-9 max-sm:hidden" aria-hidden="true">
           <SlidersHorizontal className="size-4" />
         </span>
-        <select className={FILTER} value={params.get('status') ?? ''} onChange={(e) => setFilter('status', e.target.value)} aria-label="Status">
-          <option value="">{t('history.filterStatus')}</option>
-          {['confident', 'uncertain', 'rejected'].map((s) => (
-            <option key={s} value={s}>
-              {t(`status.${s}`)}
-            </option>
-          ))}
-        </select>
-        {plots.length > 0 && (
-          <select className={FILTER} value={params.get('plotId') ?? ''} onChange={(e) => setFilter('plotId', e.target.value)} aria-label={t('scan.plot')}>
-            <option value="">{t('plots.title')}</option>
-            {plots.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.name}
+        <PillSelect>
+          <select className="input" value={params.get('status') ?? ''} onChange={(e) => setFilter('status', e.target.value)} aria-label="Status">
+            <option value="">{t('history.filterStatus')}</option>
+            {['confident', 'uncertain', 'rejected'].map((s) => (
+              <option key={s} value={s}>
+                {t(`status.${s}`)}
               </option>
             ))}
           </select>
+        </PillSelect>
+        {plots.length > 0 && (
+          <PillSelect>
+            <select className="input" value={params.get('plotId') ?? ''} onChange={(e) => setFilter('plotId', e.target.value)} aria-label={t('scan.plot')}>
+              <option value="">{t('plots.title')}</option>
+              {plots.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.name}
+                </option>
+              ))}
+            </select>
+          </PillSelect>
         )}
         {isFetching && !isLoading && <Spinner className="size-4 self-center" />}
       </div>

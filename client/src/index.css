@@ -229,6 +229,9 @@
     transform: translateY(-2px);
     @apply border-brand-200;
   }
+  .input:disabled {
+    @apply cursor-not-allowed bg-surface-sunken opacity-60;
+  }
   .input:focus {
     box-shadow: 0 0 0 3px rgb(63 140 70 / 0.18);
   }
@@ -291,4 +294,7 @@
 .leaflet-container {
   font: inherit;
   z-index: 0;
+}
+.leaflet-container .leaflet-control-attribution {
+  font-size: 11px;
 }

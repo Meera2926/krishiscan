@@ -93,6 +93,7 @@ export default {
       'KrishiScan is a decision-support tool. Always confirm with your local Krishi Vigyan Kendra or agriculture officer before spraying.',
   },
   dashboard: {
+    diseasedScans: 'Diseased',
     expertOffers: 'Expert reviews waiting for your answer',
     reminderNth: 'Reminder {{n}} of {{of}}',
     greeting: 'Namaste, {{name}}',
@@ -244,6 +245,8 @@ export default {
     pickLocation: 'Please mark the plot location on the map.',
   },
   library: {
+    diseases_other: '{{count}} diseases',
+    diseases_one: '{{count}} disease',
     title: 'Disease library',
     subtitle: 'Symptoms, causes and treatments for major diseases of Indian crops.',
     search: 'Search diseases, symptoms, pathogens',

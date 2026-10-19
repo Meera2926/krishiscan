@@ -95,7 +95,7 @@ export function OrganicRemedies({ remedies, sourceUrl }) {
         })}
       </ul>
 
-      <p className="border-t border-line bg-surface-sunken px-5 py-3.5 text-xs leading-relaxed text-ink-subtle sm:px-6">
+      <p className="border-t border-line bg-surface-sunken px-5 py-3.5 text-xs leading-relaxed text-ink-muted sm:px-6">
         {t('remedies.disclaimer')}
         {sourceUrl && (
           <>

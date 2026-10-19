@@ -5,16 +5,14 @@ import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
 import { useConsultations } from '../api/hooks.js';
 import { useAuth } from '../auth/AuthProvider.jsx';
-import { MODE_ICONS, STATUS_TONE } from '../components/consultation.jsx';
-import { EmptyState, ErrorState, IconBadge, Pagination, PageHeader, Spinner } from '../components/ui.jsx';
+import { ConsultationStatusChip, MODE_ICONS } from '../components/consultation.jsx';
+import { EmptyState, ErrorState, FullPageSpinner, IconBadge, Pagination, PageHeader } from '../components/ui.jsx';
 import { shortDate } from '../lib/format.js';
 
 function ConsultationRow({ consultation, showFarmer }) {
   const { t, i18n } = useTranslation();
   const Icon = MODE_ICONS[consultation.mode] ?? UserCheck;
   const summary = consultation.caseSummary ?? {};
-  // An unanswered offer is the one row that asks something of the farmer, so it gets the sunlight tint.
-  const pending = consultation.decision === 'pending';
 
   return (
     <li>
@@ -49,15 +47,7 @@ function ConsultationRow({ consultation, showFarmer }) {
               </span>
             </p>
           </div>
-          <span
-            className={clsx(
-              'chip w-fit shrink-0 ring-1',
-              pending ? 'bg-accent-100 text-accent-700 ring-accent-700/15' : STATUS_TONE[consultation.status],
-            )}
-          >
-            <span className="size-1.5 rounded-full bg-current opacity-70" aria-hidden="true" />
-            {pending ? t('consult.needsAnswer') : t(`consult.status.${consultation.status}`)}
-          </span>
+          <ConsultationStatusChip consultation={consultation} />
         </div>
 
         <ChevronRight
@@ -90,7 +80,7 @@ export default function Consultations() {
               role="tab"
               aria-selected={scope === s}
               className={clsx(
-                'min-h-10 rounded-full px-5 text-sm font-semibold transition-colors',
+                'btn btn-pill',
                 scope === s ? 'bg-brand-700 text-white shadow-[var(--shadow-brand)]' : 'text-ink-muted hover:bg-brand-50 hover:text-brand-800',
               )}
               onClick={() => {
@@ -104,11 +94,7 @@ export default function Consultations() {
         </div>
       )}
 
-      {isLoading && (
-        <div className="grid place-items-center py-16">
-          <Spinner className="size-7" />
-        </div>
-      )}
+      {isLoading && <FullPageSpinner />}
       {error && <ErrorState error={error} onRetry={refetch} />}
 
       {data && data.items.length === 0 && (

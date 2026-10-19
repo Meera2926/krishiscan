@@ -56,6 +56,10 @@ const LONG_WORD_LANGS = ['ta', 'te', 'ml'];
 const TILE_BASE = 'w-[calc(50%-0.5rem)] sm:w-[calc(33.333%-0.667rem)] md:w-[calc(25%-0.75rem)]';
 const cropTile = (longWords) => (longWords ? TILE_BASE : `${TILE_BASE} lg:w-[calc(16.666%-0.834rem)]`);
 
+// One shape for every block below the hero (same radius as the hero), so neighbouring panels share gutters
+// and corners; each section adds only its own background and ring colour.
+const PANEL = 'scroll-mt-24 rounded-[1.75rem] px-4 py-10 shadow-[var(--shadow-xs)] ring-1 sm:px-8 sm:py-12';
+
 export default function Landing() {
   const { t, i18n } = useTranslation();
   const { status } = useAuth();
@@ -69,8 +73,14 @@ export default function Landing() {
   // so try again when it arrives as well as when the hash changes.
   useEffect(() => {
     if (!hash) return;
-    const el = document.getElementById(decodeURIComponent(hash.slice(1)));
-    el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    // A hand-typed or truncated hash such as #%E0%A4 is not valid percent-encoding; ignore it rather than crash the page.
+    let id;
+    try {
+      id = decodeURIComponent(hash.slice(1));
+    } catch {
+      return;
+    }
+    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }, [hash, supported.length]);
 
   if (status === 'authenticated') return <Navigate to="/dashboard" replace />;
@@ -97,7 +107,7 @@ export default function Landing() {
       <section
         id="features"
         aria-labelledby="why-title"
-        className="scroll-mt-24 rounded-[1.75rem] bg-gradient-to-b from-surface/80 to-brand-50/60 px-4 py-10 shadow-[var(--shadow-xs)] ring-1 ring-brand-200/50 sm:px-8 sm:py-12"
+        className={`${PANEL} bg-gradient-to-b from-surface/80 to-brand-50/60 ring-brand-200/50`}
       >
         <SectionIntro id="why-title" eyebrow={t('landing.whyEyebrow')} title={t('landing.whyTitle', { app: t('app.name') })} subtitle={t('landing.whySubtitle')} />
         <ul className="grid gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-4">
@@ -116,7 +126,7 @@ export default function Landing() {
         <section
           id="crops"
           aria-labelledby="crops-title"
-          className="scroll-mt-24 rounded-[1.75rem] bg-surface px-4 py-10 shadow-[var(--shadow-xs)] ring-1 ring-line sm:px-8 sm:py-12"
+          className={`${PANEL} bg-surface ring-line`}
         >
           <SectionIntro id="crops-title" title={t('landing.cropsTitle')} subtitle={t('landing.cropsSubtitle')} />
           <ul className="flex flex-wrap justify-center gap-4">
@@ -150,7 +160,7 @@ export default function Landing() {
       {/* How it works: a white panel with four steps, joined by thin arrows on wide screens. */}
       <section
         aria-labelledby="how-title"
-        className="relative overflow-hidden rounded-[1.75rem] bg-surface px-5 py-10 shadow-[var(--shadow-xs)] ring-1 ring-line sm:px-8 sm:py-12"
+        className={`${PANEL} relative overflow-hidden bg-surface ring-line`}
       >
         <div className="pointer-events-none absolute -right-24 -top-24 size-72 rounded-full bg-brand-100/60 blur-3xl" aria-hidden="true" />
         <div className="pointer-events-none absolute -bottom-28 -left-20 size-64 rounded-full bg-brand-50 blur-3xl" aria-hidden="true" />
@@ -169,7 +179,7 @@ export default function Landing() {
                 <div className="min-w-0">
                   <p className="text-xs font-bold tabular-nums text-brand-600">{i + 1}</p>
                   <h3 className="mt-0.5 font-bold leading-snug text-brand-900">{s.title}</h3>
-                  <p className="mx-auto mt-1.5 max-w-60 text-sm leading-relaxed text-ink-muted">{s.body}</p>
+                  <p className="mt-1.5 text-sm leading-relaxed text-ink-muted sm:mx-auto sm:max-w-60">{s.body}</p>
                 </div>
                 {i < steps.length - 1 && (
                   <ArrowRight className="absolute -right-[2.1rem] top-[1.125rem] hidden size-5 text-brand-300 lg:block" strokeWidth={1.5} aria-hidden="true" />
@@ -177,10 +187,17 @@ export default function Landing() {
               </li>
             ))}
           </ol>
+          {/* The page's sign-up call to action, after the visitor has seen what they get. */}
+          <div className="mt-10 flex justify-center sm:mt-12">
+            <Link to="/register" className="btn-primary btn-pill group min-h-12 px-8 text-[15px]">
+              {t('landing.ctaStart')}
+              <ArrowRight className="size-4 transition-transform duration-200 group-hover:translate-x-0.5" aria-hidden="true" />
+            </Link>
+          </div>
         </div>
       </section>
 
-      <section className="flex gap-3.5 rounded-panel bg-accent-50 p-5 text-soil-700 ring-1 ring-accent-500/25 sm:p-6">
+      <section className="flex gap-3.5 rounded-[1.75rem] bg-accent-50 p-5 text-soil-700 ring-1 ring-accent-500/25 sm:p-6">
         <span className="grid size-9 shrink-0 place-items-center rounded-full bg-accent-100 text-accent-700">
           <ShieldAlert className="size-[18px]" aria-hidden="true" />
         </span>
