@@ -36,6 +36,8 @@ const formBool = z
 const createBody = z
   .object({
     plotId: objectId.optional(),
+    // The scan being re-photographed, when the farmer chose "scan again" on a result.
+    followUpOf: objectId.optional(),
     crop: cropKey.optional(),
     lat: latitude.optional(),
     lng: longitude.optional(),
@@ -81,24 +83,44 @@ async function loadAdvisory(scan) {
 }
 
 /** Severity change against the plot's previous reliable scan: the per-scan view of progression. */
+const COMPARE_FIELDS = 'createdAt severity diseaseKey isHealthy review image.url status';
+
+/**
+ * How much of the leaf is affected now against before. A re-photograph of a named scan is compared
+ * with that scan; otherwise a scan on a plot is compared with the plot's previous scan. Changes of
+ * under 3 points are within what the colour estimate can tell apart, so they count as no change.
+ */
 async function compareWithPrevious(scan) {
+  if (!scan.severity?.reliable) return null;
+  let previous = null;
+  let basis = null;
+  if (scan.followUpOf) {
+    previous = await Scan.findOne({ _id: scan.followUpOf, owner: scan.owner }).select(COMPARE_FIELDS);
+    if (previous && (previous.status === 'rejected' || !previous.severity?.reliable)) previous = null;
+    if (previous) basis = 'leaf';
+  }
   const plotId = scan.plot?._id ?? scan.plot;
-  if (!plotId || !scan.severity?.reliable) return null;
-  const previous = await Scan.findOne({
-    plot: plotId,
-    _id: { $ne: scan._id },
-    createdAt: { $lt: scan.createdAt },
-    status: { $ne: 'rejected' },
-    'severity.reliable': true,
-  })
-    .sort({ createdAt: -1 })
-    .select('createdAt severity diseaseKey isHealthy review');
+  if (!previous && plotId) {
+    previous = await Scan.findOne({
+      plot: plotId,
+      _id: { $ne: scan._id },
+      createdAt: { $lt: scan.createdAt },
+      status: { $ne: 'rejected' },
+      'severity.reliable': true,
+    })
+      .sort({ createdAt: -1 })
+      .select(COMPARE_FIELDS);
+    if (previous) basis = 'plot';
+  }
   if (!previous) return null;
   const change = Math.round((scan.severity.percent - previous.severity.percent) * 10) / 10;
   return {
+    basis,
     previousScanId: previous.id,
     previousDate: previous.createdAt,
+    previousImageUrl: previous.image?.url ?? null,
     previousPercent: previous.severity.percent,
+    currentPercent: scan.severity.percent,
     previousDiseaseKey: previous.effectiveDiseaseKey,
     change,
     direction: change >= 3 ? 'worse' : change <= -3 ? 'better' : 'same',
@@ -126,13 +148,23 @@ router.post('/', uploadImage, validate({ body: createBody }), async (req, res) =
   if (!req.file) throw badRequest('Attach a photo in the "image" field.');
   const body = req.valid.body;
 
+  // A re-photograph belongs with the scan it follows: same farmer, same crop, same plot.
+  let earlier = null;
+  if (body.followUpOf) {
+    earlier = await Scan.findOne({ _id: body.followUpOf, owner: req.auth.userId }).select('declaredCrop plot');
+    if (!earlier) throw notFound('The scan to compare with was not found');
+  }
   let plot = null;
-  if (body.plotId) {
-    plot = await Plot.findOne({ _id: body.plotId, owner: req.auth.userId });
-    if (!plot) throw notFound('Plot not found');
+  const plotId = body.plotId ?? earlier?.plot ?? null;
+  if (plotId) {
+    plot = await Plot.findOne({ _id: plotId, owner: req.auth.userId });
+    if (!plot && body.plotId) throw notFound('Plot not found');
   }
   // The classifiers are routed by crop, and farmers know their crop, so it is required.
-  const declaredCrop = body.crop || plot?.crop || null;
+  const declaredCrop = body.crop || plot?.crop || earlier?.declaredCrop || null;
+  if (earlier?.declaredCrop && declaredCrop !== earlier.declaredCrop) {
+    throw unprocessable('Same crop needed', { crop: ['A re-photograph must be of the same crop as the scan it follows.'] });
+  }
   if (!declaredCrop) {
     throw unprocessable('Choose the crop', { crop: ['Select which crop this leaf is from.'] });
   }
@@ -166,6 +198,7 @@ router.post('/', uploadImage, validate({ body: createBody }), async (req, res) =
     scan = await Scan.create({
       owner: req.auth.userId,
       plot: plot?._id ?? null,
+      followUpOf: earlier?._id ?? null,
       declaredCrop,
       image: {
         url: saved.url,

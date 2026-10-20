@@ -361,6 +361,36 @@ describe('progression and treatments', () => {
     await request(app).post(`/api/plots/${plot.id}/treatments`).set(bearer(other.token)).send({ type: 'organic', product: 'Neem', appliedAt: daysAgo(1).toISOString() }).expect(404);
   });
 
+  it('compares a re-photographed leaf with the scan it follows, without a plot', async () => {
+    const { token } = await registerUser(app);
+    const other = await registerUser(app);
+    const first = (await uploadScan(token, { crop: 'tomato' }, await lesionLeaf(40, 4))).body.scan;
+    expect(first.severity.reliable).toBe(true);
+
+    // Scan again: no plot and no crop given; both come from the earlier scan.
+    const again = await uploadScan(token, { followUpOf: first.id }, await lesionLeaf(100, 5));
+    expect(again.status).toBe(201);
+    expect(again.body.scan.declaredCrop).toBe('tomato');
+    expect(again.body.scan.followUpOf).toBe(first.id);
+    expect(again.body.comparison).toMatchObject({ basis: 'leaf', previousScanId: first.id, direction: 'worse' });
+    expect(again.body.comparison.change).toBeGreaterThan(10);
+    expect(again.body.comparison.previousImageUrl).toBe(first.image.url);
+    expect(again.body.comparison.currentPercent).toBe(again.body.scan.severity.percent);
+
+    // The same comparison comes back when the result is opened later.
+    const detail = await request(app).get(`/api/scans/${again.body.scan.id}`).set(bearer(token)).expect(200);
+    expect(detail.body.comparison.previousScanId).toBe(first.id);
+
+    // A smaller lesion against the larger one reads as better.
+    const third = await uploadScan(token, { followUpOf: again.body.scan.id }, await lesionLeaf(30, 6));
+    expect(third.status).toBe(201);
+    expect(third.body.comparison.direction).toBe('better');
+
+    // Another farmer cannot compare against this farmer's scan, and the crop must match.
+    expect((await uploadScan(other.token, { followUpOf: first.id, crop: 'tomato' })).status).toBe(404);
+    expect((await uploadScan(token, { followUpOf: first.id, crop: 'potato' })).status).toBe(422);
+  });
+
   it('validates treatments and deletes them', async () => {
     const { token } = await registerUser(app);
     const plot = (await request(app).post('/api/plots').set(bearer(token)).send({ name: 'T', crop: 'tomato', lat: 13, lng: 78 })).body.plot;

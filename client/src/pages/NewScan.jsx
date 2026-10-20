@@ -1,21 +1,22 @@
 import clsx from 'clsx';
-import { Camera, Check, ImagePlus, ImageUp, Lightbulb, LocateFixed, MapPin } from 'lucide-react';
+import { Camera, Check, GitCompareArrows, ImagePlus, ImageUp, Lightbulb, LocateFixed, MapPin, X } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useSearchParams } from 'react-router';
 import { describeError } from '../api/client.js';
-import { useCreateScan, usePlots } from '../api/hooks.js';
+import { useCreateScan, usePlots, useScan } from '../api/hooks.js';
 import { CropSelect } from '../components/domain.jsx';
 import { Alert, Field, IconBadge, PageHeader, Spinner } from '../components/ui.jsx';
+import { shortDate } from '../lib/format.js';
 import { useGeolocation } from '../lib/useGeolocation.js';
 
 const MAX_MB = 8;
 
 export default function NewScan() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
-  const [params] = useSearchParams();
+  const [params, setParams] = useSearchParams();
   const { data: plots = [] } = usePlots();
   const createScan = useCreateScan();
   const geo = useGeolocation();
@@ -25,6 +26,21 @@ export default function NewScan() {
   const [crop, setCrop] = useState('');
   const [share, setShare] = useState(true);
   const [fileError, setFileError] = useState(null);
+
+  // "Scan this leaf again": the new photo is compared with this earlier scan of the same leaf.
+  const againId = params.get('again');
+  const { data: againData } = useScan(againId);
+  const earlier = againData?.scan ?? null;
+  useEffect(() => {
+    if (!earlier) return;
+    setCrop(earlier.declaredCrop ?? '');
+    if (earlier.plot?.id) setPlotId(earlier.plot.id);
+  }, [earlier]);
+  const stopComparing = () => {
+    const next = new URLSearchParams(params);
+    next.delete('again');
+    setParams(next, { replace: true });
+  };
 
   const plot = plots.find((p) => p.id === plotId);
   // A plot fixes both the crop and the location.
@@ -53,6 +69,7 @@ export default function NewScan() {
     e.preventDefault();
     const data = new FormData();
     data.append('image', file);
+    if (earlier) data.append('followUpOf', earlier.id);
     if (plotId) data.append('plotId', plotId);
     data.append('crop', crop);
     if (!plot && geo.coords) {
@@ -67,6 +84,23 @@ export default function NewScan() {
   return (
     <div className="mx-auto max-w-6xl">
       <PageHeader title={t('scan.title')} subtitle={t('scan.subtitle')} />
+
+      {earlier && (
+        <div className="card mb-6 flex flex-wrap items-center gap-4 p-4 sm:p-5">
+          <img src={earlier.image.url} alt="" className="size-16 shrink-0 rounded-control object-cover ring-1 ring-line" />
+          <div className="min-w-0 flex-1 basis-56">
+            <p className="flex items-center gap-2 font-bold text-brand-900">
+              <GitCompareArrows className="size-4 shrink-0 text-brand-700" aria-hidden="true" />
+              {t('scan.compareWith', { date: shortDate(earlier.createdAt, i18n.language) })}
+            </p>
+            <p className="mt-0.5 text-sm leading-relaxed text-ink-muted">{t('scan.compareHint')}</p>
+          </div>
+          <button type="button" className="btn-ghost text-sm max-sm:w-full" onClick={stopComparing}>
+            <X className="size-4" aria-hidden="true" />
+            {t('scan.dontCompare')}
+          </button>
+        </div>
+      )}
 
       <form onSubmit={onSubmit} className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
         <div className="card p-3 sm:p-4">

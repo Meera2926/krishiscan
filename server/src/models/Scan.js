@@ -29,6 +29,8 @@ const scanSchema = new mongoose.Schema(
   {
     owner: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     plot: { type: mongoose.Schema.Types.ObjectId, ref: 'Plot', default: null },
+    // The earlier scan of the same leaf this one re-photographs ("scan again"); the result compares the two.
+    followUpOf: { type: mongoose.Schema.Types.ObjectId, ref: 'Scan', default: null },
     // Crop the farmer said they photographed; used to condition the predictions.
     declaredCrop: { type: String, lowercase: true, default: null },
 

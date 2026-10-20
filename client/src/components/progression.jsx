@@ -313,8 +313,46 @@ function TreatmentForm({ plot, diseaseOptions, onDone }) {
   );
 }
 
-export function SeverityMeter({ severity, comparison }) {
+const COMPARE_TONES = {
+  worse: { box: 'bg-danger-bg/60 ring-danger/20', text: 'text-danger', Icon: TrendingUp },
+  better: { box: 'bg-ok-bg/70 ring-ok/20', text: 'text-ok', Icon: TrendingDown },
+  same: { box: 'bg-surface-sunken ring-line', text: 'text-ink-muted', Icon: Minus },
+};
+
+/** This photo against the earlier one: the earlier photo, both percentages, and whether it got worse. */
+function ScanComparison({ comparison }) {
   const { t, i18n } = useTranslation();
+  const tone = COMPARE_TONES[comparison.direction] ?? COMPARE_TONES.same;
+  const date = shortDate(comparison.previousDate, i18n.language);
+  return (
+    <div className={clsx('rounded-card p-4 ring-1', tone.box)}>
+      <p className={clsx('flex items-center gap-2 font-bold', tone.text)}>
+        <tone.Icon className="size-5 shrink-0" aria-hidden="true" />
+        {t(`progression.compare.${comparison.direction}`, { change: Math.abs(comparison.change) })}
+      </p>
+      <div className="mt-3 flex items-center gap-3">
+        {comparison.previousImageUrl && (
+          <img src={comparison.previousImageUrl} alt="" className="size-16 shrink-0 rounded-control object-cover ring-1 ring-line" />
+        )}
+        <div className="min-w-0 text-sm">
+          <p className="text-ink-muted">
+            {t(comparison.basis === 'leaf' ? 'progression.compare.withLeaf' : 'progression.compare.withPlot', { date })}
+          </p>
+          <p className="mt-0.5 font-semibold tabular-nums text-ink">
+            {t('progression.compare.before')} {comparison.previousPercent}% <span aria-hidden="true">→</span>{' '}
+            {t('progression.compare.now')} {comparison.currentPercent}%
+          </p>
+          <Link to={`/scans/${comparison.previousScanId}`} className="mt-0.5 inline-block font-semibold text-brand-700 underline">
+            {t('progression.previousScan')}
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export function SeverityMeter({ severity, comparison }) {
+  const { t } = useTranslation();
   if (!severity?.reliable || severity.percent == null) return null;
   const tone = severity.percent > 25 ? 'bg-danger' : severity.percent > 5 ? 'bg-warn' : 'bg-ok';
   return (
@@ -331,17 +369,7 @@ export function SeverityMeter({ severity, comparison }) {
       <div className="h-2 overflow-hidden rounded-full bg-canvas-deep ring-1 ring-inset ring-ink/5" role="meter" aria-valuemin={0} aria-valuemax={100} aria-valuenow={severity.percent} aria-label={t('progression.severity')}>
         <div className={clsx('h-full rounded-full', tone)} style={{ width: `${Math.max(2, severity.percent)}%` }} />
       </div>
-      {comparison && (
-        <p className={clsx('text-sm font-medium', comparison.direction === 'worse' ? 'text-danger' : comparison.direction === 'better' ? 'text-ok' : 'text-ink-muted')}>
-          {t(`progression.compare.${comparison.direction}`, {
-            change: `${comparison.change > 0 ? '+' : ''}${comparison.change}`,
-            date: shortDate(comparison.previousDate, i18n.language),
-          })}{' '}
-          <Link to={`/scans/${comparison.previousScanId}`} className="font-normal underline">
-            {t('progression.previousScan')}
-          </Link>
-        </p>
-      )}
+      {comparison && <ScanComparison comparison={comparison} />}
       <p className="text-xs text-ink-muted">{t('progression.estimateNote')}</p>
     </div>
   );

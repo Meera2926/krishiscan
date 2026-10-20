@@ -9,6 +9,7 @@ import {
   HelpCircle,
   ImageUp,
   MapPin,
+  RefreshCw,
   Share2,
   Sprout,
   Trash2,
@@ -181,6 +182,13 @@ export default function ScanResult() {
             </Alert>
           )}
 
+          {/* Re-photographing the same leaf is how the farmer learns whether the disease is spreading. */}
+          {scan.status !== 'rejected' && (
+            <Link to={`/scan?again=${scan.id}`} className="btn-primary w-full">
+              <RefreshCw className="size-4" aria-hidden="true" />
+              {t('result.scanThisAgain')}
+            </Link>
+          )}
           <div className="flex gap-2">
             <Link to="/scan" className="btn-outline flex-1">
               <ImageUp className="size-4" aria-hidden="true" />
@@ -297,7 +305,7 @@ export default function ScanResult() {
             </div>
           </section>
 
-          {followUp && <FollowUpCard followUp={followUp} plotId={scan.plot?.id} />}
+          {followUp && <FollowUpCard followUp={followUp} scanId={scan.id} />}
 
           {!disease?.isHealthy && <OrganicRemedies remedies={remedies} sourceUrl={disease?.sourceUrl} />}
 

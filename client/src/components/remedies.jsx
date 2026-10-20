@@ -111,7 +111,7 @@ export function OrganicRemedies({ remedies, sourceUrl }) {
 }
 
 /** When to photograph the same leaf again, so progression tracking has something to compare. */
-export function FollowUpCard({ followUp, plotId }) {
+export function FollowUpCard({ followUp, scanId }) {
   const { t, i18n } = useTranslation();
   if (!followUp) return null;
   const date = shortDate(followUp.date, i18n.language);
@@ -125,7 +125,7 @@ export function FollowUpCard({ followUp, plotId }) {
           {t(followUp.healthy ? 'followUp.healthyBody' : 'followUp.body', { days: followUp.days })}
         </p>
       </div>
-      <Link to={plotId ? `/scan?plot=${plotId}` : '/scan'} className="btn-outline max-sm:w-full">
+      <Link to={`/scan?again=${scanId}`} className="btn-outline max-sm:w-full">
         {t('followUp.remind')}
       </Link>
     </section>
