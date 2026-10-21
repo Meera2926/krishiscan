@@ -29,6 +29,10 @@ export default defineConfig({
         ],
       },
       workbox: {
+        // Take over as soon as a new version is installed. Without this the plain register script
+        // leaves the new worker waiting until every tab of the site is closed, so fixes never arrive.
+        skipWaiting: true,
+        clientsClaim: true,
         // The bundled font files too, so the app keeps its typeface offline.
         globPatterns: ['**/*.{js,css,html,woff2}'],
         navigateFallbackDenylist: [/^\/api\//, /^\/uploads\//],
