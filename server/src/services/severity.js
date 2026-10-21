@@ -8,6 +8,7 @@ import sharp from 'sharp';
  * 2. Leaf region = green pixels, dilated slightly, with enclosed holes filled. Lesions sit inside
  *    the leaf, so they become holes in the green mask, while soil and sky touch the image border
  *    and are never filled.
+ *    Lesion tissue that runs off the edge of a close-up is added when it lies between green tissue.
  * 3. Lesion tissue = leaf-region pixels that are not green (yellowing, browning, necrosis).
  *
  * This is an estimate for tracking change over time on the same plot, not a lab measurement:
@@ -16,7 +17,7 @@ import sharp from 'sharp';
 
 const SIZE = 192;
 
-export const SEVERITY_METHOD = 'hsv-enclosed-lesion-v1';
+export const SEVERITY_METHOD = 'hsv-enclosed-lesion-v2';
 
 // Percent leaf area thresholds for a 0-5 grade (upper bounds, inclusive).
 export const GRADE_BOUNDS = [1, 5, 10, 25, 50];
@@ -92,6 +93,45 @@ function fillHoles(mask, w, h) {
   return filled;
 }
 
+/**
+ * Adds lesion tissue that runs off the edge of the photo. A close-up of a badly diseased leaf has
+ * lesions that reach the image border, so they are not holes in the green mask and fillHoles leaves
+ * them out. Such tissue is taken into the leaf region when it is connected to the region and lies
+ * between healthy tissue: green on both sides of it in its row, or above and below it in its column.
+ * Soil or dead leaves beside a leaf have green on one side only and stay out.
+ */
+function extendAcrossBorder(region, green, tissue, w, h) {
+  const left = new Int32Array(h).fill(w);
+  const right = new Int32Array(h).fill(-1);
+  const top = new Int32Array(w).fill(h);
+  const bottom = new Int32Array(w).fill(-1);
+  for (let y = 0; y < h; y += 1) {
+    for (let x = 0; x < w; x += 1) {
+      if (!green[y * w + x]) continue;
+      if (x < left[y]) left[y] = x;
+      right[y] = x;
+      if (y < top[x]) top[x] = y;
+      bottom[x] = y;
+    }
+  }
+  const between = (x, y) => (x > left[y] && x < right[y]) || (y > top[x] && y < bottom[x]);
+
+  const stack = [];
+  for (let i = 0; i < region.length; i += 1) if (region[i]) stack.push(i);
+  while (stack.length) {
+    const i = stack.pop();
+    const x = i % w;
+    const y = (i - x) / w;
+    for (const [xx, yy] of [[x - 1, y], [x + 1, y], [x, y - 1], [x, y + 1]]) {
+      if (xx < 0 || xx >= w || yy < 0 || yy >= h) continue;
+      const j = yy * w + xx;
+      if (region[j] || !tissue[j] || !between(xx, yy)) continue;
+      region[j] = 1;
+      stack.push(j);
+    }
+  }
+}
+
 export async function estimateSeverity(imageBuffer) {
   const { data, info } = await sharp(imageBuffer)
     .rotate()
@@ -121,6 +161,7 @@ export async function estimateSeverity(imageBuffer) {
 
   const radius = Math.max(1, Math.round(Math.min(w, h) * 0.015));
   const region = fillHoles(dilate(green, w, h, radius), w, h);
+  extendAcrossBorder(region, green, tissue, w, h);
 
   let leaf = 0;
   let lesion = 0;

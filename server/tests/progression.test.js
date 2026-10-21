@@ -48,6 +48,24 @@ describe('severity estimation', () => {
     expect(s.leafFraction).toBeLessThan(0.6);
   });
 
+  it('counts lesions that run off the edge of a close-up', async () => {
+    // The leaf fills the frame and a rust band covers the middle 40% from the top edge to the bottom.
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300">
+      <rect width="100%" height="100%" fill="#3f8f3a"/><rect x="90" width="120" height="300" fill="#c46a1e"/></svg>`;
+    const s = await estimateSeverity(await sharp(Buffer.from(svg)).jpeg({ quality: 95 }).toBuffer());
+    expect(s.percent).toBeGreaterThan(36);
+    expect(s.percent).toBeLessThan(44);
+  });
+
+  it('does not count brown soil beside the leaf as disease', async () => {
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300">
+      <rect width="100%" height="100%" fill="#7a5a3a"/><ellipse cx="200" cy="150" rx="160" ry="110" fill="#3f8f3a"/></svg>`;
+    const s = await estimateSeverity(await sharp(Buffer.from(svg)).jpeg({ quality: 95 }).toBuffer());
+    // The leaf is 46% of the frame; only the thin rim the leaf outline is widened by may be counted.
+    expect(s.leafFraction).toBeLessThan(0.55);
+    expect(s.percent).toBeLessThan(10);
+  });
+
   it('gives no figure when there is no leaf in frame', async () => {
     const grey = await sharp({ create: { width: 300, height: 300, channels: 3, background: '#777777' } }).jpeg().toBuffer();
     const s = await estimateSeverity(grey);
