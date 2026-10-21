@@ -1,5 +1,5 @@
 import { ArrowRight, Camera, CloudSun, GraduationCap, Info, Leaf, Map } from 'lucide-react';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation, useNavigate } from 'react-router';
 import { describeError } from '../api/client.js';
@@ -51,7 +51,7 @@ function WelcomePanel() {
   );
 }
 
-function AuthCard({ title, subtitle, children, footer }) {
+function AuthCard({ title, subtitle, children, footer, after }) {
   return (
     <div className="animate-rise mx-auto max-w-md pt-2 sm:pt-6 lg:max-w-5xl">
       <div className="card-raised overflow-hidden lg:grid lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
@@ -63,6 +63,7 @@ function AuthCard({ title, subtitle, children, footer }) {
           <div className="mt-7">{children}</div>
           <hr className="rule mt-7" />
           <p className="mt-5 text-center text-sm text-ink-muted">{footer}</p>
+          {after}
         </div>
       </div>
     </div>
@@ -84,11 +85,54 @@ function useSubmit(action, redirectTo) {
   return [state, submit];
 }
 
+/** The seeded demo accounts (npm run seed -- --demo), shown so a visitor or examiner can try each role. */
+const DEMO_ACCOUNTS = [
+  { role: 'farmer', email: 'farmer@demo.in' },
+  { role: 'expert', email: 'expert@demo.in' },
+];
+const DEMO_PASSWORD = 'demo1234';
+
+function DemoAccounts({ onPick }) {
+  const { t } = useTranslation();
+  return (
+    <div className="mt-5 rounded-card bg-surface-sunken p-4 ring-1 ring-line">
+      <p className="flex items-center gap-2 text-sm font-bold text-brand-900">
+        <Info className="size-4 shrink-0 text-brand-600" aria-hidden="true" />
+        {t('auth.demoTitle')}
+      </p>
+      <ul className="mt-3 space-y-2">
+        {DEMO_ACCOUNTS.map((a) => (
+          <li key={a.email} className="flex items-center gap-3 rounded-control bg-surface px-3.5 py-2.5 ring-1 ring-line">
+            <span className="min-w-0 flex-1 text-sm">
+              <span className="block text-xs font-bold uppercase tracking-wide text-brand-700">{t(`consult.role.${a.role}`)}</span>
+              <span className="block truncate font-semibold text-ink">{a.email}</span>
+              <span className="block text-ink-muted">
+                {t('auth.password')}: <span className="font-semibold text-ink">{DEMO_PASSWORD}</span>
+              </span>
+            </span>
+            <button type="button" className="btn-outline min-h-10 shrink-0 px-4 text-sm" onClick={() => onPick(a.email)}>
+              {t('auth.demoFill')}
+            </button>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
 export function Login() {
   const { t } = useTranslation();
   const { login } = useAuth();
   const location = useLocation();
   const [state, submit] = useSubmit(login, location.state?.from ?? '/dashboard');
+  const formRef = useRef(null);
+  // Fills the form rather than logging straight in, so the visitor sees which account they are using.
+  const fillDemo = (email) => {
+    const { elements } = formRef.current;
+    elements.email.value = email;
+    elements.password.value = DEMO_PASSWORD;
+    formRef.current.querySelector('button[type="submit"]').focus();
+  };
 
   return (
     <AuthCard
@@ -102,8 +146,10 @@ export function Login() {
           </Link>
         </>
       }
+      after={<DemoAccounts onPick={fillDemo} />}
     >
       <form
+        ref={formRef}
         className="space-y-5"
         onSubmit={(e) => {
           e.preventDefault();
@@ -122,12 +168,6 @@ export function Login() {
           {state.pending && <Spinner className="size-4 text-white" />}
           {t('auth.submitLogin')}
         </button>
-        {import.meta.env.DEV && (
-          <p className="flex gap-2 rounded-control bg-surface-sunken px-3.5 py-2.5 text-xs leading-relaxed text-ink-muted ring-1 ring-line">
-            <Info className="mt-0.5 size-3.5 shrink-0 text-brand-600" aria-hidden="true" />
-            <span className="min-w-0 break-words">{t('auth.demoHint')}</span>
-          </p>
-        )}
       </form>
     </AuthCard>
   );

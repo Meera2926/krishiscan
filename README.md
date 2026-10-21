@@ -30,7 +30,7 @@ is now caught and refused outright; see **Telling the crops apart** below.
 | **Photo quality check** | Before anything is classified, the photo is EXIF-rotated, measured for sharpness and exposure, and refused outright below 128 px on a side. A dark, overexposed or genuinely unusable photo is called out on the result rather than quietly diagnosed. |
 | **Disease library** | The knowledge base is browsable: 32 diseases, plus the 11 healthy classes on request, searchable by free text across common name, pathogen and symptoms, filterable by crop. Every one of the 43 entries names the extension source it was written from. |
 | **Your data stays yours** | A scan only reaches the outbreak map if its location was shared, that can be withdrawn afterwards, and a scan can be deleted outright — record and photo. Uploaded photos are stripped of metadata, GPS included, before they are stored. |
-| **Accessibility** | UI in English, Hindi, Tamil, Telugu and Malayalam — 658 strings each, and every crop named in all five. Spoken advice through the browser's speech API, installable PWA, works on a free hosting tier. |
+| **Accessibility** | UI in English, Hindi, Tamil, Telugu and Malayalam — 667 strings each, and every crop named in all five. Spoken advice through the browser's speech API, installable PWA, works on a free hosting tier. |
 
 ## Quick start
 
