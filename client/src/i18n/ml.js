@@ -17,6 +17,8 @@ export default {
     login: 'ലോഗിൻ',
     register: 'സൈൻ അപ്പ്',
     logout: 'ലോഗൗട്ട്',
+    more: 'കൂടുതൽ',
+    short: { scan: 'സ്കാൻ', plots: 'വയൽ', consultations: 'ഉപദേശം', reviews: 'ക്യൂ', outbreaks: 'മാപ്പ്', library: 'ലൈബ്രറി', adminExperts: 'അപേക്ഷകൾ' },
   },
   common: {
     loading: 'ലോഡ് ചെയ്യുന്നു…',
@@ -121,6 +123,8 @@ export default {
     compareWith: 'ഈ ഫോട്ടോ {{date}}-ലെ നിങ്ങളുടെ സ്കാനുമായി താരതമ്യം ചെയ്യും',
     or: 'അല്ലെങ്കിൽ',
     chooseFile: 'ഫയൽ തിരഞ്ഞെടുക്കുക',
+    takePhoto: 'ഫോട്ടോ എടുക്കുക',
+    fromGallery: 'ഗാലറിയിൽ നിന്ന് തിരഞ്ഞെടുക്കുക',
     dragPrompt: 'ഇലയുടെ ഫോട്ടോ ഇവിടെ വലിച്ചിടുക',
     title: 'ഇല സ്കാൻ ചെയ്യുക',
     subtitle: 'പകൽ വെളിച്ചത്തിൽ രോഗം ബാധിച്ച ഒരു ഇലയുടെ വ്യക്തമായ, അടുത്ത ഫോട്ടോ എടുക്കുക.',

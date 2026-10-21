@@ -1,6 +1,6 @@
 import clsx from 'clsx';
-import { Camera, Check, GitCompareArrows, ImagePlus, ImageUp, Lightbulb, LocateFixed, MapPin, X } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { Camera, Check, GitCompareArrows, ImagePlus, Images, ImageUp, Lightbulb, LocateFixed, MapPin, X } from 'lucide-react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useSearchParams } from 'react-router';
@@ -12,6 +12,7 @@ import { shortDate } from '../lib/format.js';
 import { useGeolocation } from '../lib/useGeolocation.js';
 
 const MAX_MB = 8;
+const TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 
 export default function NewScan() {
   const { t, i18n } = useTranslation();
@@ -51,8 +52,18 @@ export default function NewScan() {
   const preview = useMemo(() => (file ? URL.createObjectURL(file) : null), [file]);
   useEffect(() => () => preview && URL.revokeObjectURL(preview), [preview]);
 
+  // The camera has its own input: with capture set, Android and iOS open only the camera and offer no
+  // way to pick a photo already taken, so the main picker leaves capture off and lets the phone ask.
+  const camera = useRef(null);
+  const takePhoto = (photo) => {
+    if (!photo) return;
+    const ok = TYPES.includes(photo.type) && photo.size <= MAX_MB * 1024 * 1024;
+    setFileError(ok ? null : t('scan.dropHint'));
+    if (ok) setFile(photo);
+  };
+
   const { getRootProps, getInputProps, isDragActive, open } = useDropzone({
-    accept: { 'image/jpeg': [], 'image/png': [], 'image/webp': [] },
+    accept: Object.fromEntries(TYPES.map((type) => [type, []])),
     maxFiles: 1,
     maxSize: MAX_MB * 1024 * 1024,
     noClick: Boolean(file),
@@ -112,8 +123,7 @@ export default function NewScan() {
               file && 'cursor-default border-solid border-line bg-canvas-deep',
             )}
           >
-            {/* capture="environment" opens the rear camera directly on phones. */}
-            <input {...getInputProps({ capture: 'environment' })} aria-label={t('scan.dropPrompt')} />
+            <input {...getInputProps()} aria-label={t('scan.dropPrompt')} />
             {preview ? (
               <img src={preview} alt="" className="absolute inset-0 size-full object-cover" />
             ) : (
@@ -135,7 +145,7 @@ export default function NewScan() {
                 <p className="my-3 text-sm text-ink-muted pointer-coarse:hidden">{t('scan.or')}</p>
                 <button
                   type="button"
-                  className="btn-primary px-6 pointer-coarse:mt-4"
+                  className="btn-primary px-6 pointer-coarse:hidden"
                   onClick={(e) => {
                     // The card opens the picker on click too; without this it would open twice.
                     e.stopPropagation();
@@ -145,10 +155,49 @@ export default function NewScan() {
                   <Camera className="size-4" aria-hidden="true" />
                   {t('scan.chooseFile')}
                 </button>
+                {/* Touch screens: the rear camera in one tap, or a photo already in the gallery. */}
+                <div className="mt-4 hidden w-full max-w-xs flex-col gap-2.5 pointer-coarse:flex">
+                  <button
+                    type="button"
+                    className="btn-primary min-h-12 text-base"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      camera.current?.click();
+                    }}
+                  >
+                    <Camera className="size-5" aria-hidden="true" />
+                    {t('scan.takePhoto')}
+                  </button>
+                  <button
+                    type="button"
+                    className="btn-outline min-h-12 text-base"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      open();
+                    }}
+                  >
+                    <Images className="size-5" aria-hidden="true" />
+                    {t('scan.fromGallery')}
+                  </button>
+                </div>
                 <p className="mt-5 text-xs text-ink-muted">{t('scan.dropHint')}</p>
               </div>
             )}
           </div>
+          <input
+            ref={camera}
+            type="file"
+            accept={TYPES.join(',')}
+            capture="environment"
+            className="hidden"
+            tabIndex={-1}
+            aria-hidden="true"
+            onChange={(e) => {
+              takePhoto(e.target.files?.[0]);
+              // Cleared so taking a second photo still fires a change.
+              e.target.value = '';
+            }}
+          />
           {file && (
             <button type="button" onClick={open} className="btn-outline mt-3 w-full">
               <ImagePlus className="size-4" aria-hidden="true" />

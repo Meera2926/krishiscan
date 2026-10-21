@@ -62,8 +62,9 @@ export default function Outbreaks() {
       <PageHeader title={t('outbreaks.title')} subtitle={t('outbreaks.subtitle')} />
 
       <div className="card mb-6 space-y-4 p-4 sm:p-5">
-        <div className="flex flex-wrap items-center gap-2">
-          <button type="button" className="btn-outline btn-pill px-4" onClick={geo.request} disabled={geo.status === 'loading'}>
+        {/* On phones the places scroll sideways in one row, so the map is not pushed off the first screen. */}
+        <div className="-mx-4 flex items-center gap-2 overflow-x-auto px-4 [scrollbar-width:none] sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0">
+          <button type="button" className="btn-outline btn-pill shrink-0 px-4" onClick={geo.request} disabled={geo.status === 'loading'}>
             {geo.status === 'loading' ? <Spinner className="size-4" /> : <LocateFixed className="size-4" aria-hidden="true" />}
             {t('outbreaks.locateMe')}
           </button>
@@ -72,7 +73,7 @@ export default function Outbreaks() {
               <button
                 key={p.id}
                 type="button"
-                className="btn min-h-10 rounded-full bg-brand-50 px-4 text-sm text-brand-800 ring-1 ring-brand-200 hover:bg-brand-100"
+                className="btn min-h-10 shrink-0 rounded-full bg-brand-50 px-4 text-sm text-brand-800 ring-1 ring-brand-200 hover:bg-brand-100"
                 onClick={() => setCenter({ lat: p.lat, lng: p.lng })}
               >
                 <Sprout className="size-4" aria-hidden="true" />
@@ -80,8 +81,9 @@ export default function Outbreaks() {
               </button>
             ))}
         </div>
-        <div className="flex flex-wrap items-end gap-3 border-t border-line pt-4">
-          <label className="w-full text-sm sm:w-auto">
+        {/* Two filters side by side on phones, the crop below them; one row from sm up. */}
+        <div className="grid grid-cols-2 items-end gap-3 border-t border-line pt-4 sm:flex sm:flex-wrap">
+          <label className="min-w-0 text-sm sm:w-auto">
             <span className="label">{t('outbreaks.radius')}</span>
             <PillSelect>
               <select className="input sm:w-auto" value={radiusKm} onChange={(e) => setRadiusKm(Number(e.target.value))} disabled={isCountryView}>
@@ -93,7 +95,7 @@ export default function Outbreaks() {
               </select>
             </PillSelect>
           </label>
-          <label className="w-full text-sm sm:w-auto">
+          <label className="min-w-0 text-sm sm:w-auto">
             <span className="label">{t('outbreaks.period')}</span>
             <PillSelect>
               <select className="input sm:w-auto" value={days} onChange={(e) => setDays(Number(e.target.value))}>
@@ -105,14 +107,14 @@ export default function Outbreaks() {
               </select>
             </PillSelect>
           </label>
-          <label className="w-full text-sm sm:w-52">
+          <label className="col-span-2 text-sm sm:w-52">
             <span className="label">{t('scan.crop')}</span>
             {/* CropSelect brings its own input styling; PillSelect rounds it and swaps the arrow to match the other filters. */}
             <PillSelect>
               <CropSelect value={crop} onChange={setCrop} allowAll allLabel={t('outbreaks.allCrops')} onlySupported={false} />
             </PillSelect>
           </label>
-          {isFetching && <Spinner className="mb-3 size-4" />}
+          {isFetching && <Spinner className="mb-3 hidden size-4 sm:block" />}
         </div>
       </div>
 
@@ -163,7 +165,10 @@ export default function Outbreaks() {
               {data.diseases.map((d) => (
                 <li key={d.diseaseKey} className="flex items-center justify-between gap-3 px-3 py-3">
                   <div className="min-w-0 flex-1">
-                    <Link to={`/library/${d.diseaseKey}`} className="block truncate font-semibold text-brand-900 hover:text-brand-700 hover:underline">
+                    <Link
+                      to={`/library/${d.diseaseKey}`}
+                      className="-my-2 block truncate py-2 font-semibold text-brand-900 hover:text-brand-700 hover:underline"
+                    >
                       {d.commonName}
                     </Link>
                     <p className="text-xs text-ink-muted">

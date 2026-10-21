@@ -64,7 +64,7 @@ export default function Profile() {
                 <VerificationBadge status={user.expertVerification?.status ?? 'pending'} />
                 {/* The page farmers see, ratings included, so an expert can check what is shown. */}
                 {user.expertVerification?.status === 'verified' && (
-                  <Link to={`/experts/${user.id}`} className="font-semibold text-brand-700 underline-offset-2 hover:underline">
+                  <Link to={`/experts/${user.id}`} className="-my-2 py-2 font-semibold text-brand-700 underline-offset-2 hover:underline">
                     {t('profile.publicProfile')}
                   </Link>
                 )}

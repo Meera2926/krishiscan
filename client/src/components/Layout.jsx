@@ -7,29 +7,40 @@ import {
   ClipboardCheck,
   History,
   Home,
+  Languages,
   Leaf,
   Lightbulb,
   LogOut,
   Map,
+  Menu,
   ShieldCheck,
   Sprout,
   User,
   UserCheck,
 } from 'lucide-react';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { Link, NavLink, Outlet, ScrollRestoration, useLocation } from 'react-router';
 import { isUnverifiedExpert, useAuth } from '../auth/AuthProvider.jsx';
 import { LANGUAGES } from '../i18n/index.js';
 
+/**
+ * On phones the picker shows a globe and the language code, so the bar still fits the app's name;
+ * the select itself stays full size underneath (its own text hidden), so tapping anywhere opens it.
+ */
 function LanguageSwitcher() {
   const { i18n } = useTranslation();
   const { user, updateProfile } = useAuth();
   return (
     <div className="relative">
+      <Languages className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-ink-subtle sm:hidden" aria-hidden="true" />
+      <span className="pointer-events-none absolute left-8 top-1/2 -translate-y-1/2 text-[13px] font-bold uppercase text-ink-muted sm:hidden" aria-hidden="true">
+        {i18n.language}
+      </span>
       <select
         aria-label="Language"
-        className="min-h-9 appearance-none rounded-full border border-line-strong bg-surface/90 py-1 pl-2.5 pr-6 text-sm font-medium sm:pl-3 sm:pr-8 text-ink-muted transition-colors hover:border-brand-300 hover:text-ink"
+        className="min-h-9 w-[4.75rem] appearance-none rounded-full border border-line-strong bg-surface/90 py-1 pl-2.5 pr-6 text-base font-medium text-transparent transition-colors hover:border-brand-300 sm:w-auto sm:pl-3 sm:pr-8 sm:text-sm sm:text-ink-muted sm:hover:text-ink [&>option]:text-ink"
         value={i18n.language}
         onChange={(e) => {
           i18n.changeLanguage(e.target.value);
@@ -50,11 +61,8 @@ function LanguageSwitcher() {
   );
 }
 
-/**
- * The leaf mark and the name. `onDark` is the white version used on the sidebar; `compact` keeps
- * only the mark on the narrowest phones, where the open pages' bar also has to fit "Log in".
- */
-function Brand({ onDark = false, compact = false, className }) {
+/** The leaf mark and the name. `onDark` is the white version used on the sidebar. */
+function Brand({ onDark = false, className }) {
   const { t } = useTranslation();
   return (
     <Link to="/" className={clsx('group flex shrink-0 items-center gap-1.5 sm:gap-2', className)}>
@@ -70,7 +78,6 @@ function Brand({ onDark = false, compact = false, className }) {
         className={clsx(
           'text-lg font-extrabold tracking-tight sm:text-xl',
           onDark ? 'text-white' : 'text-brand-900',
-          compact && 'max-[379px]:sr-only',
         )}
       >
         {t('app.name')}
@@ -163,7 +170,8 @@ function AccountControls() {
         </span>
         <span className="max-w-32 truncate">{user.name.split(' ')[0]}</span>
       </NavLink>
-      <button type="button" className="btn-ghost min-h-9 px-2.5" onClick={logout} aria-label={t('nav.logout')}>
+      {/* Below lg, log out lives in the bottom bar's "More" panel, away from where thumbs rest. */}
+      <button type="button" className="btn-ghost hidden min-h-9 px-2.5 lg:inline-flex" onClick={logout} aria-label={t('nav.logout')}>
         <LogOut className="size-4" aria-hidden="true" />
       </button>
     </div>
@@ -200,9 +208,9 @@ function PublicShell({ nav }) {
   return (
     <div className="flex min-h-dvh flex-col">
       <SkipLink />
-      <header className="sticky top-0 z-30 border-b border-line/70 bg-surface/80 backdrop-blur-xl backdrop-saturate-150">
+      <header className="sticky top-0 z-30 border-b border-line/70 bg-surface/80 pt-[env(safe-area-inset-top)] backdrop-blur-xl backdrop-saturate-150">
         <div className="mx-auto flex h-16 max-w-6xl items-center gap-2 px-4 sm:gap-4">
-          <Brand compact />
+          <Brand />
           <nav className="mx-auto hidden items-center gap-1 lg:flex" aria-label="Main">
             {nav.map((item) => (
               <Link
@@ -264,10 +272,129 @@ function PublicShell({ nav }) {
   );
 }
 
+/** One bottom-bar slot: an icon over a short label. */
+function BarItem({ icon: Icon, label, active, primary }) {
+  return primary ? (
+    <>
+      <span className="-mt-7 grid size-14 place-items-center rounded-full bg-brand-700 text-white shadow-[var(--shadow-brand)] ring-4 ring-surface transition-transform duration-300 active:scale-95">
+        <Icon className="size-6" aria-hidden="true" />
+      </span>
+      <span className="max-w-full truncate px-1">{label}</span>
+    </>
+  ) : (
+    <>
+      <span className={clsx('grid h-7 w-12 place-items-center rounded-full transition-colors', active && 'bg-brand-100')}>
+        <Icon className="size-5" aria-hidden="true" />
+      </span>
+      <span className="max-w-full truncate px-1">{label}</span>
+    </>
+  );
+}
+
+const barItemClass = (active) =>
+  clsx(
+    'flex min-h-16 w-full flex-col items-center justify-center gap-1 text-[11px] font-semibold transition-colors',
+    active ? 'text-brand-700' : 'text-ink-subtle',
+  );
+
+/**
+ * The bottom bar's last slot: a panel with the pages that do not fit in the bar, the profile and
+ * log out. Without it a farmer on a phone had no way to reach expert reviews, the map or the profile.
+ */
+function MoreMenu({ items }) {
+  const { t } = useTranslation();
+  const { user, logout } = useAuth();
+  const { pathname } = useLocation();
+  const [open, setOpen] = useState(false);
+  const panel = useRef(null);
+  const active = items.some((i) => pathname.startsWith(i.to)) || pathname.startsWith('/profile');
+
+  // Close on navigation and on Escape; keep the page behind from scrolling while it is open.
+  useEffect(() => setOpen(false), [pathname]);
+  useEffect(() => {
+    if (!open) return undefined;
+    const onKey = (e) => e.key === 'Escape' && setOpen(false);
+    document.addEventListener('keydown', onKey);
+    const overflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    panel.current?.querySelector('a, button')?.focus();
+    return () => {
+      document.removeEventListener('keydown', onKey);
+      document.body.style.overflow = overflow;
+    };
+  }, [open]);
+
+  const row = 'flex min-h-12 w-full items-center gap-3 rounded-control px-3 text-[15px] font-semibold transition-colors';
+  return (
+    <>
+      <button
+        type="button"
+        className={barItemClass(active || open)}
+        aria-expanded={open}
+        aria-haspopup="dialog"
+        onClick={() => setOpen((o) => !o)}
+      >
+        <BarItem icon={Menu} label={t('nav.more')} active={active || open} />
+      </button>
+      {/* Portalled to <body>: the bar's backdrop blur would otherwise trap these fixed layers inside it. */}
+      {open &&
+        createPortal(
+          <>
+            <div className="fixed inset-0 z-40 bg-brand-900/30 lg:hidden" onClick={() => setOpen(false)} aria-hidden="true" />
+            <div
+              ref={panel}
+              role="dialog"
+              aria-modal="true"
+              aria-label={t('nav.more')}
+              className="animate-rise fixed inset-x-0 bottom-0 z-50 rounded-t-panel border-t border-line bg-surface px-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] pt-2 shadow-[var(--shadow-lg)] lg:hidden"
+            >
+              <div className="mx-auto mb-2 h-1 w-10 rounded-full bg-line-strong" aria-hidden="true" />
+              <NavLink
+                to="/profile"
+                className={({ isActive }) => clsx(row, 'mb-1', isActive ? 'bg-brand-100/80 text-brand-900' : 'hover:bg-brand-50')}
+              >
+                <span className="grid size-9 shrink-0 place-items-center rounded-full bg-brand-100 text-brand-700" aria-hidden="true">
+                  <User className="size-4" />
+                </span>
+                <span className="min-w-0">
+                  <span className="block truncate">{user.name}</span>
+                  <span className="block truncate text-xs font-medium text-ink-muted">{t('nav.profile')}</span>
+                </span>
+              </NavLink>
+              <ul className="border-t border-line pt-1">
+                {items.map((item) => (
+                  <li key={item.to}>
+                    <NavLink
+                      to={item.to}
+                      className={({ isActive }) => clsx(row, isActive ? 'bg-brand-100/80 text-brand-900' : 'text-ink hover:bg-brand-50')}
+                    >
+                      <item.icon className="size-5 shrink-0 text-brand-700" aria-hidden="true" />
+                      {item.label}
+                    </NavLink>
+                  </li>
+                ))}
+              </ul>
+              <button type="button" onClick={logout} className={clsx(row, 'mt-1 border-t border-line text-danger hover:bg-danger-bg')}>
+                <LogOut className="size-5 shrink-0" aria-hidden="true" />
+                {t('nav.logout')}
+              </button>
+            </div>
+          </>,
+          document.body,
+        )}
+    </>
+  );
+}
+
 /** Signed in: a deep-green sidebar on wide screens, a bottom bar on phones. */
 function AppShell({ nav }) {
-  // The mobile bottom bar holds up to five destinations; each list marks its own.
-  const mobileNav = nav.filter((n) => n.mobile);
+  // The bottom bar holds four destinations and "More"; each role's list marks its four. The scan
+  // button sits in the middle slot, where a thumb reaches it from either hand.
+  const bar = nav.filter((n) => n.mobile);
+  const primary = bar.find((n) => n.primary);
+  const slots = primary ? bar.filter((n) => n !== primary) : bar;
+  if (primary) slots.splice(Math.floor((slots.length + 1) / 2), 0, primary);
+  const rest = nav.filter((n) => !n.mobile);
 
   return (
     <div className="min-h-dvh lg:pl-64">
@@ -298,7 +425,7 @@ function AppShell({ nav }) {
         <TipOfTheDay />
       </aside>
 
-      <header className="sticky top-0 z-30 border-b border-line/70 bg-canvas/80 backdrop-blur-xl backdrop-saturate-150">
+      <header className="sticky top-0 z-30 border-b border-line/70 bg-canvas/80 pt-[env(safe-area-inset-top)] backdrop-blur-xl backdrop-saturate-150">
         <div className="mx-auto flex h-16 max-w-6xl items-center gap-4 px-4 sm:px-6 lg:px-8">
           <Brand className="lg:hidden" />
           <div className="hidden min-w-0 lg:block">
@@ -318,44 +445,23 @@ function AppShell({ nav }) {
         className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-surface/90 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl backdrop-saturate-150 lg:hidden"
         aria-label="Main mobile"
       >
-        {/* Columns follow the list, so three items spread out rather than bunching to the left. */}
+        {/* Columns follow the list, so fewer items spread out rather than bunching to the left. */}
         <ul
           className="mx-auto grid max-w-lg"
           style={{
-            gridTemplateColumns: `repeat(${mobileNav.length}, minmax(0, 1fr))`,
+            gridTemplateColumns: `repeat(${slots.length + 1}, minmax(0, 1fr))`,
           }}
         >
-          {mobileNav.map((item) => (
+          {slots.map((item) => (
             <li key={item.to}>
-              <NavLink
-                to={item.to}
-                className={({ isActive }) =>
-                  clsx(
-                    'flex min-h-16 flex-col items-center justify-center gap-1 text-[11px] font-semibold transition-colors',
-                    isActive ? 'text-brand-700' : 'text-ink-subtle',
-                  )
-                }
-              >
-                {({ isActive }) =>
-                  item.primary ? (
-                    <>
-                      <span className="-mt-7 grid size-14 place-items-center rounded-full bg-brand-700 text-white shadow-[var(--shadow-brand)] ring-4 ring-surface transition-transform duration-300 active:scale-95">
-                        <item.icon className="size-6" aria-hidden="true" />
-                      </span>
-                      <span className="max-w-full truncate px-1">{item.label}</span>
-                    </>
-                  ) : (
-                    <>
-                      <span className={clsx('grid h-7 w-12 place-items-center rounded-full transition-colors', isActive && 'bg-brand-100')}>
-                        <item.icon className="size-5" aria-hidden="true" />
-                      </span>
-                      <span className="max-w-full truncate px-1">{item.label}</span>
-                    </>
-                  )
-                }
+              <NavLink to={item.to} className={({ isActive }) => barItemClass(isActive)}>
+                {({ isActive }) => <BarItem icon={item.icon} label={item.short ?? item.label} active={isActive} primary={item.primary} />}
               </NavLink>
             </li>
           ))}
+          <li>
+            <MoreMenu items={rest} />
+          </li>
         </ul>
       </nav>
       <ScrollRestoration />
@@ -379,8 +485,9 @@ export default function Layout() {
     icon: Home,
     mobile: true,
   };
-  const outbreaks = { to: '/outbreaks', label: t('nav.outbreaks'), icon: Map };
-  const library = { to: '/library', label: t('nav.library'), icon: BookOpen };
+  // `short` is the bottom bar's label, where the full name would be cut off.
+  const outbreaks = { to: '/outbreaks', label: t('nav.outbreaks'), short: t('nav.short.outbreaks'), icon: Map };
+  const library = { to: '/library', label: t('nav.library'), short: t('nav.short.library'), icon: BookOpen };
 
   if (!user) {
     // The design's menu: detection opens the scan page (which asks a visitor to log in first), and
@@ -403,22 +510,25 @@ export default function Layout() {
           {
             to: '/admin/experts',
             label: t('nav.adminExperts'),
+            short: t('nav.short.adminExperts'),
             icon: ShieldCheck,
             mobile: true,
           },
           {
             to: '/consultations',
             label: t('nav.consultations'),
+            short: t('nav.short.consultations'),
             icon: UserCheck,
             mobile: true,
           },
           {
             to: '/reviews',
             label: t('nav.reviews'),
+            short: t('nav.short.reviews'),
             icon: ClipboardCheck,
             mobile: true,
           },
-          { ...outbreaks, mobile: true },
+          outbreaks,
           library,
         ]
       : user.role === 'expert'
@@ -427,23 +537,26 @@ export default function Layout() {
             {
               to: '/consultations',
               label: t('nav.consultations'),
+              short: t('nav.short.consultations'),
               icon: UserCheck,
               mobile: true,
             },
             {
               to: '/reviews',
               label: t('nav.reviews'),
+              short: t('nav.short.reviews'),
               icon: ClipboardCheck,
               mobile: true,
             },
             { ...outbreaks, mobile: true },
-            { ...library, mobile: true },
+            library,
           ]
         : [
             home,
             {
               to: '/scan',
               label: t('nav.scan'),
+              short: t('nav.short.scan'),
               icon: Camera,
               primary: true,
               mobile: true,
@@ -454,14 +567,14 @@ export default function Layout() {
               icon: History,
               mobile: true,
             },
-            { to: '/plots', label: t('nav.plots'), icon: Sprout, mobile: true },
+            { to: '/plots', label: t('nav.plots'), short: t('nav.short.plots'), icon: Sprout, mobile: true },
             {
               to: '/consultations',
               label: t('nav.consultations'),
               icon: UserCheck,
             },
             outbreaks,
-            { ...library, mobile: true },
+            library,
           ];
 
   return <AppShell nav={nav} />;

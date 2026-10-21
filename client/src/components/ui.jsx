@@ -209,16 +209,18 @@ const STAT_TONES = {
 
 export function StatCard({ label, value, icon: Icon, tone = 'brand' }) {
   return (
-    <div className="card flex items-center gap-3.5 p-4">
+    // Icon above the figure on phones: in a half-width tile, a label beside the icon has too little room
+    // for single long words such as Malayalam "ആരോഗ്യമുള്ളത്" and pushed the page wider than the screen.
+    <div className="card flex flex-col items-start gap-3 p-4 sm:flex-row sm:items-center sm:gap-3.5">
       {Icon && (
-        <div className={clsx('grid size-12 shrink-0 place-items-center rounded-full ring-1', STAT_TONES[tone])}>
+        <div className={clsx('grid size-10 shrink-0 place-items-center rounded-full ring-1 sm:size-12', STAT_TONES[tone])}>
           <Icon className="size-5" aria-hidden="true" />
         </div>
       )}
-      <div className="min-w-0">
+      <div className="min-w-0 max-w-full">
         <p className="text-[1.75rem] font-extrabold leading-none text-brand-900 tabular-nums">{value}</p>
         {/* Wraps rather than truncates: "Awaiting expert" loses its meaning cut short. */}
-        <p className="mt-1.5 text-xs font-medium leading-snug text-ink-muted">{label}</p>
+        <p className="mt-1.5 text-xs font-medium leading-snug text-ink-muted [overflow-wrap:anywhere]">{label}</p>
       </div>
     </div>
   );

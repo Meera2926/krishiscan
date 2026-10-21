@@ -218,7 +218,7 @@ export default function Dashboard() {
             icon={ScanLine}
             action={
               recent.data?.total > 0 && (
-                <Link to="/history" className="inline-flex shrink-0 items-center gap-1 text-sm font-bold text-brand-700 hover:text-brand-900">
+                <Link to="/history" className="-my-2 inline-flex shrink-0 items-center gap-1 py-2 text-sm font-bold text-brand-700 hover:text-brand-900">
                   {t('common.viewAll')}
                   <ArrowRight className="size-3.5" aria-hidden="true" />
                 </Link>
@@ -256,7 +256,7 @@ export default function Dashboard() {
                 {s.topDiseases.map((d, i) => (
                   <li key={d.diseaseKey}>
                     <div className="flex items-center justify-between gap-3">
-                      <Link to={`/library/${d.diseaseKey}`} className="truncate text-sm font-semibold hover:text-brand-700 hover:underline">
+                      <Link to={`/library/${d.diseaseKey}`} className="-my-2 truncate py-2 text-sm font-semibold hover:text-brand-700 hover:underline">
                         {d.commonName}
                       </Link>
                       <span className="chip shrink-0 bg-brand-50 font-bold tabular-nums text-brand-800">{d.count}</span>

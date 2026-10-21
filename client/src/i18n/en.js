@@ -16,6 +16,9 @@ export default {
     login: 'Log in',
     register: 'Sign up',
     logout: 'Log out',
+    more: 'More',
+    // Bottom-bar labels, where the full names do not fit.
+    short: { scan: 'Scan leaf', plots: 'My plots', consultations: 'Reviews', reviews: 'Queue', outbreaks: 'Map', library: 'Library', adminExperts: 'Applications' },
   },
   common: {
     loading: 'Loading…',
@@ -120,6 +123,8 @@ export default {
     compareWith: 'This photo will be compared with your scan of {{date}}',
     or: 'or',
     chooseFile: 'Choose file',
+    takePhoto: 'Take photo',
+    fromGallery: 'Choose from gallery',
     dragPrompt: 'Drag and drop a leaf photo here',
     title: 'Scan a leaf',
     subtitle: 'Take a clear, close photo of one affected leaf in daylight.',

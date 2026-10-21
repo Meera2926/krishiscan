@@ -17,6 +17,8 @@ export default {
     login: 'लॉग इन',
     register: 'साइन अप',
     logout: 'लॉग आउट',
+    more: 'और',
+    short: { scan: 'स्कैन', plots: 'मेरे खेत', consultations: 'समीक्षाएँ', reviews: 'कतार', outbreaks: 'मानचित्र', library: 'लाइब्रेरी', adminExperts: 'आवेदन' },
   },
   common: {
     loading: 'लोड हो रहा है…',
@@ -121,6 +123,8 @@ export default {
     compareWith: 'इस फ़ोटो की तुलना {{date}} के आपके स्कैन से की जाएगी',
     or: 'या',
     chooseFile: 'फ़ाइल चुनें',
+    takePhoto: 'फ़ोटो लें',
+    fromGallery: 'गैलरी से चुनें',
     dragPrompt: 'पत्ती की फ़ोटो यहाँ खींचकर छोड़ें',
     title: 'पत्ती स्कैन करें',
     subtitle: 'दिन की रोशनी में एक प्रभावित पत्ती की साफ़, पास से फ़ोटो लें।',

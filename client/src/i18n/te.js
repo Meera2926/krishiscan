@@ -17,6 +17,8 @@ export default {
     login: 'లాగిన్',
     register: 'సైన్ అప్',
     logout: 'లాగ్ అవుట్',
+    more: 'మరిన్ని',
+    short: { scan: 'ఆకు స్కాన్', plots: 'నా పొలాలు', consultations: 'సమీక్షలు', reviews: 'క్యూ', outbreaks: 'మ్యాప్', library: 'లైబ్రరీ', adminExperts: 'దరఖాస్తులు' },
   },
   common: {
     loading: 'లోడ్ అవుతోంది…',
@@ -121,6 +123,8 @@ export default {
     compareWith: 'ఈ ఫోటోను {{date}} నాటి మీ స్కాన్‌తో పోలుస్తాం',
     or: 'లేదా',
     chooseFile: 'ఫైల్ ఎంచుకోండి',
+    takePhoto: 'ఫొటో తీయండి',
+    fromGallery: 'గ్యాలరీ నుండి ఎంచుకోండి',
     dragPrompt: 'ఆకు ఫోటోను ఇక్కడికి లాగి వదలండి',
     title: 'ఆకు స్కాన్ చేయండి',
     subtitle: 'పగటి వెలుతురులో తెగులు ఉన్న ఒక ఆకును దగ్గరగా, స్పష్టంగా ఫొటో తీయండి.',

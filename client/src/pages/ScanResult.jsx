@@ -117,100 +117,16 @@ export default function ScanResult() {
         {t('nav.history')}
       </Link>
 
-      <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,360px)_minmax(0,1fr)]">
-        <aside className="space-y-5">
-          <img
-            src={scan.image.url}
-            alt=""
-            className="aspect-square w-full rounded-panel bg-canvas-deep object-cover shadow-md ring-1 ring-line"
-          />
+      {/* Phones: photo, then the diagnosis, then the details and actions. Wide screens: photo and details on
+          the left, the diagnosis beside them. The 1fr row takes the diagnosis column's extra height. */}
+      <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,360px)_minmax(0,1fr)] lg:grid-rows-[auto_1fr]">
+        <img
+          src={scan.image.url}
+          alt=""
+          className="aspect-[4/3] w-full rounded-panel bg-canvas-deep object-cover shadow-md ring-1 ring-line lg:col-start-1 lg:row-start-1 lg:aspect-square"
+        />
 
-          <div className="card divide-y divide-line px-5 py-1.5 text-sm">
-            <p className="flex items-center justify-between gap-3 py-2.5">
-              <span className="flex items-center gap-2 text-ink-muted">
-                <Sprout className="size-4 text-brand-600" aria-hidden="true" />
-                {t('scan.crop')}
-              </span>
-              <span className="font-semibold text-brand-900">{cropName(scan.declaredCrop)}</span>
-            </p>
-            {scan.plot?.name && (
-              <p className="flex items-center justify-between gap-3 py-2.5">
-                <span className="flex items-center gap-2 text-ink-muted">
-                  <MapPin className="size-4 text-brand-600" aria-hidden="true" />
-                  {t('scan.plot')}
-                </span>
-                <Link to={`/plots/${scan.plot.id}`} className="truncate font-semibold text-brand-700 underline underline-offset-2">
-                  {scan.plot.name}
-                </Link>
-              </p>
-            )}
-            <p className="flex items-center justify-between gap-3 py-2.5">
-              <span className="flex items-center gap-2 text-ink-muted">
-                <CalendarDays className="size-4 text-brand-600" aria-hidden="true" />
-                {t('history.title')}
-              </span>
-              <span className="font-medium">{shortDate(scan.createdAt, lang)}</span>
-            </p>
-            {scan.location && (
-              <label className="flex cursor-pointer items-center justify-between gap-3 py-2.5">
-                <span className="flex items-center gap-2 text-ink-muted">
-                  <Share2 className="size-4 text-brand-600" aria-hidden="true" />
-                  {scan.shareLocation ? t('result.shareOn') : t('result.shareOff')}
-                </span>
-                <input
-                  type="checkbox"
-                  className="size-4 accent-brand-700"
-                  checked={scan.shareLocation}
-                  disabled={updateScan.isPending}
-                  onChange={(e) => updateScan.mutate({ shareLocation: e.target.checked })}
-                />
-              </label>
-            )}
-          </div>
-
-          {scan.quality?.warnings?.length > 0 && (
-            <Alert tone="warn">
-              <p className="mb-1.5 font-semibold">{t('result.quality')}</p>
-              <ul className="space-y-1 font-normal">
-                {scan.quality.warnings.map((w) => (
-                  <li key={w} className="flex gap-2">
-                    <span className="mt-[0.45rem] size-1.5 shrink-0 rounded-full bg-current opacity-70" aria-hidden="true" />
-                    {t(`result.qualityWarning.${w}`)}
-                  </li>
-                ))}
-              </ul>
-            </Alert>
-          )}
-
-          {/* Re-photographing the same leaf is how the farmer learns whether the disease is spreading. */}
-          {scan.status !== 'rejected' && (
-            <Link to={`/scan?again=${scan.id}`} className="btn-primary w-full">
-              <RefreshCw className="size-4" aria-hidden="true" />
-              {t('result.scanThisAgain')}
-            </Link>
-          )}
-          <div className="flex gap-2">
-            <Link to="/scan" className="btn-outline flex-1">
-              <ImageUp className="size-4" aria-hidden="true" />
-              {t('result.scanAgain')}
-            </Link>
-            <button
-              type="button"
-              className="btn-danger"
-              aria-label={t('common.delete')}
-              disabled={deleteScan.isPending}
-              onClick={() => {
-                if (window.confirm(t('common.confirmDelete'))) {
-                  deleteScan.mutate(scan.id, { onSuccess: () => navigate('/history', { replace: true }) });
-                }
-              }}
-            >
-              <Trash2 className="size-4" aria-hidden="true" />
-            </button>
-          </div>
-        </aside>
-
-        <div className="min-w-0 space-y-6">
+        <div className="min-w-0 space-y-6 lg:col-start-2 lg:row-span-2 lg:row-start-1">
           <section className="card animate-rise overflow-hidden">
             <div className={clsx('border-b p-5 sm:p-6', tone.wrap)}>
               <div className="flex items-start gap-4">
@@ -326,6 +242,92 @@ export default function ScanResult() {
 
           <p className="text-center text-xs text-ink-muted">{t('result.model', { version: scan.modelVersion, ms: scan.inferenceMs ?? '—' })}</p>
         </div>
+
+        <aside className="space-y-5 lg:col-start-1 lg:row-start-2">
+          <div className="card divide-y divide-line px-5 py-1.5 text-sm">
+            <p className="flex items-center justify-between gap-3 py-2.5">
+              <span className="flex items-center gap-2 text-ink-muted">
+                <Sprout className="size-4 text-brand-600" aria-hidden="true" />
+                {t('scan.crop')}
+              </span>
+              <span className="font-semibold text-brand-900">{cropName(scan.declaredCrop)}</span>
+            </p>
+            {scan.plot?.name && (
+              <p className="flex items-center justify-between gap-3 py-2.5">
+                <span className="flex items-center gap-2 text-ink-muted">
+                  <MapPin className="size-4 text-brand-600" aria-hidden="true" />
+                  {t('scan.plot')}
+                </span>
+                <Link to={`/plots/${scan.plot.id}`} className="truncate font-semibold text-brand-700 underline underline-offset-2">
+                  {scan.plot.name}
+                </Link>
+              </p>
+            )}
+            <p className="flex items-center justify-between gap-3 py-2.5">
+              <span className="flex items-center gap-2 text-ink-muted">
+                <CalendarDays className="size-4 text-brand-600" aria-hidden="true" />
+                {t('history.title')}
+              </span>
+              <span className="font-medium">{shortDate(scan.createdAt, lang)}</span>
+            </p>
+            {scan.location && (
+              <label className="flex cursor-pointer items-center justify-between gap-3 py-2.5">
+                <span className="flex items-center gap-2 text-ink-muted">
+                  <Share2 className="size-4 text-brand-600" aria-hidden="true" />
+                  {scan.shareLocation ? t('result.shareOn') : t('result.shareOff')}
+                </span>
+                <input
+                  type="checkbox"
+                  className="size-4 accent-brand-700"
+                  checked={scan.shareLocation}
+                  disabled={updateScan.isPending}
+                  onChange={(e) => updateScan.mutate({ shareLocation: e.target.checked })}
+                />
+              </label>
+            )}
+          </div>
+
+          {scan.quality?.warnings?.length > 0 && (
+            <Alert tone="warn">
+              <p className="mb-1.5 font-semibold">{t('result.quality')}</p>
+              <ul className="space-y-1 font-normal">
+                {scan.quality.warnings.map((w) => (
+                  <li key={w} className="flex gap-2">
+                    <span className="mt-[0.45rem] size-1.5 shrink-0 rounded-full bg-current opacity-70" aria-hidden="true" />
+                    {t(`result.qualityWarning.${w}`)}
+                  </li>
+                ))}
+              </ul>
+            </Alert>
+          )}
+
+          {/* Re-photographing the same leaf is how the farmer learns whether the disease is spreading. */}
+          {scan.status !== 'rejected' && (
+            <Link to={`/scan?again=${scan.id}`} className="btn-primary w-full">
+              <RefreshCw className="size-4" aria-hidden="true" />
+              {t('result.scanThisAgain')}
+            </Link>
+          )}
+          <div className="flex gap-2">
+            <Link to="/scan" className="btn-outline flex-1">
+              <ImageUp className="size-4" aria-hidden="true" />
+              {t('result.scanAgain')}
+            </Link>
+            <button
+              type="button"
+              className="btn-danger"
+              aria-label={t('common.delete')}
+              disabled={deleteScan.isPending}
+              onClick={() => {
+                if (window.confirm(t('common.confirmDelete'))) {
+                  deleteScan.mutate(scan.id, { onSuccess: () => navigate('/history', { replace: true }) });
+                }
+              }}
+            >
+              <Trash2 className="size-4" aria-hidden="true" />
+            </button>
+          </div>
+        </aside>
       </div>
     </div>
   );

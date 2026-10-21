@@ -73,6 +73,16 @@
 @layer base {
   html {
     -webkit-text-size-adjust: 100%;
+    /* No grey flash over whatever was tapped; buttons and cards show their own pressed state. */
+    -webkit-tap-highlight-color: transparent;
+  }
+  /* Taps act at once instead of waiting to see whether a double-tap zoom follows. */
+  a,
+  button,
+  select,
+  label,
+  [role='button'] {
+    touch-action: manipulation;
   }
   body {
     @apply bg-canvas text-ink font-sans antialiased;
@@ -164,8 +174,9 @@
   @apply rounded-full px-6;
 }
 
+/* 16px on phones: iOS Safari zooms the page into any field whose text is smaller when it is tapped. */
 @utility input {
-  @apply w-full rounded-control border border-line-strong bg-surface px-3.5 min-h-11 text-[15px];
+  @apply w-full rounded-control border border-line-strong bg-surface px-3.5 min-h-11 text-base sm:text-[15px];
   @apply placeholder:text-ink-subtle focus:border-brand-500 focus:outline-none;
   box-shadow: inset 0 1px 2px rgb(16 53 29 / 0.04);
   transition:
@@ -224,10 +235,16 @@
   .btn:active:not(:disabled) {
     transform: translateY(1px) scale(0.995);
   }
-  .card-interactive:hover {
-    box-shadow: var(--shadow-md);
-    transform: translateY(-2px);
-    @apply border-brand-200;
+  /* Only where there is a real cursor: on a touch screen :hover sticks after a tap and the card stays lifted. */
+  @media (hover: hover) {
+    .card-interactive:hover {
+      box-shadow: var(--shadow-md);
+      transform: translateY(-2px);
+      @apply border-brand-200;
+    }
+  }
+  .card-interactive:active {
+    transform: scale(0.99);
   }
   .input:disabled {
     @apply cursor-not-allowed bg-surface-sunken opacity-60;
@@ -294,6 +311,16 @@
 .leaflet-container {
   font: inherit;
   z-index: 0;
+}
+/* Finger-sized zoom buttons on touch screens; Leaflet's own are 30px. */
+@media (pointer: coarse) {
+  /* Specific enough to beat leaflet.css, which loads after this file. */
+  .leaflet-container .leaflet-control-zoom.leaflet-bar a {
+    width: 40px;
+    height: 40px;
+    line-height: 40px;
+    font-size: 20px;
+  }
 }
 .leaflet-container .leaflet-control-attribution {
   font-size: 11px;
