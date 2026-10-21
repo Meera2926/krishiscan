@@ -88,8 +88,10 @@ const COMPARE_FIELDS = 'createdAt severity diseaseKey isHealthy review image.url
 /**
  * How much of the leaf is affected now against before. A re-photograph of a named scan is compared
  * with that scan; otherwise a scan on a plot is compared with the plot's previous scan. Changes of
- * under 3 points are within what the colour estimate can tell apart, so they count as no change.
+ * under 1 point are within the noise of the colour estimate, so they count as no change.
  */
+const SAME_WITHIN = 1;
+
 async function compareWithPrevious(scan) {
   if (!scan.severity?.reliable) return null;
   let previous = null;
@@ -123,7 +125,7 @@ async function compareWithPrevious(scan) {
     currentPercent: scan.severity.percent,
     previousDiseaseKey: previous.effectiveDiseaseKey,
     change,
-    direction: change >= 3 ? 'worse' : change <= -3 ? 'better' : 'same',
+    direction: change >= SAME_WITHIN ? 'worse' : change <= -SAME_WITHIN ? 'better' : 'same',
   };
 }
 

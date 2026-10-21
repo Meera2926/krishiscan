@@ -42,7 +42,12 @@ export default defineConfig({
           {
             urlPattern: ({ url }) => url.pathname.startsWith('/uploads/') || url.hostname === 'res.cloudinary.com',
             handler: 'CacheFirst',
-            options: { cacheName: 'scan-images', expiration: { maxEntries: 150, maxAgeSeconds: 30 * 24 * 3600 } },
+            options: {
+              cacheName: 'scan-images',
+              expiration: { maxEntries: 150, maxAgeSeconds: 30 * 24 * 3600 },
+              // Cloudinary photos load as cross-origin (opaque) responses, which are only cached when allowed.
+              cacheableResponse: { statuses: [0, 200] },
+            },
           },
         ],
       },

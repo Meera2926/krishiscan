@@ -35,7 +35,8 @@ export function createApp() {
           scriptSrc: ["'self'"],
           styleSrc: ["'self'", "'unsafe-inline'"],
           imgSrc: ["'self'", 'data:', 'blob:', 'https://res.cloudinary.com', 'https://tile.openstreetmap.org'],
-          connectSrc: ["'self'"],
+          // The service worker caches scan photos with fetch(), which connect-src governs.
+          connectSrc: ["'self'", 'https://res.cloudinary.com'],
           workerSrc: ["'self'", 'blob:'],
           manifestSrc: ["'self'"],
           objectSrc: ["'none'"],
