@@ -45,6 +45,9 @@ export function createApp() {
       },
       // Uploaded images are loaded by the same-origin SPA; nothing needs cross-origin embedding.
       crossOriginResourcePolicy: { policy: 'same-origin' },
+      // OpenStreetMap refuses tile requests that carry no Referer (403 "Access blocked"), which is what
+      // helmet's default no-referrer sent. This policy sends other sites only the origin, never a path.
+      referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
     }),
   );
   app.use(compression());
